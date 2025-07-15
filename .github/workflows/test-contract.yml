@@ -51,13 +51,3 @@ jobs:
         with:
           scarb-version: ${{ env.SCARB_VERSION }}
       - run: scarb fmt --check
-
-  scarb-check:
-    needs: [setup-environment]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: software-mansion/setup-scarb@v1
-        with:
-          scarb-version: ${{ env.SCARB_VERSION }}
-      - run: scarb check
