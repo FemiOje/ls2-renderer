@@ -13,7 +13,7 @@ const MAX_ADVENTURER_HEALTH: u16 = 1023;
 fn get_max_health(vitality: u8) -> u16 {
     let vitality_health_boost = vitality.into() * HEALTH_INCREASE_PER_VITALITY.into();
     let new_max_health = STARTING_HEALTH.into() + vitality_health_boost;
-    
+
     if new_max_health > MAX_ADVENTURER_HEALTH {
         MAX_ADVENTURER_HEALTH
     } else {
@@ -556,11 +556,22 @@ fn create_modular_adventurer_page(
     let health_position = SVGPosition { x: 90, y: 115 };
     let health_size = SVGSize { width: 200, height: 8 };
     let max_health = get_max_health(adventurer.stats.vitality);
-    page_elements += create_health_bar_component(adventurer.health.into(), max_health.into(), health_position, health_size, @theme);
-    
+    page_elements +=
+        create_health_bar_component(
+            adventurer.health.into(), max_health.into(), health_position, health_size, @theme,
+        );
+
     // Health text
     let health_text_pos = SVGPosition { x: 90, y: 135 };
-    page_elements += create_text_component(format!("{}/{} HP", adventurer.health, max_health), health_text_pos, 12, @theme, "start", "text-top");
+    page_elements +=
+        create_text_component(
+            format!("{}/{} HP", adventurer.health, max_health),
+            health_text_pos,
+            12,
+            @theme,
+            "start",
+            "text-top",
+        );
 
     // Inventory layout
     let inventory_position = SVGPosition { x: 90, y: 180 };
@@ -781,7 +792,9 @@ fn create_battle_svg(
     let _cha = format!("{}", adventurer.stats.charisma);
     let _luck = format!("{}", adventurer.stats.luck);
     let _health = format!("{}", adventurer.health);
-    let _max_health = format!("{}", get_max_health(adventurer.stats.vitality)); // Dynamic max health based on vitality
+    let _max_health = format!(
+        "{}", get_max_health(adventurer.stats.vitality),
+    ); // Dynamic max health based on vitality
     let _xp = format!("{}", adventurer.xp);
     let _gold = format!("{}", adventurer.gold);
 
@@ -889,7 +902,9 @@ fn create_shinobi_svg_legacy(
     let _cha = format!("{}", adventurer.stats.charisma);
     let _luck = format!("{}", adventurer.stats.luck);
     let _health = format!("{}", adventurer.health);
-    let _max_health = format!("{}", get_max_health(adventurer.stats.vitality)); // Dynamic max health based on vitality
+    let _max_health = format!(
+        "{}", get_max_health(adventurer.stats.vitality),
+    ); // Dynamic max health based on vitality
     let _xp = format!("{}", adventurer.xp);
 
     // Generate equipped item names for inventory slots
