@@ -252,207 +252,813 @@ pub struct ItemInfo {
 pub impl ItemDatabaseImpl of ItemDatabaseTrait {
     fn get_item_info(item_id: u8) -> ItemInfo {
         if item_id == 1 {
-            ItemInfo { id: 1, item_type: ItemType::Jewelry, slot: ItemSlot::Neck, tier: ItemTier::T1, name: ItemString::Pendant }
+            ItemInfo {
+                id: 1,
+                item_type: ItemType::Jewelry,
+                slot: ItemSlot::Neck,
+                tier: ItemTier::T1,
+                name: ItemString::Pendant,
+            }
         } else if item_id == 2 {
-            ItemInfo { id: 2, item_type: ItemType::Jewelry, slot: ItemSlot::Neck, tier: ItemTier::T2, name: ItemString::Necklace }
+            ItemInfo {
+                id: 2,
+                item_type: ItemType::Jewelry,
+                slot: ItemSlot::Neck,
+                tier: ItemTier::T2,
+                name: ItemString::Necklace,
+            }
         } else if item_id == 3 {
-            ItemInfo { id: 3, item_type: ItemType::Jewelry, slot: ItemSlot::Neck, tier: ItemTier::T3, name: ItemString::Amulet }
+            ItemInfo {
+                id: 3,
+                item_type: ItemType::Jewelry,
+                slot: ItemSlot::Neck,
+                tier: ItemTier::T3,
+                name: ItemString::Amulet,
+            }
         } else if item_id == 4 {
-            ItemInfo { id: 4, item_type: ItemType::Jewelry, slot: ItemSlot::Ring, tier: ItemTier::T1, name: ItemString::SilverRing }
+            ItemInfo {
+                id: 4,
+                item_type: ItemType::Jewelry,
+                slot: ItemSlot::Ring,
+                tier: ItemTier::T1,
+                name: ItemString::SilverRing,
+            }
         } else if item_id == 5 {
-            ItemInfo { id: 5, item_type: ItemType::Jewelry, slot: ItemSlot::Ring, tier: ItemTier::T2, name: ItemString::BronzeRing }
+            ItemInfo {
+                id: 5,
+                item_type: ItemType::Jewelry,
+                slot: ItemSlot::Ring,
+                tier: ItemTier::T2,
+                name: ItemString::BronzeRing,
+            }
         } else if item_id == 6 {
-            ItemInfo { id: 6, item_type: ItemType::Jewelry, slot: ItemSlot::Ring, tier: ItemTier::T3, name: ItemString::PlatinumRing }
+            ItemInfo {
+                id: 6,
+                item_type: ItemType::Jewelry,
+                slot: ItemSlot::Ring,
+                tier: ItemTier::T3,
+                name: ItemString::PlatinumRing,
+            }
         } else if item_id == 7 {
-            ItemInfo { id: 7, item_type: ItemType::Jewelry, slot: ItemSlot::Ring, tier: ItemTier::T4, name: ItemString::TitaniumRing }
+            ItemInfo {
+                id: 7,
+                item_type: ItemType::Jewelry,
+                slot: ItemSlot::Ring,
+                tier: ItemTier::T4,
+                name: ItemString::TitaniumRing,
+            }
         } else if item_id == 8 {
-            ItemInfo { id: 8, item_type: ItemType::Jewelry, slot: ItemSlot::Ring, tier: ItemTier::T5, name: ItemString::GoldRing }
+            ItemInfo {
+                id: 8,
+                item_type: ItemType::Jewelry,
+                slot: ItemSlot::Ring,
+                tier: ItemTier::T5,
+                name: ItemString::GoldRing,
+            }
         } else if item_id == 9 {
-            ItemInfo { id: 9, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T1, name: ItemString::GhostWand }
+            ItemInfo {
+                id: 9,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T1,
+                name: ItemString::GhostWand,
+            }
         } else if item_id == 10 {
-            ItemInfo { id: 10, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T2, name: ItemString::GraveWand }
+            ItemInfo {
+                id: 10,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T2,
+                name: ItemString::GraveWand,
+            }
         } else if item_id == 11 {
-            ItemInfo { id: 11, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T3, name: ItemString::BoneWand }
+            ItemInfo {
+                id: 11,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T3,
+                name: ItemString::BoneWand,
+            }
         } else if item_id == 12 {
-            ItemInfo { id: 12, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T4, name: ItemString::Wand }
+            ItemInfo {
+                id: 12,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T4,
+                name: ItemString::Wand,
+            }
         } else if item_id == 13 {
-            ItemInfo { id: 13, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T5, name: ItemString::Grimoire }
+            ItemInfo {
+                id: 13,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T5,
+                name: ItemString::Grimoire,
+            }
         } else if item_id == 14 {
-            ItemInfo { id: 14, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T1, name: ItemString::Chronicle }
+            ItemInfo {
+                id: 14,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T1,
+                name: ItemString::Chronicle,
+            }
         } else if item_id == 15 {
-            ItemInfo { id: 15, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T2, name: ItemString::Tome }
+            ItemInfo {
+                id: 15,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T2,
+                name: ItemString::Tome,
+            }
         } else if item_id == 16 {
-            ItemInfo { id: 16, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T3, name: ItemString::Book }
+            ItemInfo {
+                id: 16,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T3,
+                name: ItemString::Book,
+            }
         } else if item_id == 17 {
-            ItemInfo { id: 17, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T1, name: ItemString::DivineRobe }
+            ItemInfo {
+                id: 17,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T1,
+                name: ItemString::DivineRobe,
+            }
         } else if item_id == 18 {
-            ItemInfo { id: 18, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T2, name: ItemString::SilkRobe }
+            ItemInfo {
+                id: 18,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T2,
+                name: ItemString::SilkRobe,
+            }
         } else if item_id == 19 {
-            ItemInfo { id: 19, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T3, name: ItemString::LinenRobe }
+            ItemInfo {
+                id: 19,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T3,
+                name: ItemString::LinenRobe,
+            }
         } else if item_id == 20 {
-            ItemInfo { id: 20, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T4, name: ItemString::Robe }
+            ItemInfo {
+                id: 20,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T4,
+                name: ItemString::Robe,
+            }
         } else if item_id == 21 {
-            ItemInfo { id: 21, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T5, name: ItemString::Shirt }
+            ItemInfo {
+                id: 21,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T5,
+                name: ItemString::Shirt,
+            }
         } else if item_id == 22 {
-            ItemInfo { id: 22, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T1, name: ItemString::Crown }
+            ItemInfo {
+                id: 22,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T1,
+                name: ItemString::Crown,
+            }
         } else if item_id == 23 {
-            ItemInfo { id: 23, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T1, name: ItemString::DivineHood }
+            ItemInfo {
+                id: 23,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T1,
+                name: ItemString::DivineHood,
+            }
         } else if item_id == 24 {
-            ItemInfo { id: 24, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T2, name: ItemString::SilkHood }
+            ItemInfo {
+                id: 24,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T2,
+                name: ItemString::SilkHood,
+            }
         } else if item_id == 25 {
-            ItemInfo { id: 25, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T3, name: ItemString::LinenHood }
+            ItemInfo {
+                id: 25,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T3,
+                name: ItemString::LinenHood,
+            }
         } else if item_id == 26 {
-            ItemInfo { id: 26, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T4, name: ItemString::Hood }
+            ItemInfo {
+                id: 26,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T4,
+                name: ItemString::Hood,
+            }
         } else if item_id == 27 {
-            ItemInfo { id: 27, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T1, name: ItemString::BrightsilkSash }
+            ItemInfo {
+                id: 27,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T1,
+                name: ItemString::BrightsilkSash,
+            }
         } else if item_id == 28 {
-            ItemInfo { id: 28, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T2, name: ItemString::SilkSash }
+            ItemInfo {
+                id: 28,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T2,
+                name: ItemString::SilkSash,
+            }
         } else if item_id == 29 {
-            ItemInfo { id: 29, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T3, name: ItemString::WoolSash }
+            ItemInfo {
+                id: 29,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T3,
+                name: ItemString::WoolSash,
+            }
         } else if item_id == 30 {
-            ItemInfo { id: 30, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T4, name: ItemString::LinenSash }
+            ItemInfo {
+                id: 30,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T4,
+                name: ItemString::LinenSash,
+            }
         } else if item_id == 31 {
-            ItemInfo { id: 31, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T5, name: ItemString::Sash }
+            ItemInfo {
+                id: 31,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T5,
+                name: ItemString::Sash,
+            }
         } else if item_id == 32 {
-            ItemInfo { id: 32, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T1, name: ItemString::DivineSlippers }
+            ItemInfo {
+                id: 32,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T1,
+                name: ItemString::DivineSlippers,
+            }
         } else if item_id == 33 {
-            ItemInfo { id: 33, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T2, name: ItemString::SilkSlippers }
+            ItemInfo {
+                id: 33,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T2,
+                name: ItemString::SilkSlippers,
+            }
         } else if item_id == 34 {
-            ItemInfo { id: 34, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T3, name: ItemString::WoolShoes }
+            ItemInfo {
+                id: 34,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T3,
+                name: ItemString::WoolShoes,
+            }
         } else if item_id == 35 {
-            ItemInfo { id: 35, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T4, name: ItemString::LinenShoes }
+            ItemInfo {
+                id: 35,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T4,
+                name: ItemString::LinenShoes,
+            }
         } else if item_id == 36 {
-            ItemInfo { id: 36, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T5, name: ItemString::Shoes }
+            ItemInfo {
+                id: 36,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T5,
+                name: ItemString::Shoes,
+            }
         } else if item_id == 37 {
-            ItemInfo { id: 37, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T1, name: ItemString::DivineGloves }
+            ItemInfo {
+                id: 37,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T1,
+                name: ItemString::DivineGloves,
+            }
         } else if item_id == 38 {
-            ItemInfo { id: 38, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T2, name: ItemString::SilkGloves }
+            ItemInfo {
+                id: 38,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T2,
+                name: ItemString::SilkGloves,
+            }
         } else if item_id == 39 {
-            ItemInfo { id: 39, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T3, name: ItemString::WoolGloves }
+            ItemInfo {
+                id: 39,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T3,
+                name: ItemString::WoolGloves,
+            }
         } else if item_id == 40 {
-            ItemInfo { id: 40, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T4, name: ItemString::LinenGloves }
+            ItemInfo {
+                id: 40,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T4,
+                name: ItemString::LinenGloves,
+            }
         } else if item_id == 41 {
-            ItemInfo { id: 41, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T5, name: ItemString::Gloves }
+            ItemInfo {
+                id: 41,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T5,
+                name: ItemString::Gloves,
+            }
         } else if item_id == 42 {
-            ItemInfo { id: 42, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T1, name: ItemString::Katana }
+            ItemInfo {
+                id: 42,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T1,
+                name: ItemString::Katana,
+            }
         } else if item_id == 43 {
-            ItemInfo { id: 43, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T2, name: ItemString::Falchion }
+            ItemInfo {
+                id: 43,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T2,
+                name: ItemString::Falchion,
+            }
         } else if item_id == 44 {
-            ItemInfo { id: 44, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T3, name: ItemString::Scimitar }
+            ItemInfo {
+                id: 44,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T3,
+                name: ItemString::Scimitar,
+            }
         } else if item_id == 45 {
-            ItemInfo { id: 45, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T4, name: ItemString::LongSword }
+            ItemInfo {
+                id: 45,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T4,
+                name: ItemString::LongSword,
+            }
         } else if item_id == 46 {
-            ItemInfo { id: 46, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T5, name: ItemString::ShortSword }
+            ItemInfo {
+                id: 46,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T5,
+                name: ItemString::ShortSword,
+            }
         } else if item_id == 47 {
-            ItemInfo { id: 47, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T1, name: ItemString::DemonHusk }
+            ItemInfo {
+                id: 47,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T1,
+                name: ItemString::DemonHusk,
+            }
         } else if item_id == 48 {
-            ItemInfo { id: 48, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T2, name: ItemString::DragonskinArmor }
+            ItemInfo {
+                id: 48,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T2,
+                name: ItemString::DragonskinArmor,
+            }
         } else if item_id == 49 {
-            ItemInfo { id: 49, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T3, name: ItemString::StuddedLeatherArmor }
+            ItemInfo {
+                id: 49,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T3,
+                name: ItemString::StuddedLeatherArmor,
+            }
         } else if item_id == 50 {
-            ItemInfo { id: 50, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T4, name: ItemString::HardLeatherArmor }
+            ItemInfo {
+                id: 50,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T4,
+                name: ItemString::HardLeatherArmor,
+            }
         } else if item_id == 51 {
-            ItemInfo { id: 51, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T5, name: ItemString::LeatherArmor }
+            ItemInfo {
+                id: 51,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T5,
+                name: ItemString::LeatherArmor,
+            }
         } else if item_id == 52 {
-            ItemInfo { id: 52, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T1, name: ItemString::DemonCrown }
+            ItemInfo {
+                id: 52,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T1,
+                name: ItemString::DemonCrown,
+            }
         } else if item_id == 53 {
-            ItemInfo { id: 53, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T2, name: ItemString::DragonsCrown }
+            ItemInfo {
+                id: 53,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T2,
+                name: ItemString::DragonsCrown,
+            }
         } else if item_id == 54 {
-            ItemInfo { id: 54, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T3, name: ItemString::WarCap }
+            ItemInfo {
+                id: 54,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T3,
+                name: ItemString::WarCap,
+            }
         } else if item_id == 55 {
-            ItemInfo { id: 55, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T4, name: ItemString::LeatherCap }
+            ItemInfo {
+                id: 55,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T4,
+                name: ItemString::LeatherCap,
+            }
         } else if item_id == 56 {
-            ItemInfo { id: 56, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T5, name: ItemString::Cap }
+            ItemInfo {
+                id: 56,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T5,
+                name: ItemString::Cap,
+            }
         } else if item_id == 57 {
-            ItemInfo { id: 57, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T1, name: ItemString::DemonhideBelt }
+            ItemInfo {
+                id: 57,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T1,
+                name: ItemString::DemonhideBelt,
+            }
         } else if item_id == 58 {
-            ItemInfo { id: 58, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T2, name: ItemString::DragonskinBelt }
+            ItemInfo {
+                id: 58,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T2,
+                name: ItemString::DragonskinBelt,
+            }
         } else if item_id == 59 {
-            ItemInfo { id: 59, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T3, name: ItemString::StuddedLeatherBelt }
+            ItemInfo {
+                id: 59,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T3,
+                name: ItemString::StuddedLeatherBelt,
+            }
         } else if item_id == 60 {
-            ItemInfo { id: 60, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T4, name: ItemString::HardLeatherBelt }
+            ItemInfo {
+                id: 60,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T4,
+                name: ItemString::HardLeatherBelt,
+            }
         } else if item_id == 61 {
-            ItemInfo { id: 61, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T5, name: ItemString::LeatherBelt }
+            ItemInfo {
+                id: 61,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T5,
+                name: ItemString::LeatherBelt,
+            }
         } else if item_id == 62 {
-            ItemInfo { id: 62, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T1, name: ItemString::DemonhideBoots }
+            ItemInfo {
+                id: 62,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T1,
+                name: ItemString::DemonhideBoots,
+            }
         } else if item_id == 63 {
-            ItemInfo { id: 63, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T2, name: ItemString::DragonskinBoots }
+            ItemInfo {
+                id: 63,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T2,
+                name: ItemString::DragonskinBoots,
+            }
         } else if item_id == 64 {
-            ItemInfo { id: 64, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T3, name: ItemString::StuddedLeatherBoots }
+            ItemInfo {
+                id: 64,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T3,
+                name: ItemString::StuddedLeatherBoots,
+            }
         } else if item_id == 65 {
-            ItemInfo { id: 65, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T4, name: ItemString::HardLeatherBoots }
+            ItemInfo {
+                id: 65,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T4,
+                name: ItemString::HardLeatherBoots,
+            }
         } else if item_id == 66 {
-            ItemInfo { id: 66, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T5, name: ItemString::LeatherBoots }
+            ItemInfo {
+                id: 66,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T5,
+                name: ItemString::LeatherBoots,
+            }
         } else if item_id == 67 {
-            ItemInfo { id: 67, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T1, name: ItemString::DemonsHands }
+            ItemInfo {
+                id: 67,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T1,
+                name: ItemString::DemonsHands,
+            }
         } else if item_id == 68 {
-            ItemInfo { id: 68, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T2, name: ItemString::DragonskinGloves }
+            ItemInfo {
+                id: 68,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T2,
+                name: ItemString::DragonskinGloves,
+            }
         } else if item_id == 69 {
-            ItemInfo { id: 69, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T3, name: ItemString::StuddedLeatherGloves }
+            ItemInfo {
+                id: 69,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T3,
+                name: ItemString::StuddedLeatherGloves,
+            }
         } else if item_id == 70 {
-            ItemInfo { id: 70, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T4, name: ItemString::HardLeatherGloves }
+            ItemInfo {
+                id: 70,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T4,
+                name: ItemString::HardLeatherGloves,
+            }
         } else if item_id == 71 {
-            ItemInfo { id: 71, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T5, name: ItemString::LeatherGloves }
+            ItemInfo {
+                id: 71,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T5,
+                name: ItemString::LeatherGloves,
+            }
         } else if item_id == 72 {
-            ItemInfo { id: 72, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T1, name: ItemString::Warhammer }
+            ItemInfo {
+                id: 72,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T1,
+                name: ItemString::Warhammer,
+            }
         } else if item_id == 73 {
-            ItemInfo { id: 73, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T2, name: ItemString::Quarterstaff }
+            ItemInfo {
+                id: 73,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T2,
+                name: ItemString::Quarterstaff,
+            }
         } else if item_id == 74 {
-            ItemInfo { id: 74, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T3, name: ItemString::Maul }
+            ItemInfo {
+                id: 74,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T3,
+                name: ItemString::Maul,
+            }
         } else if item_id == 75 {
-            ItemInfo { id: 75, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T4, name: ItemString::Mace }
+            ItemInfo {
+                id: 75,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T4,
+                name: ItemString::Mace,
+            }
         } else if item_id == 76 {
-            ItemInfo { id: 76, item_type: ItemType::Weapon, slot: ItemSlot::Weapon, tier: ItemTier::T5, name: ItemString::Club }
+            ItemInfo {
+                id: 76,
+                item_type: ItemType::Weapon,
+                slot: ItemSlot::Weapon,
+                tier: ItemTier::T5,
+                name: ItemString::Club,
+            }
         } else if item_id == 77 {
-            ItemInfo { id: 77, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T1, name: ItemString::HolyChestplate }
+            ItemInfo {
+                id: 77,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T1,
+                name: ItemString::HolyChestplate,
+            }
         } else if item_id == 78 {
-            ItemInfo { id: 78, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T2, name: ItemString::OrnateChestplate }
+            ItemInfo {
+                id: 78,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T2,
+                name: ItemString::OrnateChestplate,
+            }
         } else if item_id == 79 {
-            ItemInfo { id: 79, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T3, name: ItemString::PlateMail }
+            ItemInfo {
+                id: 79,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T3,
+                name: ItemString::PlateMail,
+            }
         } else if item_id == 80 {
-            ItemInfo { id: 80, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T4, name: ItemString::ChainMail }
+            ItemInfo {
+                id: 80,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T4,
+                name: ItemString::ChainMail,
+            }
         } else if item_id == 81 {
-            ItemInfo { id: 81, item_type: ItemType::Armor, slot: ItemSlot::Chest, tier: ItemTier::T5, name: ItemString::RingMail }
+            ItemInfo {
+                id: 81,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Chest,
+                tier: ItemTier::T5,
+                name: ItemString::RingMail,
+            }
         } else if item_id == 82 {
-            ItemInfo { id: 82, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T1, name: ItemString::AncientHelm }
+            ItemInfo {
+                id: 82,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T1,
+                name: ItemString::AncientHelm,
+            }
         } else if item_id == 83 {
-            ItemInfo { id: 83, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T2, name: ItemString::OrnateHelm }
+            ItemInfo {
+                id: 83,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T2,
+                name: ItemString::OrnateHelm,
+            }
         } else if item_id == 84 {
-            ItemInfo { id: 84, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T3, name: ItemString::GreatHelm }
+            ItemInfo {
+                id: 84,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T3,
+                name: ItemString::GreatHelm,
+            }
         } else if item_id == 85 {
-            ItemInfo { id: 85, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T4, name: ItemString::FullHelm }
+            ItemInfo {
+                id: 85,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T4,
+                name: ItemString::FullHelm,
+            }
         } else if item_id == 86 {
-            ItemInfo { id: 86, item_type: ItemType::Armor, slot: ItemSlot::Head, tier: ItemTier::T5, name: ItemString::Helm }
+            ItemInfo {
+                id: 86,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Head,
+                tier: ItemTier::T5,
+                name: ItemString::Helm,
+            }
         } else if item_id == 87 {
-            ItemInfo { id: 87, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T1, name: ItemString::OrnateBelt }
+            ItemInfo {
+                id: 87,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T1,
+                name: ItemString::OrnateBelt,
+            }
         } else if item_id == 88 {
-            ItemInfo { id: 88, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T2, name: ItemString::WarBelt }
+            ItemInfo {
+                id: 88,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T2,
+                name: ItemString::WarBelt,
+            }
         } else if item_id == 89 {
-            ItemInfo { id: 89, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T3, name: ItemString::PlatedBelt }
+            ItemInfo {
+                id: 89,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T3,
+                name: ItemString::PlatedBelt,
+            }
         } else if item_id == 90 {
-            ItemInfo { id: 90, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T4, name: ItemString::MeshBelt }
+            ItemInfo {
+                id: 90,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T4,
+                name: ItemString::MeshBelt,
+            }
         } else if item_id == 91 {
-            ItemInfo { id: 91, item_type: ItemType::Armor, slot: ItemSlot::Waist, tier: ItemTier::T5, name: ItemString::HeavyBelt }
+            ItemInfo {
+                id: 91,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Waist,
+                tier: ItemTier::T5,
+                name: ItemString::HeavyBelt,
+            }
         } else if item_id == 92 {
-            ItemInfo { id: 92, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T1, name: ItemString::HolyGreaves }
+            ItemInfo {
+                id: 92,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T1,
+                name: ItemString::HolyGreaves,
+            }
         } else if item_id == 93 {
-            ItemInfo { id: 93, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T2, name: ItemString::OrnateGreaves }
+            ItemInfo {
+                id: 93,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T2,
+                name: ItemString::OrnateGreaves,
+            }
         } else if item_id == 94 {
-            ItemInfo { id: 94, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T3, name: ItemString::Greaves }
+            ItemInfo {
+                id: 94,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T3,
+                name: ItemString::Greaves,
+            }
         } else if item_id == 95 {
-            ItemInfo { id: 95, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T4, name: ItemString::ChainBoots }
+            ItemInfo {
+                id: 95,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T4,
+                name: ItemString::ChainBoots,
+            }
         } else if item_id == 96 {
-            ItemInfo { id: 96, item_type: ItemType::Armor, slot: ItemSlot::Foot, tier: ItemTier::T5, name: ItemString::HeavyBoots }
+            ItemInfo {
+                id: 96,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Foot,
+                tier: ItemTier::T5,
+                name: ItemString::HeavyBoots,
+            }
         } else if item_id == 97 {
-            ItemInfo { id: 97, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T1, name: ItemString::HolyGauntlets }
+            ItemInfo {
+                id: 97,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T1,
+                name: ItemString::HolyGauntlets,
+            }
         } else if item_id == 98 {
-            ItemInfo { id: 98, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T2, name: ItemString::OrnateGauntlets }
+            ItemInfo {
+                id: 98,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T2,
+                name: ItemString::OrnateGauntlets,
+            }
         } else if item_id == 99 {
-            ItemInfo { id: 99, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T3, name: ItemString::Gauntlets }
+            ItemInfo {
+                id: 99,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T3,
+                name: ItemString::Gauntlets,
+            }
         } else if item_id == 100 {
-            ItemInfo { id: 100, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T4, name: ItemString::ChainGloves }
+            ItemInfo {
+                id: 100,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T4,
+                name: ItemString::ChainGloves,
+            }
         } else if item_id == 101 {
-            ItemInfo { id: 101, item_type: ItemType::Armor, slot: ItemSlot::Hand, tier: ItemTier::T5, name: ItemString::HeavyGloves }
+            ItemInfo {
+                id: 101,
+                item_type: ItemType::Armor,
+                slot: ItemSlot::Hand,
+                tier: ItemTier::T5,
+                name: ItemString::HeavyGloves,
+            }
         } else {
             ItemInfo { id: 0, item_type: 0, slot: 0, tier: 0, name: '' }
         }
@@ -492,10 +1098,10 @@ pub impl ItemDatabaseImpl of ItemDatabaseTrait {
         if !Self::is_valid_item(item_id) {
             return 'None Equipped';
         }
-        
+
         let _greatness = Self::calculate_greatness(xp);
         let item_name = Self::get_item_name(item_id);
-        
+
         // For now, return simple format: "G{greatness} {item_name}"
         // In a full implementation, this would include prefixes and suffixes
         item_name
