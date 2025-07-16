@@ -3,6 +3,7 @@ pub mod utils {
     pub mod renderer_utils;
     pub mod renderer;
     pub mod components;
+    pub mod item_database;
 }
 
 pub mod mocks {
