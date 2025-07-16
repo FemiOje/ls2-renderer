@@ -3,12 +3,15 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+    paths:
+      - "src/**/*.cairo"
+      - "tests/**/*.cairo"
+      - "Scarb.toml"
+      - ".github/workflows/**"
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   claude-review:
@@ -21,8 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
-      issues: read
+      pull-requests: write
+      issues: write
       id-token: write
     
     steps:
@@ -42,17 +45,19 @@ jobs:
           
           # Direct prompt for automated review (no @claude mention needed)
           direct_prompt: |
-            Please review this pull request and provide feedback on:
-            - Code quality and best practices
-            - Potential bugs or issues
-            - Performance considerations
-            - Security concerns
-            - Test coverage
-            
+            Please review this Cairo/Starknet smart contract pull request and provide feedback on:
+            - Smart contract security vulnerabilities
+            - Gas optimization opportunities
+            - Cairo coding conventions and best practices
+            - Proper error handling and input validation
+            - Test coverage for contract functions
+            - Integration with mock contracts
+            - Code quality and maintainability
+
             Be constructive and helpful in your feedback.
 
           # Optional: Use sticky comments to make Claude reuse the same comment on subsequent pushes to the same PR
-          # use_sticky_comment: true
+          use_sticky_comment: true
           
           # Optional: Customize review based on file types
           # direct_prompt: |
@@ -69,7 +74,17 @@ jobs:
           #   'Please provide a thorough code review focusing on our coding standards and best practices.' }}
           
           # Optional: Add specific tools for running tests or linting
-          # allowed_tools: "Bash(npm run test),Bash(npm run lint),Bash(npm run typecheck)"
+          allowed_tools: "Bash(scarb build),Bash(scarb test),Bash(scarb fmt),Bash(scarb check)"
+
+          # Custom instructions for Cairo development
+          custom_instructions: |
+            This is a Cairo/Starknet smart contract project. When working with code:
+            - Follow Cairo coding conventions and best practices
+            - Use `scarb build` to compile, `scarb test` to run tests
+            - Ensure all changes pass `scarb fmt` formatting
+            - Focus on smart contract security and gas optimization
+            - Test interactions with mock contracts thoroughly
+            - Follow the project structure defined in CLAUDE.md
           
           # Optional: Skip review for certain conditions
           # if: |

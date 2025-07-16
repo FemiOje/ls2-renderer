@@ -10,6 +10,10 @@ on:
   pull_request_review:
     types: [submitted]
 
+concurrency:
+  group: claude-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   claude:
     if: |
@@ -20,8 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
-      issues: read
+      pull-requests: write
+      issues: write
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
@@ -48,15 +52,19 @@ jobs:
           
           # Optional: Trigger when specific user is assigned to an issue
           # assignee_trigger: "claude-bot"
+
+          allowed_tools: "Bash(scarb build),Bash(scarb test),Bash(scarb fmt),Bash(scarb check),Bash(scarb clean)"
           
-          # Optional: Allow Claude to run specific commands
-          # allowed_tools: "Bash(npm install),Bash(npm run build),Bash(npm run test:*),Bash(npm run lint:*)"
-          
-          # Optional: Add custom instructions for Claude to customize its behavior for your project
-          # custom_instructions: |
-          #   Follow our coding standards
-          #   Ensure all new code has tests
-          #   Use TypeScript for new files
+          # Custom instructions for Cairo development
+          custom_instructions: |
+            This is a Cairo/Starknet smart contract project. When working with code:
+            - Follow Cairo coding conventions and best practices
+            - Use `scarb build` to compile, `scarb test` to run tests
+            - Ensure all changes pass `scarb fmt` formatting
+            - Focus on smart contract security and gas optimization
+            - Test interactions with mock contracts thoroughly
+            - Follow the project structure defined in CLAUDE.md
+            - Each task is complete when `scarb build && scarb test` run without warnings or errors
           
           # Optional: Custom environment variables for Claude
           # claude_env: |
