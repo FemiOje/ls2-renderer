@@ -34,7 +34,7 @@ jobs:
         with:
           scarb-version: ${{ env.SCARB_VERSION }}
       - name: Setup Starknet Foundry
-        uses: foundry-rs/setup-snfoundry@v3
+        uses: foundry-rs/setup-snfoundry@v4
         with:
           starknet-foundry-version: ${{ env.SNFORGE_VERSION }}
       - name: Run Scarb Build
