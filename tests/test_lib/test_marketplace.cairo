@@ -194,3 +194,56 @@ fn test_marketplace_metadata_generation() {
     assert!(*metadata.at(1) == adventurer_level.into(), "Second element should be level");
     assert!(*metadata.at(2) == ' Items:', "Third element should be items label");
 }
+
+#[test]
+fn test_marketplace_items_display_example() {
+    let adventurer_level = 5;
+    let adventurer_seed = 12345;
+
+    let items = MarketplaceImpl::generate_marketplace_items(adventurer_level, adventurer_seed);
+
+    // Display all 21 items as an example
+    let mut display_items = ArrayTrait::<felt252>::new();
+    display_items.append('=== MARKETPLACE EXAMPLE ===');
+    display_items.append('Level 5 Adventurer');
+    display_items.append('Seed: 12345');
+    display_items.append('Available Items:');
+
+    let mut i = 0;
+    loop {
+        if i >= items.len() {
+            break;
+        }
+
+        let item_id = *items.at(i);
+        let item_name = ls2_renderer::utils::item_database::ItemDatabaseImpl::get_item_name(
+            item_id,
+        );
+
+        display_items.append(item_name);
+
+        i += 1;
+    };
+
+    display_items.append('=== END EXAMPLE ===');
+
+    // Verify we have the expected structure
+    assert!(display_items.len() >= 25, "Should have header + 21 items + footer");
+    assert!(*display_items.at(0) == '=== MARKETPLACE EXAMPLE ===', "Should have header");
+    assert!(*display_items.at(1) == 'Level 5 Adventurer', "Should show level");
+    assert!(*display_items.at(2) == 'Seed: 12345', "Should show seed");
+
+    // Verify items are valid
+    assert!(items.len() == 21, "Should have 21 items total");
+
+    // Check that all items are in valid range
+    let mut j = 0;
+    loop {
+        if j >= items.len() {
+            break;
+        }
+        let item_id = *items.at(j);
+        assert!(item_id >= 1 && item_id <= 101, "Item ID should be valid");
+        j += 1;
+    };
+}
