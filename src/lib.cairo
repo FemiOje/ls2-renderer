@@ -5,6 +5,7 @@ pub mod utils {
     pub mod components;
     pub mod item_database;
     pub mod marketplace;
+    pub mod combat;
 }
 
 pub mod mocks {

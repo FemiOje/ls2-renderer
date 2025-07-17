@@ -3,6 +3,7 @@ use ls2_renderer::mocks::mock_beast::{Beast};
 use ls2_renderer::utils::encoding::{U256BytesUsedTraitImpl, bytes_base64_encode};
 use ls2_renderer::utils::item_database::ItemDatabaseImpl;
 use ls2_renderer::utils::marketplace::MarketplaceImpl;
+use ls2_renderer::utils::combat::{CombatImpl, CombatResult};
 
 // Health calculation constants
 const STARTING_HEALTH: u8 = 100;
@@ -1200,6 +1201,251 @@ fn create_marketplace_items_grid(
     grid_elements
 }
 
+fn create_modular_combat_page(
+    adventurer_name: ByteArray, adventurer: Adventurer, beast: Beast, combat_result: CombatResult,
+) -> ByteArray {
+    let theme = get_battle_theme();
+    let page_size = SVGSize { width: 360, height: 510 };
+    let page_position = SVGPosition { x: 20, y: 20 };
+
+    let mut page_elements: ByteArray = "";
+
+    // Page background and border
+    page_elements +=
+        format!(
+            "<path d='M{} {}h{}v{}H{}z' filter='url(#s)' transform='translate(1200)'/>",
+            page_position.x,
+            page_position.y,
+            page_size.width,
+            page_size.height,
+            page_position.x,
+        );
+    page_elements +=
+        format!(
+            "<path d='M{} {}h{}v{}H{}z'/>",
+            page_position.x + 1210,
+            page_position.y + 10,
+            page_size.width - 20,
+            page_size.height - 20,
+            page_position.x + 1210,
+        );
+    page_elements += create_page_border(page_size, @theme);
+
+    // Page header
+    let header_position = SVGPosition { x: 1320, y: 65 };
+    page_elements +=
+        create_text_component(
+            format!("{}S", adventurer_name), header_position, 12, @theme, "start", "text-top",
+        );
+
+    let title_position = SVGPosition { x: 1320, y: 85 };
+    page_elements +=
+        create_text_component("Combat Analysis", title_position, 16, @theme, "start", "text-top");
+
+    // Combat stats display
+    let combat_stats_position = SVGPosition { x: 1240, y: 120 };
+    page_elements += create_combat_stats_display(combat_result, combat_stats_position, @theme);
+
+    // Beast info
+    let beast_info_position = SVGPosition { x: 1240, y: 300 };
+    page_elements += create_beast_info_display(beast, beast_info_position, @theme);
+
+    // Elemental effectiveness indicator
+    let effectiveness_position = SVGPosition { x: 1240, y: 400 };
+    page_elements +=
+        create_effectiveness_indicator(
+            combat_result.elemental_effectiveness, effectiveness_position, @theme,
+        );
+
+    page_elements
+}
+
+fn create_combat_stats_display(
+    combat_result: CombatResult, position: SVGPosition, theme: @SVGTheme,
+) -> ByteArray {
+    let mut stats_elements: ByteArray = "";
+    let line_height = 18;
+
+    // Title
+    stats_elements +=
+        create_text_component("Combat Stats:", position, 14, theme, "start", "text-top");
+
+    // Base Attack
+    let base_attack_pos = SVGPosition { x: position.x, y: position.y + line_height };
+    stats_elements +=
+        create_text_component(
+            format!("Base Attack: {}", combat_result.base_attack),
+            base_attack_pos,
+            12,
+            theme,
+            "start",
+            "text-top",
+        );
+
+    // Elemental Damage
+    let elemental_pos = SVGPosition { x: position.x, y: position.y + line_height * 2 };
+    stats_elements +=
+        create_text_component(
+            format!("Elemental: {}", combat_result.elemental_adjusted_damage),
+            elemental_pos,
+            12,
+            theme,
+            "start",
+            "text-top",
+        );
+
+    // Strength Bonus
+    let strength_pos = SVGPosition { x: position.x, y: position.y + line_height * 3 };
+    stats_elements +=
+        create_text_component(
+            format!("Strength: +{}", combat_result.strength_bonus),
+            strength_pos,
+            12,
+            theme,
+            "start",
+            "text-top",
+        );
+
+    // Critical Hit
+    if combat_result.is_critical {
+        let critical_pos = SVGPosition { x: position.x, y: position.y + line_height * 4 };
+        stats_elements +=
+            create_text_component(
+                format!("CRITICAL: +{}", combat_result.critical_hit_bonus),
+                critical_pos,
+                12,
+                theme,
+                "start",
+                "text-top",
+            );
+    }
+
+    // Weapon Special
+    let special_pos = SVGPosition { x: position.x, y: position.y + line_height * 5 };
+    stats_elements +=
+        create_text_component(
+            format!("Special: +{}", combat_result.weapon_special_bonus),
+            special_pos,
+            12,
+            theme,
+            "start",
+            "text-top",
+        );
+
+    // Armor Penetration
+    let armor_pen_pos = SVGPosition { x: position.x, y: position.y + line_height * 6 };
+    stats_elements +=
+        create_text_component(
+            format!("Armor Pen: {}", combat_result.armor_penetration),
+            armor_pen_pos,
+            12,
+            theme,
+            "start",
+            "text-top",
+        );
+
+    // Total Damage
+    let total_pos = SVGPosition { x: position.x, y: position.y + line_height * 7 };
+    stats_elements +=
+        create_text_component(
+            format!("Total: {}", combat_result.total_damage),
+            total_pos,
+            14,
+            theme,
+            "start",
+            "text-top",
+        );
+
+    stats_elements
+}
+
+fn create_beast_info_display(beast: Beast, position: SVGPosition, theme: @SVGTheme) -> ByteArray {
+    let mut beast_elements: ByteArray = "";
+    let line_height = 18;
+
+    // Title
+    beast_elements +=
+        create_text_component("Beast Info:", position, 14, theme, "start", "text-top");
+
+    // Beast ID and Health
+    let id_pos = SVGPosition { x: position.x, y: position.y + line_height };
+    beast_elements +=
+        create_text_component(
+            format!("ID: {} HP: {}", beast.id, beast.starting_health),
+            id_pos,
+            12,
+            theme,
+            "start",
+            "text-top",
+        );
+
+    // Beast Level
+    let level_pos = SVGPosition { x: position.x, y: position.y + line_height * 2 };
+    beast_elements +=
+        create_text_component(
+            format!("Level: {}", beast.combat_spec.level),
+            level_pos,
+            12,
+            theme,
+            "start",
+            "text-top",
+        );
+
+    // Beast Tier
+    let tier_text: ByteArray = match beast.combat_spec.tier {
+        ls2_renderer::mocks::mock_beast::Tier::T1 => "T1",
+        ls2_renderer::mocks::mock_beast::Tier::T2 => "T2",
+        ls2_renderer::mocks::mock_beast::Tier::T3 => "T3",
+        ls2_renderer::mocks::mock_beast::Tier::T4 => "T4",
+        ls2_renderer::mocks::mock_beast::Tier::T5 => "T5",
+        _ => "Unknown",
+    };
+    let tier_pos = SVGPosition { x: position.x, y: position.y + line_height * 3 };
+    beast_elements +=
+        create_text_component(
+            format!("Tier: {}", tier_text), tier_pos, 12, theme, "start", "text-top",
+        );
+
+    beast_elements
+}
+
+fn create_effectiveness_indicator(
+    effectiveness: u8, position: SVGPosition, theme: @SVGTheme,
+) -> ByteArray {
+    let mut indicator_elements: ByteArray = "";
+
+    let effectiveness_text = match effectiveness {
+        2 => "Super Effective!",
+        1 => "Normal Damage",
+        0 => "Not Very Effective",
+        _ => "Unknown",
+    };
+
+    let color: ByteArray = match effectiveness {
+        2 => "#00FF00", // Green for super effective
+        1 => "#FFFF00", // Yellow for normal
+        0 => "#FF0000", // Red for not very effective
+        _ => "#FFFFFF" // White for unknown
+    };
+
+    // Background for effectiveness
+    let bg_color: ByteArray = "#000000";
+    indicator_elements +=
+        format!(
+            "<rect x='{}' y='{}' width='120' height='25' fill='{}' stroke='{}' stroke-width='2' rx='5'/>",
+            position.x - 5,
+            position.y - 15,
+            bg_color,
+            color,
+        );
+
+    // Effectiveness text
+    indicator_elements +=
+        create_text_component(effectiveness_text, position, 12, theme, "start", "text-top");
+
+    indicator_elements
+}
+
 fn create_modular_svg_with_components(
     adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag,
 ) -> ByteArray {
@@ -1362,13 +1608,28 @@ fn create_battle_svg(
     let _beast_max_health = format!("{}", beast.starting_health); // For display purposes
     let _beast_power = format!("{}", beast.combat_spec.level + 20); // Simulated power calculation
 
-    // Calculate battle damage (simplified)
-    let damage_dealt = if adventurer.stats.strength > 10 {
-        10
-    } else {
-        adventurer.stats.strength.into()
+    // Calculate actual combat damage using combat system
+    let attacker_spec = CombatImpl::create_attack_spec_from_weapon(
+        adventurer.equipment.weapon, ((adventurer.xp / 100) + 1).try_into().unwrap(),
+    );
+    let defender_spec = CombatImpl::create_defense_spec_from_beast(beast);
+    let luck_seed = (adventurer_id * 42) % 100; // Deterministic luck seed
+    let combat_result = CombatImpl::calculate_damage(
+        attacker_spec, defender_spec, adventurer.stats, luck_seed,
+    );
+    let _damage = format!("{}", combat_result.total_damage);
+    let _base_attack = format!("{}", combat_result.base_attack);
+    let _elemental_effectiveness: ByteArray = match combat_result.elemental_effectiveness {
+        2 => "Super Effective",
+        1 => "Normal",
+        0 => "Not Very Effective",
+        _ => "Unknown",
     };
-    let _damage = format!("{}", damage_dealt);
+    let _is_critical: ByteArray = if combat_result.is_critical {
+        "CRITICAL HIT!"
+    } else {
+        ""
+    };
 
     // Generate equipped item names for inventory slots
     let _weapon_name = generate_item(adventurer.equipment.weapon, false);
@@ -1387,7 +1648,7 @@ fn create_battle_svg(
 
     // Create the optimized 4-page SVG (based on optimized multi_page_nft.svg template)
     format!(
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"550\"><defs><linearGradient id=\"border_gradient\" x1=\"200\" x2=\"200\" y1=\"20\" y2=\"530\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"#FE9676\"/><stop offset=\"1\" stop-color=\"#58F54C\"/></linearGradient><linearGradient id=\"battle_gradient\" x1=\"0%\" x2=\"100%\" y1=\"0%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#F44\"/><stop offset=\"100%\" stop-color=\"#800\"/></linearGradient><filter id=\"s\"><feDropShadow dx=\"0\" dy=\"10\" flood-opacity=\".3\" stdDeviation=\"10\"/></filter><style>@import url(https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&amp;family=MedievalSharp&amp;display=swap);text{{font-family:\"Pixelify Sans\",\"Courier New\",\"Monaco\",\"Lucida Console\",monospace;font-weight:700;text-rendering:optimizeSpeed;shape-rendering:crispEdges}}</style></defs><g id=\"slideContainer\"><g id=\"page1\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\"/><path d=\"M30 30h340v490H30z\"/><path fill=\"#78E846\" d=\"M20 20h360v2H20zm0 508h360v2H20zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"m92 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2H92zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5H94V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#78E846\" font-size=\"14\"><text x=\"130\" y=\"70\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\">{}</text><text x=\"250\" y=\"70\" font-size=\"12\">LEVEL {}</text><text x=\"40\" y=\"100\">STR</text><text x=\"40\" y=\"120\" font-size=\"20\">{}</text><text x=\"40\" y=\"150\">DEX</text><text x=\"40\" y=\"170\" font-size=\"20\">{}</text><text x=\"40\" y=\"200\">INT</text><text x=\"40\" y=\"220\" font-size=\"20\">{}</text><text x=\"40\" y=\"250\">HIT</text><text x=\"40\" y=\"270\" font-size=\"20\">{}</text><text x=\"40\" y=\"300\">WIS</text><text x=\"40\" y=\"320\" font-size=\"20\">{}</text><text x=\"40\" y=\"350\">CHA</text><text x=\"40\" y=\"370\" font-size=\"20\">{}</text><text x=\"40\" y=\"400\">LUCK</text><text x=\"40\" y=\"420\" font-size=\"20\">{}</text><text x=\"90\" y=\"160\" font-size=\"12\">INVENTORY</text><text x=\"90\" y=\"135\" font-size=\"12\">{}/{} HP</text></g><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M90 115h200v8H90z\"/><path fill=\"#78E846\" d=\"M91 116h160v6H91z\"/><path fill=\"#E8A746\" d=\"M320 55h50v25h-50z\"/><text x=\"330\" y=\"70\" fill=\"#2C1A0A\" font-size=\"14\">{}</text><text x=\"325\" y=\"50\" fill=\"#E8A746\" font-size=\"10\">XP</text><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M90 180h40v40H90zm60 0h40v40h-40zm60 0h40v40h-40zm60 0h40v40h-40zM90 250h40v40H90zm60 0h40v40h-40zm60 0h40v40h-40zm60 0h40v40h-40z\"/><path fill=\"#78E846\" d=\"M95 190h2v20h-2m-2-20h6v4h-6zm12 0h4v4h-4zm61-20h20v15h-20zm5 15h10v8h-10zm55-5h20v15h-20m5-20h10v8h-10zm55 2h20v4h-20m5-8h2v16h-2zm8 2h4v8h-4M95 260h2v20h-2zm3 3h12v2H98zm0 10h12v2H98zm12-8h2v8h-2zm50-2h10v16h-10m2-18h6v4h-6zm53 9h8v10h-8zm12 0h8v10h-8m-12-13h20v6h-20zm63-4h14v14h-14zm-153-78h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm-180 70h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8z\"/><path fill=\"#2C1A0A\" d=\"M217 205h4v6h-4zm-54 60h4v8h-4zm119 2h6v6h-6z\"/><g fill=\"#78E846\" font-size=\"8\"><text x=\"95\" y=\"230\">{}</text><text x=\"155\" y=\"230\">{}</text><text x=\"215\" y=\"230\">{}</text><text x=\"275\" y=\"230\">{}</text><text x=\"95\" y=\"300\">{}</text><text x=\"155\" y=\"300\">{}</text><text x=\"215\" y=\"300\">{}</text><text x=\"275\" y=\"300\">{}</text></g><g font-size=\"6\"><text x=\"126\" y=\"192\">01</text><text x=\"186\" y=\"192\">02</text><text x=\"246\" y=\"192\">03</text><text x=\"306\" y=\"192\">04</text><text x=\"126\" y=\"262\">05</text><text x=\"186\" y=\"262\">06</text><text x=\"246\" y=\"262\">07</text><text x=\"306\" y=\"262\">08</text></g><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M40 430h320v80H40z\"/><g fill=\"#78E846\" font-size=\"12\"><text x=\"50\" y=\"450\">ADVENTURER #{}</text><text x=\"50\" y=\"470\">LEVEL {} - {} XP</text></g></g><g id=\"page2\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\" transform=\"translate(400)\"/><path d=\"M430 30h340v490H430z\"/><path fill=\"#E89446\" d=\"M420 20h360v2H420zm0 508h360v2H420zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#E89446\" fill-rule=\"evenodd\" d=\"m450 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2h-17zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5h-11V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#E89446\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\" transform=\"translate(400)\">{}&apos;S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\" transform=\"translate(400)\">Item Bag</text></g><path fill=\"#2C1A0A\" stroke=\"#E89446\" d=\"M440 150h320v80H440z\"/><g fill=\"#E89446\" font-size=\"12\"><text x=\"50\" y=\"170\" transform=\"translate(400)\">INFORMATION ABOUT RUN GOES</text><text x=\"50\" y=\"190\" transform=\"translate(400)\">HERE AND HERE</text></g><path fill=\"none\" stroke=\"#663D17\" d=\"M440 250h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 65h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 65h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 65h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55z\"/><g fill=\"#E89446\" transform=\"translate(400)\"><circle cx=\"67\" cy=\"277\" r=\"8\" fill=\"none\" stroke=\"#E89446\" stroke-width=\"2\"/><path d=\"M63 265h8v6h-8z\"/><path fill=\"none\" stroke=\"#E89446\" d=\"M127 270h11v14h-11z\"/><path stroke=\"#E89446\" d=\"M130 272h5m-5 4h5m-5 4h3\"/><circle cx=\"197\" cy=\"277\" r=\"8\" fill=\"none\" stroke=\"#E89446\" stroke-width=\"2\"/><text x=\"197\" y=\"281\" font-size=\"8\" text-anchor=\"middle\">$</text></g><g fill=\"#E89446\" font-size=\"8\"><text x=\"67\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">{}</text><text x=\"132\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">{}</text><text x=\"197\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">{}</text><text x=\"262\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">EMPTY</text><text x=\"327\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">EMPTY</text></g><g fill=\"#E89446\" font-size=\"6\"><text x=\"47\" y=\"260\" transform=\"translate(400)\">01</text><text x=\"112\" y=\"260\" transform=\"translate(400)\">02</text><text x=\"177\" y=\"260\" transform=\"translate(400)\">03</text><text x=\"242\" y=\"260\" transform=\"translate(400)\">04</text><text x=\"307\" y=\"260\" transform=\"translate(400)\">05</text><text x=\"47\" y=\"325\" transform=\"translate(400)\">06</text><text x=\"112\" y=\"325\" transform=\"translate(400)\">07</text><text x=\"177\" y=\"325\" transform=\"translate(400)\">08</text><text x=\"242\" y=\"325\" transform=\"translate(400)\">09</text><text x=\"307\" y=\"325\" transform=\"translate(400)\">10</text><text x=\"47\" y=\"390\" transform=\"translate(400)\">11</text><text x=\"112\" y=\"390\" transform=\"translate(400)\">12</text><text x=\"177\" y=\"390\" transform=\"translate(400)\">13</text><text x=\"242\" y=\"390\" transform=\"translate(400)\">14</text><text x=\"307\" y=\"390\" transform=\"translate(400)\">15</text></g></g><g id=\"page3\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\" transform=\"translate(800)\"/><path d=\"M830 30h340v490H830z\"/><path fill=\"#77EDFF\" d=\"M820 20h360v2H820zm0 508h360v2H820zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#77EDFF\" fill-rule=\"evenodd\" d=\"m850 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2h-17zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5h-11V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#77EDFF\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\" transform=\"translate(800)\">{}&apos;S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\" transform=\"translate(800)\">Marketplace</text></g><path fill=\"none\" stroke=\"#77EDFF\" d=\"M840 100h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 85h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 85h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 85h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55z\"/><g fill=\"#77EDFF\" transform=\"translate(800)\"><path d=\"M60 115h15v25H60z\"/><circle cx=\"132\" cy=\"127\" r=\"8\"/><path d=\"M125 135h14v8h-14zm60-15h20v15h-20z\"/><circle cx=\"257\" cy=\"127\" r=\"8\"/><path d=\"M250 135h14v8h-14zm65-15h20v15h-20z\"/><circle cx=\"67\" cy=\"212\" r=\"8\"/><path d=\"M120 200h25v20h-25zm65 5h20v15h-20z\"/><circle cx=\"257\" cy=\"212\" r=\"8\"/><path d=\"M315 205h20v15h-20z\"/><circle cx=\"67\" cy=\"297\" r=\"8\"/><path d=\"M120 285h25v20h-25zm65 5h20v15h-20z\"/><circle cx=\"257\" cy=\"297\" r=\"8\"/><path d=\"M315 290h20v15h-20z\"/><circle cx=\"67\" cy=\"382\" r=\"8\"/><path d=\"M120 370h25v20h-25zm65 5h20v15h-20z\"/><circle cx=\"257\" cy=\"382\" r=\"8\"/><path d=\"M315 375h20v15h-20z\"/></g><g fill=\"#77EDFF\" font-size=\"8\"><text x=\"67\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">FIRE</text><text x=\"67\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"132\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">HEALTH</text><text x=\"132\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"197\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">WATER</text><text x=\"197\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">FIRE</text><text x=\"327\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"67\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">CHARISMA</text><text x=\"67\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"132\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">OCEAN</text><text x=\"132\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">NECKLACE</text><text x=\"197\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"197\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"327\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"67\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">CHARISMA</text><text x=\"67\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"132\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">OCEAN</text><text x=\"132\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">NECKLACE</text><text x=\"197\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"197\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"327\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"67\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">CHARISMA</text><text x=\"67\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"132\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">OCEAN</text><text x=\"132\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">NECKLACE</text><text x=\"197\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"197\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"327\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text></g><g fill=\"#77EDFF\" font-size=\"6\"><text x=\"47\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"47\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"47\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"47\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"365\" transform=\"translate(800)\">ITEM</text></g></g><g id=\"page4\" transform=\"translate(1200)\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\"/><path d=\"M30 30h340v490H30z\"/><linearGradient id=\"page4_border\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"#FE9676\"/><stop offset=\"100%\" stop-color=\"#78E846\"/></linearGradient><path fill=\"url(#page4_border)\" stroke=\"url(#page4_border)\" stroke-width=\"2\" d=\"M20 20h360v2H20zm0 508h360v2H20zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#FE9676\" fill-rule=\"evenodd\" d=\"m50 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2H50zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5H52V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6H59v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#FE9676\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\">{}&apos;S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\">Current Battle</text></g><rect width=\"320\" height=\"120\" x=\"40\" y=\"110\" fill=\"#210E04\" rx=\"6\"/><rect width=\"60\" height=\"18\" x=\"55\" y=\"125\" fill=\"#FE9676\" rx=\"3\"/><text x=\"85\" y=\"138\" font-size=\"10\" text-anchor=\"middle\">{}</text><text x=\"60\" y=\"160\" fill=\"#FE9676\" font-size=\"12\">Level {}</text><text x=\"60\" y=\"180\" fill=\"#FE9676\" font-size=\"12\">Health: {}/25</text><text x=\"60\" y=\"200\" fill=\"#FE9676\" font-size=\"12\">Power: {}</text><text x=\"200\" y=\"160\" fill=\"#FE9676\" font-size=\"12\">Status: Hostile</text><text x=\"200\" y=\"180\" fill=\"#FE9676\" font-size=\"12\">Type: Magical</text><text x=\"200\" y=\"200\" fill=\"#FE9676\" font-size=\"12\">Tier: 3</text><rect width=\"320\" height=\"80\" x=\"40\" y=\"250\" fill=\"#2C1A0A\" stroke=\"#FE9676\" rx=\"6\"/><text x=\"60\" y=\"275\" fill=\"#FE9676\" font-size=\"12\">LAST ACTIVITY:</text><text x=\"60\" y=\"295\" fill=\"#FE9676\" font-size=\"11\">Troll ambushed you for 15 damage!</text><text x=\"60\" y=\"310\" fill=\"#FE9676\" font-size=\"11\">You attacked with sword for 21 damage.</text><rect width=\"320\" height=\"150\" x=\"40\" y=\"350\" fill=\"#171D10\" rx=\"6\"/><rect width=\"50\" height=\"18\" x=\"55\" y=\"365\" fill=\"#78E846\" rx=\"3\"/><text x=\"80\" y=\"378\" font-size=\"10\" text-anchor=\"middle\">YOU</text><text x=\"60\" y=\"400\" fill=\"#78E846\" font-size=\"12\">Level {}</text><text x=\"60\" y=\"420\" fill=\"#78E846\" font-size=\"12\">Health: {}/100</text><text x=\"60\" y=\"440\" fill=\"#78E846\" font-size=\"12\">Power: {}</text><text x=\"60\" y=\"460\" fill=\"#78E846\" font-size=\"12\">Dexterity: {}</text><text x=\"200\" y=\"400\" fill=\"#78E846\" font-size=\"12\">XP: 1250</text><text x=\"200\" y=\"420\" fill=\"#78E846\" font-size=\"12\">Beast Health: 10</text><text x=\"200\" y=\"440\" fill=\"#78E846\" font-size=\"12\">Weapon: Katana</text><text x=\"200\" y=\"460\" fill=\"#78E846\" font-size=\"12\">Armor: Iron</text></g><animateTransform attributeName=\"transform\" calcMode=\"spline\" dur=\"40s\" keySplines=\"0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1\" keyTimes=\"0; 0.22; 0.28; 0.47; 0.53; 0.72; 0.78; 0.97; 1\" repeatCount=\"indefinite\" type=\"translate\" values=\"0,0; 0,0; -400,0; -400,0; -800,0; -800,0; -1200,0; -1200,0; 0,0\"/></g></svg>",
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"550\"><defs><linearGradient id=\"border_gradient\" x1=\"200\" x2=\"200\" y1=\"20\" y2=\"530\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"#FE9676\"/><stop offset=\"1\" stop-color=\"#58F54C\"/></linearGradient><linearGradient id=\"battle_gradient\" x1=\"0%\" x2=\"100%\" y1=\"0%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#F44\"/><stop offset=\"100%\" stop-color=\"#800\"/></linearGradient><filter id=\"s\"><feDropShadow dx=\"0\" dy=\"10\" flood-opacity=\".3\" stdDeviation=\"10\"/></filter><style>@import url(https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&amp;family=MedievalSharp&amp;display=swap);text{{font-family:\"Pixelify Sans\",\"Courier New\",\"Monaco\",\"Lucida Console\",monospace;font-weight:700;text-rendering:optimizeSpeed;shape-rendering:crispEdges}}</style></defs><g id=\"slideContainer\"><g id=\"page1\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\"/><path d=\"M30 30h340v490H30z\"/><path fill=\"#78E846\" d=\"M20 20h360v2H20zm0 508h360v2H20zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"m92 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2H92zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5H94V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#78E846\" font-size=\"14\"><text x=\"130\" y=\"70\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\">{}</text><text x=\"250\" y=\"70\" font-size=\"12\">LEVEL {}</text><text x=\"40\" y=\"100\">STR</text><text x=\"40\" y=\"120\" font-size=\"20\">{}</text><text x=\"40\" y=\"150\">DEX</text><text x=\"40\" y=\"170\" font-size=\"20\">{}</text><text x=\"40\" y=\"200\">INT</text><text x=\"40\" y=\"220\" font-size=\"20\">{}</text><text x=\"40\" y=\"250\">HIT</text><text x=\"40\" y=\"270\" font-size=\"20\">{}</text><text x=\"40\" y=\"300\">WIS</text><text x=\"40\" y=\"320\" font-size=\"20\">{}</text><text x=\"40\" y=\"350\">CHA</text><text x=\"40\" y=\"370\" font-size=\"20\">{}</text><text x=\"40\" y=\"400\">LUCK</text><text x=\"40\" y=\"420\" font-size=\"20\">{}</text><text x=\"90\" y=\"160\" font-size=\"12\">INVENTORY</text><text x=\"90\" y=\"135\" font-size=\"12\">{}/{} HP</text></g><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M90 115h200v8H90z\"/><path fill=\"#78E846\" d=\"M91 116h160v6H91z\"/><path fill=\"#E8A746\" d=\"M320 55h50v25h-50z\"/><text x=\"330\" y=\"70\" fill=\"#2C1A0A\" font-size=\"14\">{}</text><text x=\"325\" y=\"50\" fill=\"#E8A746\" font-size=\"10\">XP</text><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M90 180h40v40H90zm60 0h40v40h-40zm60 0h40v40h-40zm60 0h40v40h-40zM90 250h40v40H90zm60 0h40v40h-40zm60 0h40v40h-40zm60 0h40v40h-40z\"/><path fill=\"#78E846\" d=\"M95 190h2v20h-2m-2-20h6v4h-6zm12 0h4v4h-4zm61-20h20v15h-20zm5 15h10v8h-10zm55-5h20v15h-20m5-20h10v8h-10zm55 2h20v4h-20m5-8h2v16h-2zm8 2h4v8h-4M95 260h2v20h-2zm3 3h12v2H98zm0 10h12v2H98zm12-8h2v8h-2zm50-2h10v16h-10m2-18h6v4h-6zm53 9h8v10h-8zm12 0h8v10h-8m-12-13h20v6h-20zm63-4h14v14h-14zm-153-78h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm-180 70h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8z\"/><path fill=\"#2C1A0A\" d=\"M217 205h4v6h-4zm-54 60h4v8h-4zm119 2h6v6h-6z\"/><g fill=\"#78E846\" font-size=\"8\"><text x=\"95\" y=\"230\">{}</text><text x=\"155\" y=\"230\">{}</text><text x=\"215\" y=\"230\">{}</text><text x=\"275\" y=\"230\">{}</text><text x=\"95\" y=\"300\">{}</text><text x=\"155\" y=\"300\">{}</text><text x=\"215\" y=\"300\">{}</text><text x=\"275\" y=\"300\">{}</text></g><g font-size=\"6\"><text x=\"126\" y=\"192\">01</text><text x=\"186\" y=\"192\">02</text><text x=\"246\" y=\"192\">03</text><text x=\"306\" y=\"192\">04</text><text x=\"126\" y=\"262\">05</text><text x=\"186\" y=\"262\">06</text><text x=\"246\" y=\"262\">07</text><text x=\"306\" y=\"262\">08</text></g><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M40 430h320v80H40z\"/><g fill=\"#78E846\" font-size=\"12\"><text x=\"50\" y=\"450\">ADVENTURER #{}</text><text x=\"50\" y=\"470\">LEVEL {} - {} XP</text></g></g><g id=\"page2\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\" transform=\"translate(400)\"/><path d=\"M430 30h340v490H430z\"/><path fill=\"#E89446\" d=\"M420 20h360v2H420zm0 508h360v2H420zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#E89446\" fill-rule=\"evenodd\" d=\"m450 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2h-17zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5h-11V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#E89446\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\" transform=\"translate(400)\">{}&apos;S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\" transform=\"translate(400)\">Item Bag</text></g><path fill=\"#2C1A0A\" stroke=\"#E89446\" d=\"M440 150h320v80H440z\"/><g fill=\"#E89446\" font-size=\"12\"><text x=\"50\" y=\"170\" transform=\"translate(400)\">INFORMATION ABOUT RUN GOES</text><text x=\"50\" y=\"190\" transform=\"translate(400)\">HERE AND HERE</text></g><path fill=\"none\" stroke=\"#663D17\" d=\"M440 250h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 65h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 65h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 65h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55z\"/><g fill=\"#E89446\" transform=\"translate(400)\"><circle cx=\"67\" cy=\"277\" r=\"8\" fill=\"none\" stroke=\"#E89446\" stroke-width=\"2\"/><path d=\"M63 265h8v6h-8z\"/><path fill=\"none\" stroke=\"#E89446\" d=\"M127 270h11v14h-11z\"/><path stroke=\"#E89446\" d=\"M130 272h5m-5 4h5m-5 4h3\"/><circle cx=\"197\" cy=\"277\" r=\"8\" fill=\"none\" stroke=\"#E89446\" stroke-width=\"2\"/><text x=\"197\" y=\"281\" font-size=\"8\" text-anchor=\"middle\">$</text></g><g fill=\"#E89446\" font-size=\"8\"><text x=\"67\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">{}</text><text x=\"132\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">{}</text><text x=\"197\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">{}</text><text x=\"262\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">EMPTY</text><text x=\"327\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">EMPTY</text></g><g fill=\"#E89446\" font-size=\"6\"><text x=\"47\" y=\"260\" transform=\"translate(400)\">01</text><text x=\"112\" y=\"260\" transform=\"translate(400)\">02</text><text x=\"177\" y=\"260\" transform=\"translate(400)\">03</text><text x=\"242\" y=\"260\" transform=\"translate(400)\">04</text><text x=\"307\" y=\"260\" transform=\"translate(400)\">05</text><text x=\"47\" y=\"325\" transform=\"translate(400)\">06</text><text x=\"112\" y=\"325\" transform=\"translate(400)\">07</text><text x=\"177\" y=\"325\" transform=\"translate(400)\">08</text><text x=\"242\" y=\"325\" transform=\"translate(400)\">09</text><text x=\"307\" y=\"325\" transform=\"translate(400)\">10</text><text x=\"47\" y=\"390\" transform=\"translate(400)\">11</text><text x=\"112\" y=\"390\" transform=\"translate(400)\">12</text><text x=\"177\" y=\"390\" transform=\"translate(400)\">13</text><text x=\"242\" y=\"390\" transform=\"translate(400)\">14</text><text x=\"307\" y=\"390\" transform=\"translate(400)\">15</text></g></g><g id=\"page3\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\" transform=\"translate(800)\"/><path d=\"M830 30h340v490H830z\"/><path fill=\"#77EDFF\" d=\"M820 20h360v2H820zm0 508h360v2H820zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#77EDFF\" fill-rule=\"evenodd\" d=\"m850 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2h-17zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5h-11V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#77EDFF\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\" transform=\"translate(800)\">{}&apos;S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\" transform=\"translate(800)\">Marketplace</text></g><path fill=\"none\" stroke=\"#77EDFF\" d=\"M840 100h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 85h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 85h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 85h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55z\"/><g fill=\"#77EDFF\" transform=\"translate(800)\"><path d=\"M60 115h15v25H60z\"/><circle cx=\"132\" cy=\"127\" r=\"8\"/><path d=\"M125 135h14v8h-14zm60-15h20v15h-20z\"/><circle cx=\"257\" cy=\"127\" r=\"8\"/><path d=\"M250 135h14v8h-14zm65-15h20v15h-20z\"/><circle cx=\"67\" cy=\"212\" r=\"8\"/><path d=\"M120 200h25v20h-25zm65 5h20v15h-20z\"/><circle cx=\"257\" cy=\"212\" r=\"8\"/><path d=\"M315 205h20v15h-20z\"/><circle cx=\"67\" cy=\"297\" r=\"8\"/><path d=\"M120 285h25v20h-25zm65 5h20v15h-20z\"/><circle cx=\"257\" cy=\"297\" r=\"8\"/><path d=\"M315 290h20v15h-20z\"/><circle cx=\"67\" cy=\"382\" r=\"8\"/><path d=\"M120 370h25v20h-25zm65 5h20v15h-20z\"/><circle cx=\"257\" cy=\"382\" r=\"8\"/><path d=\"M315 375h20v15h-20z\"/></g><g fill=\"#77EDFF\" font-size=\"8\"><text x=\"67\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">FIRE</text><text x=\"67\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"132\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">HEALTH</text><text x=\"132\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"197\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">WATER</text><text x=\"197\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">FIRE</text><text x=\"327\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"67\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">CHARISMA</text><text x=\"67\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"132\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">OCEAN</text><text x=\"132\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">NECKLACE</text><text x=\"197\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"197\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"327\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"67\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">CHARISMA</text><text x=\"67\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"132\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">OCEAN</text><text x=\"132\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">NECKLACE</text><text x=\"197\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"197\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"327\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"67\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">CHARISMA</text><text x=\"67\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"132\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">OCEAN</text><text x=\"132\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">NECKLACE</text><text x=\"197\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"197\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"327\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text></g><g fill=\"#77EDFF\" font-size=\"6\"><text x=\"47\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"47\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"47\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"47\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"365\" transform=\"translate(800)\">ITEM</text></g></g><g id=\"page4\" transform=\"translate(1200)\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\"/><path d=\"M30 30h340v490H30z\"/><linearGradient id=\"page4_border\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"#FE9676\"/><stop offset=\"100%\" stop-color=\"#78E846\"/></linearGradient><path fill=\"url(#page4_border)\" stroke=\"url(#page4_border)\" stroke-width=\"2\" d=\"M20 20h360v2H20zm0 508h360v2H20zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#FE9676\" fill-rule=\"evenodd\" d=\"m50 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2H50zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5H52V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6H59v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#FE9676\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\">{}&apos;S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\">Current Battle</text></g><rect width=\"320\" height=\"120\" x=\"40\" y=\"110\" fill=\"#210E04\" rx=\"6\"/><rect width=\"60\" height=\"18\" x=\"55\" y=\"125\" fill=\"#FE9676\" rx=\"3\"/><text x=\"85\" y=\"138\" font-size=\"10\" text-anchor=\"middle\">{}</text><text x=\"60\" y=\"160\" fill=\"#FE9676\" font-size=\"12\">Level {}</text><text x=\"60\" y=\"180\" fill=\"#FE9676\" font-size=\"12\">Health: {}/25</text><text x=\"60\" y=\"200\" fill=\"#FE9676\" font-size=\"12\">Power: {}</text><text x=\"200\" y=\"160\" fill=\"#FE9676\" font-size=\"12\">Status: Hostile</text><text x=\"200\" y=\"180\" fill=\"#FE9676\" font-size=\"12\">Type: Magical</text><text x=\"200\" y=\"200\" fill=\"#FE9676\" font-size=\"12\">Tier: 3</text><rect width=\"320\" height=\"80\" x=\"40\" y=\"250\" fill=\"#2C1A0A\" stroke=\"#FE9676\" rx=\"6\"/><text x=\"60\" y=\"275\" fill=\"#FE9676\" font-size=\"12\">LAST ACTIVITY:</text><text x=\"60\" y=\"295\" fill=\"#FE9676\" font-size=\"11\">{} ambushed you for {} damage!</text><text x=\"60\" y=\"310\" fill=\"#FE9676\" font-size=\"11\">You attacked with {} for {} damage. {}</text><rect width=\"320\" height=\"150\" x=\"40\" y=\"350\" fill=\"#171D10\" rx=\"6\"/><rect width=\"50\" height=\"18\" x=\"55\" y=\"365\" fill=\"#78E846\" rx=\"3\"/><text x=\"80\" y=\"378\" font-size=\"10\" text-anchor=\"middle\">YOU</text><text x=\"60\" y=\"400\" fill=\"#78E846\" font-size=\"12\">Level {}</text><text x=\"60\" y=\"420\" fill=\"#78E846\" font-size=\"12\">Health: {}/100</text><text x=\"60\" y=\"440\" fill=\"#78E846\" font-size=\"12\">Power: {}</text><text x=\"60\" y=\"460\" fill=\"#78E846\" font-size=\"12\">Dexterity: {}</text><text x=\"200\" y=\"400\" fill=\"#78E846\" font-size=\"12\">XP: 1250</text><text x=\"200\" y=\"420\" fill=\"#78E846\" font-size=\"12\">Beast Health: 10</text><text x=\"200\" y=\"440\" fill=\"#78E846\" font-size=\"12\">Weapon: Katana</text><text x=\"200\" y=\"460\" fill=\"#78E846\" font-size=\"12\">Armor: Iron</text></g><animateTransform attributeName=\"transform\" calcMode=\"spline\" dur=\"40s\" keySplines=\"0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1\" keyTimes=\"0; 0.22; 0.28; 0.47; 0.53; 0.72; 0.78; 0.97; 1\" repeatCount=\"indefinite\" type=\"translate\" values=\"0,0; 0,0; -400,0; -400,0; -800,0; -800,0; -1200,0; -1200,0; 0,0\"/></g></svg>",
         _name,
         _level,
         _str,
@@ -1420,6 +1681,11 @@ fn create_battle_svg(
         _beast_level,
         _beast_health,
         _beast_power,
+        _beast_name,
+        _base_attack,
+        _weapon_name,
+        _damage,
+        _is_critical,
         _level,
         _health,
         _str,
