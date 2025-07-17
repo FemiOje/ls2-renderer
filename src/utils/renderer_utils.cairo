@@ -2,6 +2,7 @@ use ls2_renderer::mocks::mock_adventurer::{Adventurer, Bag, Item};
 use ls2_renderer::mocks::mock_beast::{Beast};
 use ls2_renderer::utils::encoding::{U256BytesUsedTraitImpl, bytes_base64_encode};
 use ls2_renderer::utils::item_database::ItemDatabaseImpl;
+use ls2_renderer::utils::marketplace::MarketplaceImpl;
 
 // Health calculation constants
 const STARTING_HEALTH: u8 = 100;
@@ -1089,6 +1090,116 @@ fn create_modular_bag_page(adventurer_name: ByteArray, bag: Bag) -> ByteArray {
     page_elements
 }
 
+fn create_modular_marketplace_page(
+    adventurer_name: ByteArray, adventurer_level: u8, adventurer_seed: u64,
+) -> ByteArray {
+    let theme = get_marketplace_theme();
+    let page_size = SVGSize { width: 360, height: 510 };
+    let page_position = SVGPosition { x: 20, y: 20 };
+
+    let mut page_elements: ByteArray = "";
+
+    // Page background and border
+    page_elements +=
+        format!(
+            "<path d='M{} {}h{}v{}H{}z' filter='url(#s)' transform='translate(800)'/>",
+            page_position.x,
+            page_position.y,
+            page_size.width,
+            page_size.height,
+            page_position.x,
+        );
+    page_elements +=
+        format!(
+            "<path d='M{} {}h{}v{}H{}z'/>",
+            page_position.x + 810,
+            page_position.y + 10,
+            page_size.width - 20,
+            page_size.height - 20,
+            page_position.x + 810,
+        );
+    page_elements += create_page_border(page_size, @theme);
+
+    // Page header
+    let header_position = SVGPosition { x: 920, y: 65 };
+    page_elements +=
+        create_text_component(
+            format!("{}S", adventurer_name), header_position, 12, @theme, "start", "text-top",
+        );
+
+    let title_position = SVGPosition { x: 920, y: 85 };
+    page_elements +=
+        create_text_component("Marketplace", title_position, 16, @theme, "start", "text-top");
+
+    // Level info
+    let level_position = SVGPosition { x: 920, y: 105 };
+    page_elements +=
+        create_text_component(
+            format!("Level {}", adventurer_level), level_position, 12, @theme, "start", "text-top",
+        );
+
+    // Generate marketplace items
+    let marketplace_items = MarketplaceImpl::generate_marketplace_items(
+        adventurer_level, adventurer_seed,
+    );
+
+    // Display marketplace items grid
+    let items_start_position = SVGPosition { x: 840, y: 130 };
+    page_elements += create_marketplace_items_grid(marketplace_items, items_start_position, @theme);
+
+    page_elements
+}
+
+fn create_marketplace_items_grid(
+    marketplace_items: Array<u8>, position: SVGPosition, theme: @SVGTheme,
+) -> ByteArray {
+    let mut grid_elements: ByteArray = "";
+    let cols = 3;
+    let item_width = 100;
+    let item_height = 25;
+    let spacing = 5;
+
+    let mut i = 0;
+    loop {
+        if i >= marketplace_items.len() {
+            break;
+        }
+
+        let item_id = *marketplace_items.at(i);
+        let item_name = ItemDatabaseImpl::get_item_name(item_id);
+
+        // Calculate position in grid
+        let col = i % cols;
+        let row = i / cols;
+        let x = position.x + col * (item_width + spacing);
+        let y = position.y + row * (item_height + spacing);
+
+        // Create item slot
+        let _item_pos = SVGPosition { x, y };
+        grid_elements +=
+            format!(
+                "<rect x='{}' y='{}' width='{}' height='{}' fill='{}' stroke='{}' stroke-width='1'/>",
+                x,
+                y,
+                item_width,
+                item_height,
+                theme.secondary_color,
+                theme.border_color,
+            );
+
+        // Add item name
+        let text_pos = SVGPosition { x: x + 5, y: y + 15 };
+        let mut item_name_str = Default::default();
+        item_name_str.append_word(item_name, 31);
+        grid_elements +=
+            create_text_component(item_name_str, text_pos, 10, theme, "start", "text-top");
+
+        i += 1;
+    };
+
+    grid_elements
+}
+
 fn create_modular_svg_with_components(
     adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag,
 ) -> ByteArray {
@@ -1113,14 +1224,23 @@ fn create_modular_svg_with_components(
     let page2_content = create_modular_bag_page(_name.clone(), bag);
     let page2_end: ByteArray = "</g>";
 
-    // Animation
-    let animation: ByteArray =
-        "<animateTransform attributeName='transform' type='translate' values='0,0; 0,0; -400,0; -400,0; 0,0' keyTimes='0; 0.4; 0.5; 0.9; 1' dur='20s' calcMode='spline' keySplines='0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1' repeatCount='indefinite'/>";
+    // Page 3: Marketplace
+    let page3_start: ByteArray = "<g id='page3' transform='translate(800,0)'>";
+    let adventurer_level = ((adventurer.xp / 100) + 1).try_into().unwrap();
+    let adventurer_seed = adventurer_id + adventurer.xp.into();
+    let page3_content = create_modular_marketplace_page(
+        _name.clone(), adventurer_level, adventurer_seed,
+    );
+    let page3_end: ByteArray = "</g>";
+
+    // Animation for 3 pages
+    let _animation: ByteArray =
+        "<animateTransform attributeName='transform' type='translate' values='0,0; 0,0; -400,0; -400,0; -800,0; -800,0; 0,0' keyTimes='0; 0.27; 0.33; 0.6; 0.67; 0.93; 1' dur='30s' calcMode='spline' keySplines='0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1' repeatCount='indefinite'/>";
 
     let _slide_container_end: ByteArray = "</g>";
 
     format!(
-        "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='550' viewBox='0 0 400 550'>{}{}{}{}{}{}{}{}{}</svg>",
+        "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='550' viewBox='0 0 400 550'>{}{}{}{}{}{}{}{}{}{}{}</svg>",
         svg_defs,
         slide_container_start,
         page1_start,
@@ -1129,7 +1249,9 @@ fn create_modular_svg_with_components(
         page2_start,
         page2_content,
         page2_end,
-        animation,
+        page3_start,
+        page3_content,
+        page3_end,
     )
 }
 
