@@ -54,12 +54,12 @@ mod test_declaration_workflow {
         // Mint NFT
         mint_dispatcher.mint(recipient);
 
-        // Verify ownership
-        let owner = erc721_dispatcher.owner_of(1);
+        // Verify ownership (token 4 since 1,2,3 are pre-minted)
+        let owner = erc721_dispatcher.owner_of(4);
         assert!(owner == recipient, "NFT should be owned by recipient");
 
         // Test metadata generation - should return JSON
-        let token_uri = metadata_dispatcher.token_uri(1);
+        let token_uri = metadata_dispatcher.token_uri(4);
         assert!(token_uri.len() > 100, "Token URI should return JSON");
     }
 
@@ -93,12 +93,12 @@ mod test_declaration_workflow {
         mint_dispatcher.mint(recipient1);
         mint_dispatcher.mint(recipient2);
 
-        // Verify ownership
-        let owner1 = erc721_dispatcher.owner_of(1);
-        let owner2 = erc721_dispatcher.owner_of(2);
+        // Verify ownership (tokens 4,5 since 1,2,3 are pre-minted)
+        let owner1 = erc721_dispatcher.owner_of(4);
+        let owner2 = erc721_dispatcher.owner_of(5);
 
-        assert!(owner1 == recipient1, "Token 1 should be owned by recipient1");
-        assert!(owner2 == recipient2, "Token 2 should be owned by recipient2");
+        assert!(owner1 == recipient1, "Token 4 should be owned by recipient1");
+        assert!(owner2 == recipient2, "Token 5 should be owned by recipient2");
     }
 
     #[test]
@@ -116,12 +116,12 @@ mod test_declaration_workflow {
         mint_dispatcher.mint(recipient1);
         mint_dispatcher.mint(recipient2);
 
-        // Test that both return JSON
-        let token_uri1 = metadata_dispatcher.token_uri(1);
-        let token_uri2 = metadata_dispatcher.token_uri(2);
+        // Test that both return JSON (tokens 4,5 since 1,2,3 are pre-minted)
+        let token_uri1 = metadata_dispatcher.token_uri(4);
+        let token_uri2 = metadata_dispatcher.token_uri(5);
         
-        assert!(token_uri1.len() > 100, "Token 1 URI should return JSON");
-        assert!(token_uri2.len() > 100, "Token 2 URI should return JSON");
+        assert!(token_uri1.len() > 100, "Token 4 URI should return JSON");
+        assert!(token_uri2.len() > 100, "Token 5 URI should return JSON");
         // Different token IDs can return different metadata
     }
 }

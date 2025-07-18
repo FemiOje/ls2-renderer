@@ -37,18 +37,18 @@ fn test_mint() {
     let erc721_dispatcher = IERC721Dispatcher { contract_address };
     let recipient = contract_address_const::<0x123>();
 
-    // Mint a token
+    // Mint a token (should get ID 4 since 1,2,3 are pre-minted)
     mint_dispatcher.mint(recipient);
 
-    // Check that the token was minted with ID 1
-    assert(erc721_dispatcher.owner_of(1) == recipient, 'Wrong owner');
+    // Check that the token was minted with ID 4
+    assert(erc721_dispatcher.owner_of(4) == recipient, 'Wrong owner');
     assert(erc721_dispatcher.balance_of(recipient) == 1, 'Wrong balance');
 
     // Mint another token
     mint_dispatcher.mint(recipient);
 
-    // Check that the token was minted with ID 2
-    assert(erc721_dispatcher.owner_of(2) == recipient, 'Wrong owner');
+    // Check that the token was minted with ID 5
+    assert(erc721_dispatcher.owner_of(5) == recipient, 'Wrong owner');
     assert(erc721_dispatcher.balance_of(recipient) == 2, 'Wrong balance after 2nd mint');
 }
 
@@ -62,8 +62,8 @@ fn test_token_uri_returns_one() {
     // Mint a token
     mint_dispatcher.mint(recipient);
 
-    // Get the token URI (should return "1")
-    let uri = metadata_dispatcher.token_uri(1);
+    // Get the token URI (should return "4")
+    let uri = metadata_dispatcher.token_uri(4);
 
     // Verify it returns JSON metadata
     assert(uri.len() > 100, 'token_uri should return JSON');
@@ -78,11 +78,11 @@ fn test_token_uri_different_ids() {
     let metadata_dispatcher = IERC721MetadataDispatcher { contract_address };
     let recipient = contract_address_const::<0x123>();
     
-    mint_dispatcher.mint(recipient); // id 1
-    mint_dispatcher.mint(recipient); // id 2
+    mint_dispatcher.mint(recipient); // id 4
+    mint_dispatcher.mint(recipient); // id 5
     
-    let uri1 = metadata_dispatcher.token_uri(1);
-    let uri2 = metadata_dispatcher.token_uri(2);
+    let uri1 = metadata_dispatcher.token_uri(4);
+    let uri2 = metadata_dispatcher.token_uri(5);
     
     // Both should return JSON but can be different
     assert(uri1.len() > 100, 'token_uri 1 should return JSON');
@@ -116,11 +116,11 @@ fn test_multiple_mints_different_recipients() {
     mint_dispatcher.mint(recipient3);
     mint_dispatcher.mint(recipient1); // Second token for recipient1
 
-    // Verify ownership and balances
-    assert(erc721_dispatcher.owner_of(1) == recipient1, 'Wrong owner of token 1');
-    assert(erc721_dispatcher.owner_of(2) == recipient2, 'Wrong owner of token 2');
-    assert(erc721_dispatcher.owner_of(3) == recipient3, 'Wrong owner of token 3');
+    // Verify ownership and balances (tokens 4,5,6,7 since 1,2,3 are pre-minted)
     assert(erc721_dispatcher.owner_of(4) == recipient1, 'Wrong owner of token 4');
+    assert(erc721_dispatcher.owner_of(5) == recipient2, 'Wrong owner of token 5');
+    assert(erc721_dispatcher.owner_of(6) == recipient3, 'Wrong owner of token 6');
+    assert(erc721_dispatcher.owner_of(7) == recipient1, 'Wrong owner of token 7');
 
     assert(erc721_dispatcher.balance_of(recipient1) == 2, 'Wrong balance for recipient1');
     assert(erc721_dispatcher.balance_of(recipient2) == 1, 'Wrong balance for recipient2');
@@ -136,15 +136,15 @@ fn test_transfer_functionality() {
     let owner = contract_address_const::<0x123>();
     let recipient = contract_address_const::<0x456>();
 
-    // Mint a token
+    // Mint a token (will be token ID 4)
     mint_dispatcher.mint(owner);
 
     // Transfer the token
     start_cheat_caller_address(contract_address, owner);
-    erc721_dispatcher.transfer_from(owner, recipient, 1);
+    erc721_dispatcher.transfer_from(owner, recipient, 4);
 
     // Verify the transfer
-    assert(erc721_dispatcher.owner_of(1) == recipient, 'Transfer failed');
+    assert(erc721_dispatcher.owner_of(4) == recipient, 'Transfer failed');
     assert(erc721_dispatcher.balance_of(owner) == 0, 'Wrong owner balance');
     assert(erc721_dispatcher.balance_of(recipient) == 1, 'Wrong recipient balance');
 }
@@ -161,10 +161,10 @@ fn test_sample_token_uri() {
     mint_dispatcher.mint(recipient);
 
     // Get the token URI
-    let uri = metadata_dispatcher.token_uri(1);
+    let uri = metadata_dispatcher.token_uri(4);
 
     // Should return JSON metadata
     assert(uri.len() > 100, 'should return JSON');
 
-    println!("Token URI for token #1: {}", uri);
+    println!("Token URI for token #4: {}", uri);
 }
