@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use core::num::traits::Bounded;
 
 #[inline(always)]
@@ -157,13 +159,6 @@ impl U8BytesUsedTraitImpl of BytesUsedTrait<u8> {
 
 impl USizeBytesUsedTraitImpl of BytesUsedTrait<usize> {
     fn bytes_used(self: usize) -> u8 {
-        // Convert usize to u64 and use the u64 implementation
-        return BytesUsedTrait::<u64>::bytes_used(self.into());
-    }
-}
-
-impl U32BytesUsedTraitImpl of BytesUsedTrait<u32> {
-    fn bytes_used(self: u32) -> u8 {
         if self < 0x10000 { // 256^2
             if self < 0x100 { // 256^1
                 if self == 0 {
@@ -184,25 +179,14 @@ impl U32BytesUsedTraitImpl of BytesUsedTrait<u32> {
 
 impl U64BytesUsedTraitImpl of BytesUsedTrait<u64> {
     fn bytes_used(self: u64) -> u8 {
-        if self < 0x100000000 { // 256^4
-            if self < 0x10000 { // 256^2
-                if self < 0x100 { // 256^1
-                    if self == 0 {
-                        return 0;
-                    } else {
-                        return 1;
-                    };
-                }
-                return 2;
-            } else {
-                if self < 0x1000000 { // 256^3
-                    return 3;
-                }
-                return 4;
-            }
+        if self <= Bounded::<u32>::MAX.into() { // 256^4
+            return U32BytesUsedTraitImpl::bytes_used(self.try_into().unwrap());
         } else {
             if self < 0x1000000000000 { // 256^6
                 if self < 0x10000000000 { // 256^5
+                    if self < 0x100000000 { // 256^4
+                        return 4;
+                    }
                     return 5;
                 }
                 return 6;
@@ -221,7 +205,7 @@ impl U64BytesUsedTraitImpl of BytesUsedTrait<u64> {
 impl U128BytesUsedTraitImpl of BytesUsedTrait<u128> {
     fn bytes_used(self: u128) -> u8 {
         if self <= Bounded::<u64>::MAX.into() { // 256^8
-            return BytesUsedTrait::<u64>::bytes_used(self.try_into().unwrap());
+            return U64BytesUsedTraitImpl::bytes_used(self.try_into().unwrap());
         } else {
             if self < 0x1000000000000000000000000 { // 256^12
                 if self < 0x100000000000000000000 { // 256^10
@@ -254,9 +238,29 @@ impl U128BytesUsedTraitImpl of BytesUsedTrait<u128> {
 pub impl U256BytesUsedTraitImpl of BytesUsedTrait<u256> {
     fn bytes_used(self: u256) -> u8 {
         if self.high == 0 {
-            return BytesUsedTrait::<u128>::bytes_used(self.low.try_into().unwrap());
+            return U128BytesUsedTraitImpl::bytes_used(self.low.try_into().unwrap());
         } else {
-            return BytesUsedTrait::<u128>::bytes_used(self.high.try_into().unwrap()) + 16;
+            return U128BytesUsedTraitImpl::bytes_used(self.high.try_into().unwrap()) + 16;
+        }
+    }
+}
+
+impl U32BytesUsedTraitImpl of BytesUsedTrait<u32> {
+    fn bytes_used(self: u32) -> u8 {
+        if self < 0x10000 { // 256^2
+            if self < 0x100 { // 256^1
+                if self == 0 {
+                    return 0;
+                } else {
+                    return 1;
+                };
+            }
+            return 2;
+        } else {
+            if self < 0x1000000 { // 256^3
+                return 3;
+            }
+            return 4;
         }
     }
 }

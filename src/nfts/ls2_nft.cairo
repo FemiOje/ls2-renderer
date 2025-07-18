@@ -16,10 +16,10 @@ pub mod ls2_nft {
 
     use starknet::{ContractAddress};
     use super::IOpenMint;
+    use ls2_renderer::utils::renderer::Renderer;
 
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
 
-    use ls2_renderer::utils::renderer::Renderer;
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
@@ -40,8 +40,6 @@ pub mod ls2_nft {
         #[substorage(v0)]
         pub src5: SRC5Component::Storage,
         pub token_counter: u256,
-        pub mock_adventurer_address: ContractAddress,
-        pub mock_beast_address: ContractAddress,
     }
 
     #[event]
@@ -63,12 +61,8 @@ pub mod ls2_nft {
         name: ByteArray,
         symbol: ByteArray,
         base_uri: ByteArray,
-        mock_adventurer_address: ContractAddress,
-        mock_beast_address: ContractAddress,
     ) {
         self.erc721.initializer(name, symbol, base_uri);
-        self.mock_adventurer_address.write(mock_adventurer_address);
-        self.mock_beast_address.write(mock_beast_address);
     }
 
     #[abi(embed_v0)]
@@ -81,21 +75,6 @@ pub mod ls2_nft {
         }
     }
 
-    /// Set the mock adventurer contract address (admin only)
-    /// For testing purposes only
-    #[external(v0)]
-    fn set_mock_adventurer_address(ref self: ContractState, addr: ContractAddress) {
-        // TODO: add onlyOwner or admin check
-        self.mock_adventurer_address.write(addr);
-    }
-
-    /// Set the mock beast contract address (admin only)
-    /// For testing purposes only
-    #[external(v0)]
-    fn set_mock_beast_address(ref self: ContractState, addr: ContractAddress) {
-        // TODO: add onlyOwner or admin check
-        self.mock_beast_address.write(addr);
-    }
 
     #[abi(embed_v0)]
     impl ERC721Metadata of IERC721Metadata<ContractState> {
@@ -117,9 +96,7 @@ pub mod ls2_nft {
         /// - `token_id` exists.
         fn token_uri(self: @ContractState, token_id: u256) -> ByteArray {
             self.erc721._require_owned(token_id);
-            let mock_adv_addr = self.mock_adventurer_address.read();
-            let mock_beast_addr = self.mock_beast_address.read();
-            Renderer::render(token_id, mock_adv_addr, mock_beast_addr)
+            Renderer::render(token_id)
         }
     }
 }
