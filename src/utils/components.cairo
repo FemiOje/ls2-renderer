@@ -1,8 +1,8 @@
 // Components module - showcases the modular SVG component system
 use ls2_renderer::utils::renderer_utils::{
-    SVGPosition, SVGSize, get_default_theme, get_bag_theme, get_marketplace_theme, get_battle_theme,
-    create_text_component, create_stat_component, create_health_bar_component,
-    create_inventory_slot_component, create_logo_component, create_xp_badge_component,
+    SVGPosition, SVGSize, create_health_bar_component, create_inventory_slot_component,
+    create_logo_component, create_stat_component, create_text_component, create_xp_badge_component,
+    get_bag_theme, get_battle_theme, get_default_theme, get_marketplace_theme,
 };
 
 // Example usage of modular components

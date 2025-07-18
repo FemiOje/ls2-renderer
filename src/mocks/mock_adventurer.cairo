@@ -78,9 +78,8 @@ pub trait IMockAdventurer<T> {
 
 #[starknet::contract]
 pub mod mock_adventurer {
-    use super::{Adventurer, Bag, Item, Equipment, Stats};
-    use super::IMockAdventurer;
     use crate::utils::item_database::ItemDatabaseTrait;
+    use super::{Adventurer, Bag, Equipment, IMockAdventurer, Item, Stats};
 
     #[storage]
     struct Storage {}

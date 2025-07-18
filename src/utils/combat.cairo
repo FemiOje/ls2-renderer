@@ -4,7 +4,7 @@
 // critical hits
 
 use ls2_renderer::mocks::mock_adventurer::{Adventurer, Item, Stats};
-use ls2_renderer::mocks::mock_beast::{Beast, Type, Tier};
+use ls2_renderer::mocks::mock_beast::{Beast, Tier, Type};
 use ls2_renderer::utils::item_database::ItemDatabaseImpl;
 
 // Combat constants

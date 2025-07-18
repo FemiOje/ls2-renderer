@@ -76,8 +76,7 @@ pub trait IMockBeast<T> {
 
 #[starknet::contract]
 pub mod mock_beast {
-    use super::{Beast, CombatSpec, CombatResult, SpecialPowers, Type, Tier, Category};
-    use super::IMockBeast;
+    use super::{Beast, Category, CombatResult, CombatSpec, IMockBeast, SpecialPowers, Tier, Type};
 
     #[storage]
     struct Storage {}

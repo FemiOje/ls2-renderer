@@ -1,11 +1,11 @@
-use ls2_renderer::utils::combat::{CombatImpl, CombatTrait, CombatResult, AttackSpec, DefenseSpec};
-use ls2_renderer::mocks::mock_adventurer::{Stats, Item};
-use ls2_renderer::mocks::mock_beast::{Beast, Type, Tier};
-use ls2_renderer::mocks::mock_beast::{IMockBeastDispatcherTrait, IMockBeastDispatcher};
 use ls2_renderer::mocks::mock_adventurer::{
-    IMockAdventurerDispatcherTrait, IMockAdventurerDispatcher,
+    IMockAdventurerDispatcher, IMockAdventurerDispatcherTrait, Item, Stats,
 };
-use snforge_std::{declare, ContractClassTrait, DeclareResultTrait};
+use ls2_renderer::mocks::mock_beast::{
+    Beast, IMockBeastDispatcher, IMockBeastDispatcherTrait, Tier, Type,
+};
+use ls2_renderer::utils::combat::{AttackSpec, CombatImpl, CombatResult, CombatTrait, DefenseSpec};
+use snforge_std::{ContractClassTrait, DeclareResultTrait, declare};
 
 #[test]
 fn test_base_attack_calculation() {

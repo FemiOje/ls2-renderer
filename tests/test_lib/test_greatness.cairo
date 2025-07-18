@@ -1,7 +1,7 @@
 use ls2_renderer::mocks::mock_adventurer::Item;
 use ls2_renderer::utils::renderer_utils::{
-    calculate_greatness, generate_item, create_inventory_slot_component,
-    create_multiline_text_component, get_default_theme, SVGPosition,
+    SVGPosition, calculate_greatness, create_inventory_slot_component,
+    create_multiline_text_component, generate_item, get_default_theme,
 };
 
 #[test]

@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod test_declaration_workflow {
-    use starknet::{ContractAddress, contract_address_const};
-    use snforge_std::{declare, ContractClassTrait, DeclareResultTrait};
     use ls2_renderer::nfts::ls2_nft::{IOpenMintDispatcher, IOpenMintDispatcherTrait};
-    use openzeppelin_token::erc721::interface::{IERC721Dispatcher, IERC721DispatcherTrait};
     use openzeppelin_token::erc721::interface::{
-        IERC721MetadataDispatcher, IERC721MetadataDispatcherTrait,
+        IERC721Dispatcher, IERC721DispatcherTrait, IERC721MetadataDispatcher,
+        IERC721MetadataDispatcherTrait,
     };
+    use snforge_std::{ContractClassTrait, DeclareResultTrait, declare};
+    use starknet::{ContractAddress, contract_address_const};
 
     fn deploy_nft_contract() -> ContractAddress {
         let contract = declare("ls2_nft").unwrap().contract_class();
@@ -119,7 +119,7 @@ mod test_declaration_workflow {
         // Test that both return JSON (tokens 4,5 since 1,2,3 are pre-minted)
         let token_uri1 = metadata_dispatcher.token_uri(4);
         let token_uri2 = metadata_dispatcher.token_uri(5);
-        
+
         assert!(token_uri1.len() > 100, "Token 4 URI should return JSON");
         assert!(token_uri2.len() > 100, "Token 5 URI should return JSON");
         // Different token IDs can return different metadata

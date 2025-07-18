@@ -1,11 +1,11 @@
-use starknet::{ContractAddress, contract_address_const};
-use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address};
+use core::array::ArrayTrait;
+use ls2_renderer::nfts::ls2_nft::{IOpenMintDispatcher, IOpenMintDispatcherTrait};
 use openzeppelin_token::erc721::interface::{
     IERC721Dispatcher, IERC721DispatcherTrait, IERC721MetadataDispatcher,
     IERC721MetadataDispatcherTrait,
 };
-use ls2_renderer::nfts::ls2_nft::{IOpenMintDispatcher, IOpenMintDispatcherTrait};
-use core::array::ArrayTrait;
+use snforge_std::{ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address};
+use starknet::{ContractAddress, contract_address_const};
 
 fn deploy_contract() -> ContractAddress {
     let name: ByteArray = "Test NFT";
@@ -77,13 +77,13 @@ fn test_token_uri_different_ids() {
     let mint_dispatcher = IOpenMintDispatcher { contract_address };
     let metadata_dispatcher = IERC721MetadataDispatcher { contract_address };
     let recipient = contract_address_const::<0x123>();
-    
+
     mint_dispatcher.mint(recipient); // id 4
     mint_dispatcher.mint(recipient); // id 5
-    
+
     let uri1 = metadata_dispatcher.token_uri(4);
     let uri2 = metadata_dispatcher.token_uri(5);
-    
+
     // Both should return JSON but can be different
     assert(uri1.len() > 100, 'token_uri 1 should return JSON');
     assert(uri2.len() > 100, 'token_uri 2 should return JSON');

@@ -1,11 +1,11 @@
-use ls2_renderer::mocks::mock_adventurer::{
-    IMockAdventurerDispatcherTrait, IMockAdventurerDispatcher,
-};
-use ls2_renderer::mocks::mock_beast::{IMockBeastDispatcherTrait, IMockBeastDispatcher};
-use ls2_renderer::utils::renderer::{Renderer, RendererImpl};
-use core::byte_array::ByteArrayTrait;
 use core::array::ArrayTrait;
-use snforge_std::{declare, ContractClassTrait, DeclareResultTrait};
+use core::byte_array::ByteArrayTrait;
+use ls2_renderer::mocks::mock_adventurer::{
+    IMockAdventurerDispatcher, IMockAdventurerDispatcherTrait,
+};
+use ls2_renderer::mocks::mock_beast::{IMockBeastDispatcher, IMockBeastDispatcherTrait};
+use ls2_renderer::utils::renderer::{Renderer, RendererImpl};
+use snforge_std::{ContractClassTrait, DeclareResultTrait, declare};
 
 #[test]
 fn test_dynamic_adventurer_names() {

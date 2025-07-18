@@ -1,4 +1,4 @@
-use ls2_renderer::utils::item_database::{ItemDatabaseTrait, ItemType, ItemSlot, ItemTier, ItemId};
+use ls2_renderer::utils::item_database::{ItemDatabaseTrait, ItemId, ItemSlot, ItemTier, ItemType};
 
 #[test]
 fn test_basic_item_database_functionality() {
@@ -99,7 +99,7 @@ fn test_item_counts() {
         }
 
         id += 1;
-    };
+    }
 
     // Verify counts match the requirements
     assert(jewelry_count == 8, 'Should have 8 jewelry items');

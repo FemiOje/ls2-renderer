@@ -1,5 +1,5 @@
-use ls2_renderer::utils::marketplace::{MarketplaceImpl, MARKETPLACE_ITEMS_PER_LEVEL};
 use ls2_renderer::utils::item_database::NUM_ITEMS;
+use ls2_renderer::utils::marketplace::{MARKETPLACE_ITEMS_PER_LEVEL, MarketplaceImpl};
 
 #[test]
 fn test_marketplace_items_generation() {
@@ -68,7 +68,7 @@ fn test_marketplace_no_duplicates() {
             let other_item_id = *items.at(j);
             assert!(item_id != other_item_id, "No duplicate items should exist");
             j += 1;
-        };
+        }
         i += 1;
     };
 }
@@ -92,7 +92,7 @@ fn test_marketplace_different_levels() {
             break;
         }
         i += 1;
-    };
+    }
 
     assert!(different, "Different levels should produce different marketplaces");
 }
@@ -116,7 +116,7 @@ fn test_marketplace_seed_variation() {
             break;
         }
         i += 1;
-    };
+    }
 
     assert!(different, "Different seeds should produce different marketplaces");
 }
@@ -142,7 +142,7 @@ fn test_marketplace_item_availability() {
             break;
         }
         unavailable_item += 1;
-    };
+    }
 
     if unavailable_item <= NUM_ITEMS {
         assert!(
@@ -223,7 +223,7 @@ fn test_marketplace_items_display_example() {
         display_items.append(item_name);
 
         i += 1;
-    };
+    }
 
     display_items.append('=== END EXAMPLE ===');
 

@@ -1,5 +1,5 @@
-use ls2_renderer::utils::renderer::Renderer;
 use core::byte_array::ByteArrayTrait;
+use ls2_renderer::utils::renderer::Renderer;
 
 #[test]
 fn test_basic_render() {
@@ -63,16 +63,16 @@ fn test_render_performance() {
 
     println!("Performance test passed - rendered SVG NFT successfully");
 }
-
 // #[test]
 // fn test_json_structure() {
 //     let token_id: u256 = 100;
 //     let result = Renderer::render(token_id);
-    
+
 //     // Verify basic JSON structure elements are present
 //     assert(result.find("\"name\":").is_some(), 'missing name field');
 //     assert(result.find("\"image\":").is_some(), 'missing image field');
 //     assert(result.find("data:image/svg+xml;base64,").is_some(), 'missing base64 SVG');
-    
+
 //     println!("JSON structure test passed for token {}", token_id);
 // }
+

@@ -3,7 +3,7 @@
 // Creates deterministic marketplace that generates 21 items per level from 101-item pool
 
 // use core::integer::u64_safe_divmod;
-use ls2_renderer::utils::item_database::{NUM_ITEMS, ItemDatabaseImpl};
+use ls2_renderer::utils::item_database::{ItemDatabaseImpl, NUM_ITEMS};
 
 // Constants for marketplace generation
 pub const MARKETPLACE_ITEMS_PER_LEVEL: u8 = 21;
@@ -75,7 +75,7 @@ pub impl MarketplaceImpl of MarketplaceTrait {
                     item_count += 1;
                 }
             }
-        };
+        }
 
         items
     }
@@ -130,7 +130,7 @@ pub impl MarketplaceImpl of MarketplaceTrait {
             }
             all_items.append(i);
             i += 1;
-        };
+        }
 
         all_items
     }
@@ -174,7 +174,7 @@ pub impl MarketplaceImpl of MarketplaceTrait {
             metadata.append(item_name);
 
             i += 1;
-        };
+        }
 
         metadata
     }

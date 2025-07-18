@@ -10,15 +10,13 @@ pub trait IOpenMint<T> {
 
 #[starknet::contract]
 pub mod ls2_nft {
+    use ls2_renderer::utils::renderer::Renderer;
     use openzeppelin_introspection::src5::SRC5Component;
-    use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
     use openzeppelin_token::erc721::interface::IERC721Metadata;
-
+    use openzeppelin_token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
+    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
     use starknet::{ContractAddress, contract_address_const};
     use super::IOpenMint;
-    use ls2_renderer::utils::renderer::Renderer;
-
-    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
 
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
@@ -57,15 +55,27 @@ pub mod ls2_nft {
     /// the base URI.
     #[constructor]
     fn constructor(
-        ref self: ContractState,
-        name: ByteArray,
-        symbol: ByteArray,
-        base_uri: ByteArray,
+        ref self: ContractState, name: ByteArray, symbol: ByteArray, base_uri: ByteArray,
     ) {
         self.erc721.initializer(name, symbol, base_uri);
-        self.mint(contract_address_const::<0x06325CDEEA5EF4894dAad10E7bB116D5D01f0EAf55C4a4FC1f593bA035004f75>());
-        self.mint(contract_address_const::<0x0460328709055C06d93210Ef550Ec252692732FD72fDFb229E01C16caf319f99>());
-        self.mint(contract_address_const::<0x05eb7f656bed40a49b1fc0c0bfadf91b39aa92f073d4fafdc267a862b31d229d>());
+        self
+            .mint(
+                contract_address_const::<
+                    0x06325CDEEA5EF4894dAad10E7bB116D5D01f0EAf55C4a4FC1f593bA035004f75,
+                >(),
+            );
+        self
+            .mint(
+                contract_address_const::<
+                    0x0460328709055C06d93210Ef550Ec252692732FD72fDFb229E01C16caf319f99,
+                >(),
+            );
+        self
+            .mint(
+                contract_address_const::<
+                    0x05eb7f656bed40a49b1fc0c0bfadf91b39aa92f073d4fafdc267a862b31d229d,
+                >(),
+            );
     }
 
     #[abi(embed_v0)]
