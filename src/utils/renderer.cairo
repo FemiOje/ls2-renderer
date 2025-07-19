@@ -12,8 +12,8 @@ pub trait Renderer {
 
 pub impl RendererImpl of Renderer {
     fn render(token_id: u256) -> ByteArray {
-        // For simple rendering without dynamic data, use default gold value
-        create_simple_svg_metadata(token_id, 250_u16)
+        // For simple rendering without dynamic data, use default values
+        create_simple_svg_metadata(token_id, 250_u16, 18_u8)
     }
 
     fn render_with_adventurer(token_id: u256, adventurer_contract: ContractAddress) -> ByteArray {
@@ -22,7 +22,10 @@ pub impl RendererImpl of Renderer {
         let adventurer_id: u64 = token_id.try_into().unwrap();
         let adventurer = adventurer_dispatcher.get_adventurer(adventurer_id);
         
-        // Use the dynamic gold value from adventurer data
-        create_simple_svg_metadata(token_id, adventurer.gold)
+        // Calculate level from XP using the mock contract's level calculation
+        let level = adventurer_dispatcher.get_level(adventurer.xp);
+        
+        // Use the dynamic gold and level values from adventurer data
+        create_simple_svg_metadata(token_id, adventurer.gold, level)
     }
 }

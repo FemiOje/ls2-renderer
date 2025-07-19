@@ -1,5 +1,30 @@
 use ls2_renderer::utils::encoding::{U256BytesUsedTraitImpl, bytes_base64_encode};
 
+// Convert u8 to string for display
+fn u8_to_string(value: u8) -> ByteArray {
+    if value == 0 {
+        return "0";
+    }
+
+    let mut result = "";
+    let mut val: u256 = value.into();
+    let mut digits: Array<u8> = array![];
+
+    while val > 0 {
+        let digit = (val % 10).try_into().unwrap();
+        digits.append(digit + 48); // Convert to ASCII
+        val = val / 10;
+    }
+
+    let mut i = digits.len();
+    while i > 0 {
+        i -= 1;
+        result.append_byte(*digits.at(i));
+    }
+
+    result
+}
+
 // Convert u256 to string for display
 fn u256_to_string(value: u256) -> ByteArray {
     if value == 0 {
@@ -26,7 +51,7 @@ fn u256_to_string(value: u256) -> ByteArray {
 }
 
 // Generate simple SVG for token
-fn generate_svg(token_id: u256, gold: u16) -> ByteArray {
+fn generate_svg(token_id: u256, gold: u16, level: u8) -> ByteArray {
     let mut svg =
         "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"862\" height=\"1270\" fill=\"none\">";
     svg += "<g filter=\"url(#a)\"><g clip-path=\"url(#b)\">";
@@ -35,8 +60,9 @@ fn generate_svg(token_id: u256, gold: u16) -> ByteArray {
         "<path fill=\"#78E846\" d=\"M212 124v-1h-2v-2h2v1h4v-2h-4v-1h-2v-4h2v-1h4v1h2v2h-2v-1h-4v2h4v1h2v4h-2v1h-4Zm12 0v-8h-1v1h-2v-2h1v-1h5v1h2v2h-2v-1h-1v8h-2Zm8 0v-9h1v-1h5v1h1v5h-1v1h-1v1h2v2h-2v-1h-2v-2h-1v3h-2Zm2-5h3v-3h-3v3Zm-7 25h-5v-2h5v2Zm6 24h-4v-2h2v-5h-2v-2h-2v-1h-3v-2h-4v-2h-1v-2h-2v-7h2v-1h3v1h-2v6h2v1h3v2h2v-2h2v4h2v2h2v1h1v7h-1v2Zm-2-16h-2v-7h-2v-1h4v1h2v6h-2v1Zm-11 6h-1v-2h1v2Zm9 12h-9v-2h-3v-2h-2v-7h2v-1h2v7h1v1h2v2h7v2Zm-19 59v-11h4v2h2v1h1v5h-1v1h-2v2h-4Zm2-3h2v-1h1v-3h-1v-2h-2v6Zm10 3v-2h-1v-7h1v-2h5v2h2v2h-2v-2h-4v2h3v2h-3v2h4v-1h2v2h-2v2h-5Zm10 0v-3h2v-2h1v-1h-1v-3h-2v-2h2v2h2v2-2h2v-2h2v2h-2v3h-1v1h1v2h2v3h-2v-2h-2v-3 3h-2v2h-2Zm1 24h-2v-3h-14v1h-2v-3h2v-2h17v4h-1v3Zm-2 4h-2v-4h2v4Zm-2 3h-2v-3h2v3Zm-2 4h-1v-4h1v4Zm-1 3h-2v-3h2v3Zm-2 4h-2v-4h2v4Zm-2 3h-2v-3h2v3Zm-2 4h-1v-4h1v4Zm-9 55v-2h2v-6h-2v-3h5v3h-1v6h1v2h-5Zm9 0v-11h2v2h1v1h2v4-7h2v11h-2v-2h-1v-1h-1v-4h-1v7h-2Zm13 0v-8h-1v1h-2v-2h2v-2h5v2h1v2h-2v-1h-1v8h-2Zm0 14h-6v-2h6v2Zm-4 32h-9v-2h-1v-2h-2v-3h-2v-11h2v-5h2v-4h1v-1h2v-2h2v-2h3v2h-1v2h-2v1h-2v4h-2v5h-1v11h1v3h2v2h5v-2h2v-3h2v-6h-2v-3h-2v-2h-3v-2h5v2h2v2h2v3h1v6h-1v3h-2v2h-2v2Zm-5-16h-2v-2h2v2Zm-13 74v-2h2v-6h-2v-2h5v2h-1v6h1v2h-5Zm9 0v-10h2v1h1v2h2v4-7h2v10h-2v-1h-1v-2h-1v-4h-1v7h-2Zm13 0v-8h-1v1h-2v-2h2v-1h5v1h1v2h-2v-1h-1v8h-2Zm-1 21h-13v-3h13v3Zm-13 4h-1v-4h1v4Zm14 16h-1v-6h-2v-1h-2v-2h-5v-2h-7v-5h2v2h5v1h5v2h4v2h1v9Zm-1 3h-2v-3h2v3Zm-2 2h-4v-2h4v2Zm-4 2h-3v-2h3v2Zm-3 2h-7v-2h7v2Zm-12 55v-2h-1v-9h2v8-2h2v-4h2v4h1v2h1v-8h2v9h-1v2h-2v-2h-2v-3h-1v3h-1v2h-2Zm13 0v-3h1v-6h-1v-2h5v2h-2v6h2v3h-5Zm10 0v-2h-2v-2h2v1h4v-2h-4v-1h-2v-3h2v-2h4v2h2v2h-2v-2h-4v2h4v2h2v3h-2v2h-4Zm-1 17h-1v-2h1v2Zm-1 2h-2v-2h2v2Zm-2 2h-2v-2h2v2Zm-2 1h-2v-1h2v1Zm-2 2h-1v-2h1v2Zm9 21h-10v-1h3v-7h-14v-4h2v2h12v-9h2v-2h2v11h3v2h-3v7h3v1Zm-10-19h-2v-2h2v2Zm-2 2h-2v-2h2v2Zm-2 1h-2v-1h2v1Zm-2 2h-1v-2h1v2Zm-1 2h-2v-2h2v2Zm-7 71v-2h-1v-7h1v-2h5v2h1v3h-2v-2h-3v6h3v-3h2v3h-1v2h-5Zm10 0v-11h2v5h1v-2h2v2h1v-5h2v11h-2v-4h-4v4h-2Zm11 0v-8h2v-1h1v-2h2v2h1v1h2v8h-2v-3h-4v3h-2Zm2-5h4v-2h-2v-1 1h-2v2Zm-6 54h-3v-2h1v-1h2v-4h2v-7h-2v-2h-2v-1h-7v-2h2v-2h2v-2h2v-1h1v-4h-1v-2h-6v-1h9v1h2v6h-2v1h-2v2h-1v2h5v2h2v1h1v9h-1v4h-2v1h-2v2Zm-9-28h-1v-2h1v2Zm-1 2h-2v-2h2v2Zm1 10h-1v-1h1v1Zm6 18h-7v-2h-2v-3h3v1h2v2h4v2Zm-20 53v-1h-1v-9h2v8h4v-1h2v2h-2v1h-5Zm12 0v-1h-2v-9h2v8h4v-8h2v9h-1v1h-5Zm11 0v-1h-2v-8h2v-1h5v1h1v4h-2v-3h-3v6h3v-3h2v4h-1v1h-5Zm10 0v-9h1v-1h2v2h-1v2h1v-1h1v-2h1v-1h2v2h-1v1h-1v2h-2 2v2h1v1h1v2h-2v-1h-1v-2h-1v-1h-1v4h-2Zm-7 32h-2v-11h-2v-1h-7v-2h9v2h2v1h2v9h-2v2Zm-11-11h-1v-1h1v1Zm-1 2h-2v-2h2v2Zm10 11h-2v-2h2v2Zm-2 1h-1v-1h1v1Zm-1 2h-2v-2h2v2Zm-2 2h-2v-2h2v2Zm-2 2h-2v-2h2v2Zm11 5h-18v-2h2v-2h2v-1h1v1h13v-1h1v3h-1v2Z\"/>";
     svg +=
         "<path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M289 116c0 2-1 2-2 2h-1v19h8v5l4 1c7 0 7 0 7-3v-3h7v-19h-1l-1-2v-3h-21v3Zm7 12v4l-2-1h-2l-1-4v-3h5v4Zm11 0v4h-5v-8h5v4Zm-6 6v3h-4v-5h4v2Zm-15 6v26h19v-5h-14v-22h-2l-3 1Zm8 5v13h13v10l-10 1h-11v5h24v-2l1-3h1v-8l1-8h-14v-3h13v-5h-18Z\" clip-rule=\"evenodd\"/>";
+    // Add back the character name "Shinobi" and other UI elements that were removed
     svg +=
-        "<path fill=\"#78E846\" d=\"M339 124v-1h-1v-9h2v8h3v-1h2v2h-1v1h-5Zm11 0v-1h-1v-8h1v-1h5v1h2v2h-3v-1h-3v2h3v2h-3v2h3v-1h3v2h-2v1h-5Zm13 0v-1h-2v-3h-1v-6h2v5h2v3-3h2v-5h2v6h-2v3h-1v1h-2Zm10 0v-1h-2v-8h2v-1h5v1h1v2h-2v-1h-4v2h3v2h-3v2h4v-1h2v2h-1v1h-5Zm11 0v-1h-1v-9h2v8h3v-1h2v2h-1v1h-5Zm17 0v-8 1h-2v-2h1v-1h2v1h1v9h-2Zm7 0v-1h-1v-4h1v-1h5v-2h-4v1h-2v-2h1v-1h5v1h2v4h-2v1h-4v2h4v-1h2v2h-2v1h-5Zm-70 46h2v-4h18v2h-1v2h-2v1h-2v2h-15v-3Zm2-14v-8h2v5h16v2h4v10h-2v-4h-2v-1h-15v-2h-1v-2h-2Zm2-8v-2h1v2h-1Zm1-2v-2h2v2h-2Zm2-2v-1h2v-2h1v-2h4v2h5v2h3v1h-2v2h-1v2h-2v-2h-5v-2h-5Zm13 22v-1h2v1h-2Zm2-25v-2h2v2h-2Zm3 2h6v-2h3v14h2v1h-2v12h3v2h-1v1h-2v2h-3v-2h-4v-3h2v-24h-4v-1Zm9-2v-2h2v2h-2Zm2 14v-2h1v-2h4v-2h1v2h2v4h2v10h-2v1h-2v2h-1v-12h-2v-1h-3Zm1 23v-7h2v4h3v1h2v5h-3v-1h-2v-2h-2Zm2-7v-3h2v3h-2Zm9-16h2v1h-2v-1Zm2 0v-2h3v-2h4v2h3v2h-2v15h2v1h-2v2h-3v-2h-2v-1h-2v-15h-1Zm1-9v-5h2v-2h4v2h1v3h-1v4h-4v-2h-2Zm11 9h2v-2h2v-2h3v2h2v2h1v1h-1v17h-5v-17h-4v-1Zm10 0v-2h2v-2h5v2h4v3h-2v12h2v3h-2v2h-3v-2h-2v-15h-2v-1h-2Zm13 3h2v5h1v2h2v1h2v2h7v2h-2v1h-2v2h-5v-2h-2v-1h-1v-2h-2v-10Zm2 0v-3h1v-2h2v-2h7v2h3v3h2v9h-2v3h-1v-8h-2v-2h-2v-2h-7v2h-1Zm16-15h5v-2h3v25h2v2h3v2h-1v1h-2v2h-4v-2h-1v-1h-2v-2h-2v-2h2v-22h-3v-1Zm8-2v-2h2v2h-2Zm2 15v-1h2v1h-2Zm2-1v-2h1v-2h2v-2h2v2h1v2h2v10h-2v3h-1v2h-4v-2h2v-10h-2v-1h-1Zm10 0h2v1h-2v-1Zm2 0v-2h3v-2h4v2h3v2h-2v15h2v1h-2v2h-3v-2h-2v-1h-1v-15h-2Zm2-9v-5h1v-2h4v2h1v3h-1v4h-4v-2h-1Z\"/>";
+        "<path fill=\"#78E846\" d=\"M349 170h2v-4h18v2h-1v2h-2v1h-2v2h-15v-3Zm2-14v-8h2v5h16v2h4v10h-2v-4h-2v-1h-15v-2h-1v-2h-2Zm2-8v-2h1v2h-1Zm1-2v-2h2v2h-2Zm2-2v-1h2v-2h1v-2h4v2h5v2h3v1h-2v2h-1v2h-2v-2h-5v-2h-5Zm13 22v-1h2v1h-2Zm2-25v-2h2v2h-2Zm3 2h6v-2h3v14h2v1h-2v12h3v2h-1v1h-2v2h-3v-2h-4v-3h2v-24h-4v-1Zm9-2v-2h2v2h-2Zm2 14v-2h1v-2h4v-2h1v2h2v4h2v10h-2v1h-2v2h-1v-12h-2v-1h-3Zm1 23v-7h2v4h3v1h2v5h-3v-1h-2v-2h-2Zm2-7v-3h2v3h-2Zm9-16h2v1h-2v-1Zm2 0v-2h3v-2h4v2h3v2h-2v15h2v1h-2v2h-3v-2h-2v-1h-2v-15h-1Zm1-9v-5h2v-2h4v2h1v3h-1v4h-4v-2h-2Zm11 9h2v-2h2v-2h3v2h2v2h1v1h-1v17h-5v-17h-4v-1Zm10 0v-2h2v-2h5v2h4v3h-2v12h2v3h-2v2h-3v-2h-2v-15h-2v-1h-2Zm13 3h2v5h1v2h2v1h2v2h7v2h-2v1h-2v2h-5v-2h-2v-1h-1v-2h-2v-10Zm2 0v-3h1v-2h2v-2h7v2h3v3h2v9h-2v3h-1v-8h-2v-2h-2v-2h-7v2h-1Zm16-15h5v-2h3v25h2v2h3v2h-1v1h-2v2h-4v-2h-1v-1h-2v-2h-2v-2h2v-22h-3v-1Zm8-2v-2h2v2h-2Zm2 15v-1h2v1h-2Zm2-1v-2h1v-2h2v-2h2v2h1v2h2v10h-2v3h-1v2h-4v-2h2v-10h-2v-1h-1Zm10 0h2v1h-2v-1Zm2 0v-2h3v-2h4v2h3v2h-2v15h2v1h-2v2h-3v-2h-2v-1h-1v-15h-2Zm2-9v-5h1v-2h4v2h1v3h-1v4h-4v-2h-1Z\"/>";
     // Add dark main rectangle for gold display
     svg += "<rect width=\"91\" height=\"61.1\" x=\"541.7\" y=\"113\" fill=\"#2C1A0A\" rx=\"6\"/>";
     // Add small lighter orange rectangle for "GOLD" label at top-right
@@ -46,6 +72,10 @@ fn generate_svg(token_id: u256, gold: u16) -> ByteArray {
     // Add gold value in orange on the darker background
     svg += "<text x=\"587\" y=\"150\" fill=\"#E8A746\" font-family=\"monospace\" font-size=\"24\" font-weight=\"bold\" text-anchor=\"middle\">";
     svg += u256_to_string(gold.into());
+    svg += "</text>";
+    // Add dynamic level text at original LEVEL 18 position
+    svg += "<text x=\"339\" y=\"124\" fill=\"#78E846\" font-family=\"monospace\" font-size=\"12\" font-weight=\"bold\">LEVEL ";
+    svg += u8_to_string(level);
     svg += "</text>";
     svg += "<path stroke=\"#171D10\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M286 234h343\"/><path stroke=\"#78E846\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M286 234h164\"/>";
     svg +=
@@ -82,9 +112,9 @@ fn generate_svg(token_id: u256, gold: u16) -> ByteArray {
 }
 
 // Create JSON metadata with proper base64 encoding
-pub fn create_simple_svg_metadata(token_id: u256, gold: u16) -> ByteArray {
+pub fn create_simple_svg_metadata(token_id: u256, gold: u16, level: u8) -> ByteArray {
     // Generate SVG
-    let svg = generate_svg(token_id, gold);
+    let svg = generate_svg(token_id, gold, level);
 
     // Encode SVG to base64
     let svg_base64 = bytes_base64_encode(svg);
