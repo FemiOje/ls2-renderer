@@ -107,6 +107,34 @@ fn u8_to_string(value: u8) -> ByteArray {
     result
 }
 
+/// @notice Converts u64 value to string representation for display in SVG
+/// @dev Handles edge case of zero and builds string digit by digit
+/// @param value The u64 value to convert to string
+/// @return ByteArray containing the string representation
+pub fn u64_to_string(value: u64) -> ByteArray {
+    if value == 0 {
+        return "0";
+    }
+
+    let mut result = "";
+    let mut val: u256 = value.into();
+    let mut digits: Array<u8> = array![];
+
+    while val > 0 {
+        let digit = (val % 10).try_into().unwrap();
+        digits.append(digit + 48); // Convert ASCII
+        val = val / 10;
+    }
+
+    let mut i = digits.len();
+    while i > 0 {
+        i -= 1;
+        result.append_byte(*digits.at(i));
+    }
+
+    result
+}
+
 /// @notice Converts u256 value to string representation for display
 /// @dev Handles large numbers efficiently, builds string digit by digit
 /// @param value The u256 value to convert to string
@@ -756,7 +784,6 @@ pub fn generate_details(adventurer: AdventurerVerbose) -> Span<GameDetail> {
         format!("{}", adventurer.stats.charisma)
     };
     let luck = format!("{}", adventurer.stats.luck);
-
 
     array![
         GameDetail { name: "XP", value: xp },

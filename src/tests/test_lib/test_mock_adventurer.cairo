@@ -831,12 +831,12 @@ fn test_phase4_mock_data_consistency() {
     let simple = get_simple_adventurer_verbose();
     let max_stats = get_max_stats_adventurer();
     let min_stats = get_min_stats_adventurer();
-    
+
     // STRICT POSTCONDITION: All adventurers have valid health
     assert(simple.health > 0, 'simple health invalid');
     assert(max_stats.health > 0, 'max health invalid');
     assert(min_stats.health > 0, 'min health invalid');
-    
+
     // STRICT POSTCONDITION: Stats are in expected ranges
     assert(max_stats.stats.strength >= min_stats.stats.strength, 'max < min strength');
     assert(max_stats.stats.dexterity >= min_stats.stats.dexterity, 'max < min dex');
@@ -848,10 +848,10 @@ fn test_phase4_mock_data_consistency() {
 #[test]
 fn test_phase4_equipment_integration() {
     let adventurer = get_simple_adventurer_verbose();
-    
+
     // PRECONDITION: Adventurer has equipment
     assert(adventurer.equipment.weapon.id >= 0, 'weapon id invalid');
-    
+
     // STRICT POSTCONDITION: Equipment slots are properly typed
     assert(adventurer.equipment.weapon.slot == Slot::Weapon, 'weapon slot wrong');
     assert(adventurer.equipment.chest.slot == Slot::Chest, 'chest slot wrong');
@@ -863,13 +863,12 @@ fn test_phase4_equipment_integration() {
 #[test]
 fn test_phase4_bag_integration() {
     let adventurer = get_simple_adventurer_verbose();
-    
+
     // PRECONDITION: Adventurer has bag
     let bag = adventurer.bag;
-    
+
     // STRICT POSTCONDITION: Bag items have valid IDs
     assert(bag.item_1.id >= 0, 'bag item_1 invalid');
-    
     // STRICT POSTCONDITION: Bag structure is consistent
-    // (All items exist even if empty)
+// (All items exist even if empty)
 }

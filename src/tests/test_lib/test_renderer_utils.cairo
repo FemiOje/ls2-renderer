@@ -4,7 +4,7 @@
 use death_mountain_renderer::models::models::{
     AdventurerVerbose, BagVerbose, EquipmentVerbose, ItemVerbose, Slot, Stats, Tier, Type,
 };
-use death_mountain_renderer::tests::test_lib::helper::{get_simple_adventurer_verbose};
+use death_mountain_renderer::tests::test_lib::helper::get_simple_adventurer_verbose;
 use death_mountain_renderer::utils::renderer_utils::{
     chest, foot, generate_svg, hand, head, neck, ring, u256_to_string, waist, weapon,
 };
@@ -335,7 +335,7 @@ fn test_generate_svg_basic_structure() {
                 item_type: Type::None,
                 slot: Slot::None,
             },
-            },
+        },
     };
     let svg = generate_svg(adventurer_verbose);
     assert(ByteArrayTrait::len(@svg) > 0, 'svg should not be empty');
@@ -1596,15 +1596,17 @@ fn test_generate_svg_maximum_level() {
 #[test]
 fn test_phase3_generate_details_accuracy() {
     let adventurer_verbose = get_simple_adventurer_verbose();
-    
+
     // PRECONDITION: Adventurer has valid data
     assert(adventurer_verbose.name.len() > 0, 'name not empty');
-    
-    let details = death_mountain_renderer::utils::renderer_utils::generate_details(adventurer_verbose);
-    
+
+    let details = death_mountain_renderer::utils::renderer_utils::generate_details(
+        adventurer_verbose,
+    );
+
     // STRICT POSTCONDITION: Expected number of details
     assert(details.len() >= 18, 'insufficient details');
-    
+
     // STRICT POSTCONDITION: All details valid
     let mut i = 0;
     while i < details.len() {
@@ -1623,11 +1625,11 @@ fn test_phase3_u256_conversion() {
     // Test zero
     let zero_result = u256_to_string(0_u256);
     assert(zero_result.len() == 1, 'zero wrong length');
-    
+
     // Test single digit
     let single = u256_to_string(7_u256);
     assert(single.len() == 1, 'single wrong length');
-    
+
     // Test multi-digit
     let multi = u256_to_string(12345_u256);
     assert(multi.len() > 1, 'multi wrong length');
@@ -1641,12 +1643,12 @@ fn test_phase3_svg_icons() {
     let w_icon = weapon();
     let c_icon = chest();
     let h_icon = head();
-    
+
     // STRICT POSTCONDITION: All have content
     assert(w_icon.len() > 0, 'weapon empty');
     assert(c_icon.len() > 0, 'chest empty');
     assert(h_icon.len() > 0, 'head empty');
-    
+
     // STRICT POSTCONDITION: Icons different
     assert(w_icon != c_icon, 'weapon/chest same');
 }
