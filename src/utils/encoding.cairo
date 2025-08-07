@@ -1,7 +1,15 @@
-use core::num::traits::Bounded;
+// SPDX-License-Identifier: MIT
+//
+// @title Base64 Encoding Utilities for On-Chain SVG Generation
+// @notice Gas-optimized Base64 encoding functions for converting SVG and JSON to data URIs
+// @dev Efficient implementation designed for Cairo's byte handling and gas optimization
+// @author Built for the Loot Survivor ecosystem
 
+/// @notice Returns the standard Base64 character set for encoding operations
+/// @dev Inline function for gas optimization, returns alphabet A-Z, a-z, 0-9, +, /
+/// @return Span<u8> containing the 64 Base64 characters as ASCII bytes
 #[inline(always)]
-fn get_base64_char_set() -> Span<u8> {
+pub fn get_base64_char_set() -> Span<u8> {
     let mut result = array![
         'A',
         'B',
@@ -71,11 +79,20 @@ fn get_base64_char_set() -> Span<u8> {
     result.span()
 }
 
+/// @notice Public interface for Base64 encoding of ByteArray data
+/// @dev Main function used by metadata generation to encode SVG and JSON data
+/// @param _bytes The ByteArray data to encode (SVG content, JSON metadata, etc.)
+/// @return Base64-encoded ByteArray suitable for data URI inclusion
 pub fn bytes_base64_encode(_bytes: ByteArray) -> ByteArray {
     encode_bytes(_bytes, get_base64_char_set())
 }
 
 
+/// @notice Core Base64 encoding implementation with padding support
+/// @dev Handles byte grouping, padding, and character mapping for RFC 4648 compliance
+/// @param bytes The input ByteArray to encode (may be modified for padding)
+/// @param base64_chars The character set to use for encoding
+/// @return Base64-encoded ByteArray with proper padding ('=' characters)
 fn encode_bytes(mut bytes: ByteArray, base64_chars: Span<u8>) -> ByteArray {
     let mut result: ByteArray = "";
     if bytes.len() == 0 {
@@ -132,11 +149,11 @@ fn encode_bytes(mut bytes: ByteArray, base64_chars: Span<u8>) -> ByteArray {
         }
 
         i += 3;
-    };
+    }
     result
 }
 
-trait BytesUsedTrait<T> {
+pub trait BytesUsedTrait<T> {
     /// Returns the number of bytes used to represent a `T` value.
     /// # Arguments
     /// * `self` - The value to check.
@@ -145,64 +162,30 @@ trait BytesUsedTrait<T> {
     fn bytes_used(self: T) -> u8;
 }
 
-impl U8BytesUsedTraitImpl of BytesUsedTrait<u8> {
-    fn bytes_used(self: u8) -> u8 {
-        if self == 0 {
-            return 0;
-        }
 
-        return 1;
-    }
-}
-
-impl USizeBytesUsedTraitImpl of BytesUsedTrait<usize> {
-    fn bytes_used(self: usize) -> u8 {
-        // Convert usize to u64 and use the u64 implementation
-        return BytesUsedTrait::<u64>::bytes_used(self.into());
-    }
-}
-
-impl U32BytesUsedTraitImpl of BytesUsedTrait<u32> {
-    fn bytes_used(self: u32) -> u8 {
-        if self < 0x10000 { // 256^2
-            if self < 0x100 { // 256^1
-                if self == 0 {
-                    return 0;
-                } else {
-                    return 1;
-                };
-            }
-            return 2;
-        } else {
-            if self < 0x1000000 { // 256^3
-                return 3;
-            }
-            return 4;
-        }
-    }
-}
-
-impl U64BytesUsedTraitImpl of BytesUsedTrait<u64> {
-    fn bytes_used(self: u64) -> u8 {
-        if self < 0x100000000 { // 256^4
-            if self < 0x10000 { // 256^2
-                if self < 0x100 { // 256^1
-                    if self == 0 {
-                        return 0;
-                    } else {
-                        return 1;
-                    };
-                }
-                return 2;
-            } else {
-                if self < 0x1000000 { // 256^3
-                    return 3;
-                }
-                return 4;
-            }
-        } else {
-            if self < 0x1000000000000 { // 256^6
+pub impl U128BytesUsedTraitImpl of BytesUsedTrait<u128> {
+    fn bytes_used(self: u128) -> u8 {
+        if self <= 0xffffffffffffffff { // 256^8 - 1
+            // Handle up to 8 bytes inline instead of calling U64
+            if self < 0x10000000000000 { // 256^6
                 if self < 0x10000000000 { // 256^5
+                    if self < 0x100000000 { // 256^4
+                        if self < 0x10000 { // 256^2
+                            if self < 0x100 { // 256^1
+                                if self == 0 {
+                                    return 0;
+                                } else {
+                                    return 1;
+                                };
+                            }
+                            return 2;
+                        } else {
+                            if self < 0x1000000 { // 256^3
+                                return 3;
+                            }
+                            return 4;
+                        }
+                    }
                     return 5;
                 }
                 return 6;
@@ -213,15 +196,6 @@ impl U64BytesUsedTraitImpl of BytesUsedTrait<u64> {
                     return 8;
                 }
             }
-        }
-    }
-}
-
-
-impl U128BytesUsedTraitImpl of BytesUsedTrait<u128> {
-    fn bytes_used(self: u128) -> u8 {
-        if self <= Bounded::<u64>::MAX.into() { // 256^8
-            return BytesUsedTrait::<u64>::bytes_used(self.try_into().unwrap());
         } else {
             if self < 0x1000000000000000000000000 { // 256^12
                 if self < 0x100000000000000000000 { // 256^10
@@ -254,9 +228,11 @@ impl U128BytesUsedTraitImpl of BytesUsedTrait<u128> {
 pub impl U256BytesUsedTraitImpl of BytesUsedTrait<u256> {
     fn bytes_used(self: u256) -> u8 {
         if self.high == 0 {
-            return BytesUsedTrait::<u128>::bytes_used(self.low.try_into().unwrap());
+            U128BytesUsedTraitImpl::bytes_used(self.low.try_into().unwrap())
         } else {
-            return BytesUsedTrait::<u128>::bytes_used(self.high.try_into().unwrap()) + 16;
+            // When high part is non-zero, we need 16 bytes for low + bytes for high
+            16 + U128BytesUsedTraitImpl::bytes_used(self.high.try_into().unwrap())
         }
     }
 }
+

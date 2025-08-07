@@ -1,1954 +1,775 @@
-use ls2_renderer::mocks::mock_adventurer::{Adventurer, Bag, Item};
-use ls2_renderer::mocks::mock_beast::{Beast};
-use ls2_renderer::utils::encoding::{U256BytesUsedTraitImpl, bytes_base64_encode};
-use ls2_renderer::utils::item_database::ItemDatabaseImpl;
-use ls2_renderer::utils::marketplace::MarketplaceImpl;
-use ls2_renderer::utils::combat::{CombatImpl, CombatResult};
+// SPDX-License-Identifier: MIT
+//
+// @title Renderer Utilities - SVG Generation and Metadata Creation
+// @notice Comprehensive utility functions for generating dynamic battle interface SVG artwork
+// @dev Modular SVG component system optimized for gas efficiency and visual excellence
+// @author Built for the Loot Survivor ecosystem
 
-// Health calculation constants
-const STARTING_HEALTH: u8 = 100;
-const HEALTH_INCREASE_PER_VITALITY: u8 = 20;
-const MAX_ADVENTURER_HEALTH: u16 = 1023;
+use death_mountain_renderer::models::models::{
+    AdventurerVerbose, EquipmentVerbose, GameDetail, Stats, StatsTrait,
+};
+use death_mountain_renderer::utils::encoding::U256BytesUsedTraitImpl;
 
-// Item greatness constants
-const SUFFIX_UNLOCK_GREATNESS: u8 = 15;
-const PREFIXES_UNLOCK_GREATNESS: u8 = 19;
-const NAME_PREFIX_LENGTH: u8 = 69;
-const NAME_SUFFIX_LENGTH: u8 = 18;
 
-// @notice Calculate maximum health based on vitality
-// @param vitality The vitality stat of the adventurer
-// @return The maximum health for the adventurer
-fn get_max_health(vitality: u8) -> u16 {
-    let vitality_health_boost = vitality.into() * HEALTH_INCREASE_PER_VITALITY.into();
-    let new_max_health = STARTING_HEALTH.into() + vitality_health_boost;
+// ============================================================================
+// SVG ICON COMPONENTS
+// ============================================================================
+// These functions generate reusable SVG path elements for equipment icons
+// Each icon is designed to be scalable and visually clear at multiple sizes
 
-    if new_max_health > MAX_ADVENTURER_HEALTH {
-        MAX_ADVENTURER_HEALTH
-    } else {
-        new_max_health
-    }
-}
-
-// @notice Calculate square root using Newton's method
-// @param value The value to calculate square root for
-// @return The square root of the value
-fn sqrt(value: u16) -> u8 {
-    if value == 0 {
-        return 0;
-    }
-    if value == 1 {
-        return 1;
-    }
-
-    let mut x = value / 2;
-    let mut prev_x = 0;
-
-    // Newton's method: x = (x + value/x) / 2
-    loop {
-        prev_x = x;
-        x = (x + value / x) / 2;
-
-        if x >= prev_x {
-            break prev_x.try_into().unwrap();
-        }
-    }
-}
-
-// @notice Calculate item greatness from XP
-// @param xp The item's XP value
-// @return The calculated greatness (0-20)
-pub fn calculate_greatness(xp: u16) -> u8 {
-    let greatness = sqrt(xp);
-    if greatness > 20 {
-        20
-    } else {
-        greatness
-    }
-}
-
-// @notice Get prefix string from prefix ID (1-69)
-// @param prefix_id The prefix ID (1-69)
-// @return The prefix string
-pub fn get_prefix_string(prefix_id: u8) -> ByteArray {
-    let prefix_felt = get_prefix_felt(prefix_id);
-    let mut prefix_ba = Default::default();
-    prefix_ba
-        .append_word(prefix_felt, U256BytesUsedTraitImpl::bytes_used(prefix_felt.into()).into());
-    prefix_ba
-}
-
-// @notice Get prefix felt252 from prefix ID (1-69)
-// @param prefix_id The prefix ID (1-69)
-// @return The prefix felt252
-fn get_prefix_felt(prefix_id: u8) -> felt252 {
-    if prefix_id == 1 {
-        'Agony'
-    } else if prefix_id == 2 {
-        'Apocalypse'
-    } else if prefix_id == 3 {
-        'Armageddon'
-    } else if prefix_id == 4 {
-        'Beast'
-    } else if prefix_id == 5 {
-        'Behemoth'
-    } else if prefix_id == 6 {
-        'Blight'
-    } else if prefix_id == 7 {
-        'Blood'
-    } else if prefix_id == 8 {
-        'Bramble'
-    } else if prefix_id == 9 {
-        'Brimstone'
-    } else if prefix_id == 10 {
-        'Brood'
-    } else if prefix_id == 11 {
-        'Carrion'
-    } else if prefix_id == 12 {
-        'Cataclysm'
-    } else if prefix_id == 13 {
-        'Chimeric'
-    } else if prefix_id == 14 {
-        'Corpse'
-    } else if prefix_id == 15 {
-        'Corruption'
-    } else if prefix_id == 16 {
-        'Damnation'
-    } else if prefix_id == 17 {
-        'Death'
-    } else if prefix_id == 18 {
-        'Demon'
-    } else if prefix_id == 19 {
-        'Dire'
-    } else if prefix_id == 20 {
-        'Dragon'
-    } else if prefix_id == 21 {
-        'Dread'
-    } else if prefix_id == 22 {
-        'Doom'
-    } else if prefix_id == 23 {
-        'Dusk'
-    } else if prefix_id == 24 {
-        'Eagle'
-    } else if prefix_id == 25 {
-        'Empyrean'
-    } else if prefix_id == 26 {
-        'Fate'
-    } else if prefix_id == 27 {
-        'Foe'
-    } else if prefix_id == 28 {
-        'Gale'
-    } else if prefix_id == 29 {
-        'Ghoul'
-    } else if prefix_id == 30 {
-        'Gloom'
-    } else if prefix_id == 31 {
-        'Glyph'
-    } else if prefix_id == 32 {
-        'Golem'
-    } else if prefix_id == 33 {
-        'Grim'
-    } else if prefix_id == 34 {
-        'Hate'
-    } else if prefix_id == 35 {
-        'Havoc'
-    } else if prefix_id == 36 {
-        'Honour'
-    } else if prefix_id == 37 {
-        'Horror'
-    } else if prefix_id == 38 {
-        'Hypnotic'
-    } else if prefix_id == 39 {
-        'Kraken'
-    } else if prefix_id == 40 {
-        'Loath'
-    } else if prefix_id == 41 {
-        'Maelstrom'
-    } else if prefix_id == 42 {
-        'Mind'
-    } else if prefix_id == 43 {
-        'Miracle'
-    } else if prefix_id == 44 {
-        'Morbid'
-    } else if prefix_id == 45 {
-        'Oblivion'
-    } else if prefix_id == 46 {
-        'Onslaught'
-    } else if prefix_id == 47 {
-        'Pain'
-    } else if prefix_id == 48 {
-        'Pandemonium'
-    } else if prefix_id == 49 {
-        'Phoenix'
-    } else if prefix_id == 50 {
-        'Plague'
-    } else if prefix_id == 51 {
-        'Rage'
-    } else if prefix_id == 52 {
-        'Rapture'
-    } else if prefix_id == 53 {
-        'Rune'
-    } else if prefix_id == 54 {
-        'Skull'
-    } else if prefix_id == 55 {
-        'Sol'
-    } else if prefix_id == 56 {
-        'Soul'
-    } else if prefix_id == 57 {
-        'Sorrow'
-    } else if prefix_id == 58 {
-        'Spirit'
-    } else if prefix_id == 59 {
-        'Storm'
-    } else if prefix_id == 60 {
-        'Tempest'
-    } else if prefix_id == 61 {
-        'Torment'
-    } else if prefix_id == 62 {
-        'Vengeance'
-    } else if prefix_id == 63 {
-        'Victory'
-    } else if prefix_id == 64 {
-        'Viper'
-    } else if prefix_id == 65 {
-        'Vortex'
-    } else if prefix_id == 66 {
-        'Woe'
-    } else if prefix_id == 67 {
-        'Wrath'
-    } else if prefix_id == 68 {
-        'Lights'
-    } else if prefix_id == 69 {
-        'Shimmering'
-    } else {
-        ''
-    }
-}
-
-// @notice Get suffix string from suffix ID (1-18)
-// @param suffix_id The suffix ID (1-18)
-// @return The suffix string
-pub fn get_suffix_string(suffix_id: u8) -> ByteArray {
-    let suffix_felt = get_suffix_felt(suffix_id);
-    let mut suffix_ba = Default::default();
-    suffix_ba
-        .append_word(suffix_felt, U256BytesUsedTraitImpl::bytes_used(suffix_felt.into()).into());
-    suffix_ba
-}
-
-// @notice Get suffix felt252 from suffix ID (1-18)
-// @param suffix_id The suffix ID (1-18)
-// @return The suffix felt252
-fn get_suffix_felt(suffix_id: u8) -> felt252 {
-    if suffix_id == 1 {
-        'Bane'
-    } else if suffix_id == 2 {
-        'Root'
-    } else if suffix_id == 3 {
-        'Bite'
-    } else if suffix_id == 4 {
-        'Song'
-    } else if suffix_id == 5 {
-        'Roar'
-    } else if suffix_id == 6 {
-        'Grasp'
-    } else if suffix_id == 7 {
-        'Instrument'
-    } else if suffix_id == 8 {
-        'Glow'
-    } else if suffix_id == 9 {
-        'Bender'
-    } else if suffix_id == 10 {
-        'Shadow'
-    } else if suffix_id == 11 {
-        'Whisper'
-    } else if suffix_id == 12 {
-        'Shout'
-    } else if suffix_id == 13 {
-        'Growl'
-    } else if suffix_id == 14 {
-        'Tear'
-    } else if suffix_id == 15 {
-        'Peak'
-    } else if suffix_id == 16 {
-        'Form'
-    } else if suffix_id == 17 {
-        'Sun'
-    } else if suffix_id == 18 {
-        'Moon'
-    } else {
-        ''
-    }
-}
-
-// @notice Generate prefix ID from item ID and XP
-// @param item_id The item ID
-// @param xp The item XP
-// @return The prefix ID (1-69)
-fn generate_prefix_id(item_id: u8, xp: u16) -> u8 {
-    let seed: u256 = item_id.into() * 1000 + xp.into();
-    let prefix_id = (seed % NAME_PREFIX_LENGTH.into()) + 1;
-    prefix_id.try_into().unwrap()
-}
-
-// @notice Generate suffix ID from item ID and XP
-// @param item_id The item ID
-// @param xp The item XP
-// @return The suffix ID (1-18)
-fn generate_suffix_id(item_id: u8, xp: u16) -> u8 {
-    let seed: u256 = item_id.into() * 2000 + xp.into();
-    let suffix_id = (seed % NAME_SUFFIX_LENGTH.into()) + 1;
-    suffix_id.try_into().unwrap()
-}
-
-// SVG Component System
-#[derive(Drop)]
-pub struct SVGTheme {
-    pub primary_color: ByteArray,
-    pub secondary_color: ByteArray,
-    pub background_color: ByteArray,
-    pub border_color: ByteArray,
-    pub text_color: ByteArray,
-}
-
-#[derive(Copy, Drop)]
-pub struct SVGPosition {
-    pub x: u32,
-    pub y: u32,
-}
-
-#[derive(Copy, Drop)]
-pub struct SVGSize {
-    pub width: u32,
-    pub height: u32,
-}
-
-#[derive(Drop)]
-pub struct SVGComponent {
-    pub position: SVGPosition,
-    pub size: SVGSize,
-    pub theme: SVGTheme,
-}
-
-// @notice Generates the LS logo svg
-// @return The generated LS logo
-fn logo() -> ByteArray {
-    "<path d=\"M1 2V0h8v2h1v10H7v4H3v-4H0V2zm1 4v4h2v2h2v-2h2V6H6v4H4V6z\"/>"
-}
-
-// @notice Generates the crown icon used for top scores
-// @return The generated crown icon
-fn crown() -> ByteArray {
-    "<path d=\"M0 0v7h15V0h-1v1h-1v1h-1v1h-2V2H9V1H8V0H7v1H6v1H5v1H3V2H2V1H1V0H0Z\"/>"
-}
-
-// @notice Generates the weapon icon svg
-// @return The generated weapon icon
-fn weapon() -> ByteArray {
+/// @notice Generates the weapon icon SVG path
+/// @dev Optimized path data for sword/weapon representation
+/// @return SVG path element for weapon icon
+pub fn weapon() -> ByteArray {
     "<path d=\"M8 4V3H6V2H5V1H3v2H2v2H1v1h2V5h2v2H4v2H3v2H2v2H1v2H0v2h2v-2h1v-2h1v-2h1V9h1V7h2v5h2v-2h1V8h1V6h1V4H8Z\"/>"
 }
 
-// @notice Generates the chest icon svg
-// @return The generated chest icon
-fn chest() -> ByteArray {
+/// @notice Generates the chest armor icon SVG path
+/// @dev Detailed path data representing chest/torso armor
+/// @return SVG path element for chest armor icon
+pub fn chest() -> ByteArray {
     "<path d=\"M0 8h2V7H0v1Zm3-3V2H2v1H1v2H0v1h4V5H3Zm2-4H4v4h1V1Zm6 0v4h1V1h-1Zm4 4V3h-1V2h-1v3h-1v1h4V5h-1Zm-1 3h2V7h-2v1ZM9 7H7V6H4v1H3v4h4v-1h2v1h4V7h-1V6H9v1Zm1 6v1h1v2h1v-2h1v-2H9v1h1Zm-3-1h2v-1H7v1Zm0 1v-1H3v2h1v2h1v-2h1v-1h1Zm2 0H7v1H6v2h4v-2H9v-1Z\" />"
 }
 
-// @notice Generates the head icon svg
-// @return The generated head icon
-fn head() -> ByteArray {
+/// @notice Generates the head armor/helmet icon SVG path
+/// @dev Stylized helmet design with clear visual recognition
+/// @return SVG path element for head armor icon
+pub fn head() -> ByteArray {
     "<path d=\"M12 2h-1V1h-1V0H6v1H5v1H4v1H3v8h1v1h2V8H5V7H4V5h3v4h2V5h3v2h-1v1h-1v4h2v-1h1V3h-1V2ZM2 2V1H1V0H0v2h1v2h1v1-2h1V2H2Zm13-2v1h-1v1h-1v1h1v2-1h1V2h1V0h-1Z\"/>"
 }
 
-// @notice Generates the waist icon svg
-// @return The generated waist icon
-fn waist() -> ByteArray {
+/// @notice Generates the waist armor/belt icon SVG path
+/// @dev Belt or waist armor representation with buckle details
+/// @return SVG path element for waist armor icon
+pub fn waist() -> ByteArray {
     "<path d=\"M0 13h2v-1H0v1Zm0-2h3v-1H0v1Zm1-7H0v5h3V8h2V3H1v1Zm0-2h4V0H1v2Zm5 0h1V1h1v1h1V0H6v2Zm8-2h-4v2h4V0Zm0 4V3h-4v5h2v1h3V4h-1Zm-2 7h3v-1h-3v1Zm1 2h2v-1h-2v1ZM6 9h1v1h1V9h1V3H6v6Z\"/>"
 }
 
-// @notice Generates the foot icon svg
-// @return The generated foot icon
-fn foot() -> ByteArray {
+/// @notice Generates the foot armor/boots icon SVG path
+/// @dev Boot design with detailed sole and upper construction
+/// @return SVG path element for foot armor icon
+pub fn foot() -> ByteArray {
     "<path d=\"M4 1V0H0v2h5V1H4Zm2-1H5v1h1V0Zm0 2H5v1h1V2Zm0 2V3H5v1h1Zm0 2V5H5v1h1Zm0 2V7H5v1h1Zm5 0V7H9v1h2Zm0-2V5H9v1h2Zm0-2V3H9v1h2Zm0-2H9v1h2V2Zm0-2H9v1h2V0ZM8 1V0H7v2h2V1H8Zm0 6h1V6H8V5h1V4H8V3h1-2v5h1V7ZM6 9V8H4V7h1V6H4V5h1V4H4V3h1-5v8h5V9h1Zm5 0h-1V8H7v1H6v2H5v1h6V9ZM0 13h5v-1H0v1Zm11 0v-1H5v1h6Zm1 0h4v-1h-4v1Zm3-3V9h-1V8h-2v1h-1v1h1v2h4v-2h-1Zm-4-2v1-1Z\"/>"
 }
 
-// @notice Generates the hand icon svg
-// @return The generated hand icon
-fn hand() -> ByteArray {
+/// @notice Generates the hand armor/gloves icon SVG path
+/// @dev Gauntlet design showing fingers and hand protection
+/// @return SVG path element for hand armor icon
+pub fn hand() -> ByteArray {
     "<path d=\"M9 8v1H8v3H4v-1h3V2H6v7H5V1H4v8H3V2H2v8H1V5H0v10h1v2h5v-1h2v-1h1v-2h1V8H9Z\"/>"
 }
 
-// @notice Generates the neck icon svg
-// @return The generated neck icon
-fn neck() -> ByteArray {
+/// @notice Generates the neck armor/necklace icon SVG path
+/// @dev Amulet or neck piece design with decorative elements
+/// @return SVG path element for neck armor icon
+pub fn neck() -> ByteArray {
     "<path d=\"M14 8V6h-1V5h-1V4h-1V3h-1V2H8V1H2v1H1v1H0v8h1v1h1v1h4v-1h1v-1H3v-1H2V4h1V3h4v1h2v1h1v1h1v1h1v1h1v1h-2v1h1v1h2v-1h1V8h-1Zm-6 3v1h1v-1H8Zm1 0h2v-1H9v1Zm4 3v-2h-1v2h1Zm-6-2v2h1v-2H7Zm2 4h2v-1H9v1Zm-1-2v1h1v-1H8Zm3 1h1v-1h-1v1Zm0-3h1v-1h-1v1Zm-2 2h2v-2H9v2Z\"/>"
 }
 
-// @notice Generates the ring icon svg
-// @return The generated ring icon
-fn ring() -> ByteArray {
+/// @notice Generates the ring icon SVG path
+/// @dev Ring design with gem or decorative element
+/// @return SVG path element for ring icon
+pub fn ring() -> ByteArray {
     "<path d=\"M13 3V2h-1V1h-2v1h1v3h-1v2H9v1H8v1H7v1H6v1H4v1H1v-1H0v2h1v1h1v1h4v-1h2v-1h1v-1h1v-1h1v-1h1V9h1V7h1V3h-1ZM3 9h1V8h1V7h1V6h1V5h1V4h2V2H9V1H8v1H6v1H5v1H4v1H3v1H2v1H1v2H0v1h1v1h2V9Z\"/>"
 }
 
-// Theme constants
-pub fn get_default_theme() -> SVGTheme {
-    SVGTheme {
-        primary_color: "#78E846",
-        secondary_color: "#2C1A0A",
-        background_color: "#000000",
-        border_color: "#3DEC00",
-        text_color: "#78E846",
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+// Core utility functions for data conversion and SVG generation
+
+/// @notice Converts u8 value to string representation for display in SVG
+/// @dev Handles edge case of zero and builds string digit by digit
+/// @param value The u8 value to convert to string
+/// @return ByteArray containing the string representation
+fn u8_to_string(value: u8) -> ByteArray {
+    if value == 0 {
+        return "0";
     }
-}
 
-pub fn get_bag_theme() -> SVGTheme {
-    SVGTheme {
-        primary_color: "#E89446",
-        secondary_color: "#2C1A0A",
-        background_color: "#000000",
-        border_color: "#E89446",
-        text_color: "#E89446",
-    }
-}
-
-pub fn get_marketplace_theme() -> SVGTheme {
-    SVGTheme {
-        primary_color: "#77EDFF",
-        secondary_color: "#2C1A0A",
-        background_color: "#000000",
-        border_color: "#77EDFF",
-        text_color: "#77EDFF",
-    }
-}
-
-pub fn get_battle_theme() -> SVGTheme {
-    SVGTheme {
-        primary_color: "#FE9676",
-        secondary_color: "#2C1A0A",
-        background_color: "#000000",
-        border_color: "#FE9676",
-        text_color: "#FE9676",
-    }
-}
-
-// Component builders
-fn create_rect_component(
-    position: SVGPosition, size: SVGSize, theme: @SVGTheme, rx: u32,
-) -> ByteArray {
-    format!(
-        "<rect x='{}' y='{}' width='{}' height='{}' rx='{}' fill='{}' stroke='{}'/>",
-        position.x,
-        position.y,
-        size.width,
-        size.height,
-        rx,
-        theme.background_color,
-        theme.border_color,
-    )
-}
-
-fn create_page_border(size: SVGSize, theme: @SVGTheme) -> ByteArray {
-    let border_width = 2;
-    format!(
-        "<path fill='{}' d='M20 20h{}v{}H20zm0 {}h{}v{}H20zm0-{}h{}v{}h-{}zm{} 0h{}v{}h-{}z'/>",
-        theme.border_color,
-        size.width - 40,
-        border_width,
-        size.height - 22,
-        size.width - 40,
-        border_width,
-        size.height - 22,
-        border_width,
-        size.height - 22,
-        border_width,
-        size.width - 22,
-        border_width,
-        size.height - 22,
-        border_width,
-    )
-}
-
-pub fn create_text_component(
-    text: ByteArray,
-    position: SVGPosition,
-    fontsize: u32,
-    theme: @SVGTheme,
-    text_anchor: ByteArray,
-    baseline: ByteArray,
-) -> ByteArray {
-    format!(
-        "<text x='{}' y='{}' font-size='{}' text-anchor='{}' dominant-baseline='{}' fill='{}'>{}</text>",
-        position.x,
-        position.y,
-        fontsize,
-        text_anchor,
-        baseline,
-        theme.text_color,
-        text,
-    )
-}
-
-// @notice Create multi-line text component for long item names
-// @param text The text to render (may be split across lines)
-// @param position Base position for the text
-// @param fontsize Font size in pixels
-// @param theme SVG theme colors
-// @param text_anchor Text alignment (start, middle, end)
-// @param baseline Text baseline (text-top, middle, etc.)
-// @param max_chars_per_line Maximum characters per line before wrapping
-// @return SVG text elements for multi-line rendering
-pub fn create_multiline_text_component(
-    text: ByteArray,
-    position: SVGPosition,
-    fontsize: u32,
-    theme: @SVGTheme,
-    text_anchor: ByteArray,
-    baseline: ByteArray,
-    max_chars_per_line: u32,
-) -> ByteArray {
-    let lines = split_text_into_lines(text, max_chars_per_line);
     let mut result = "";
-    let mut line_index = 0;
+    let mut val: u256 = value.into();
+    let mut digits: Array<u8> = array![];
 
-    loop {
-        if line_index >= lines.len() {
-            break;
-        }
+    while val > 0 {
+        let digit = (val % 10).try_into().unwrap();
+        digits.append(digit + 48); // Convert to ASCII
+        val = val / 10;
+    }
 
-        let line_text = lines.at(line_index);
-        let line_y = position.y + (line_index * (fontsize + 1)); // Add 1px line spacing
-        let line_position = SVGPosition { x: position.x, y: line_y };
-
-        result +=
-            create_text_component(
-                line_text.clone(),
-                line_position,
-                fontsize,
-                theme,
-                text_anchor.clone(),
-                baseline.clone(),
-            );
-
-        line_index += 1;
-    };
+    let mut i = digits.len();
+    while i > 0 {
+        i -= 1;
+        result.append_byte(*digits.at(i));
+    }
 
     result
 }
 
-// @notice Split text into lines based on character limit
-// @param text The text to split
-// @param max_chars_per_line Maximum characters per line
-// @return Array of text lines
-fn split_text_into_lines(text: ByteArray, _max_chars_per_line: u32) -> Array<ByteArray> {
-    let mut lines = ArrayTrait::new();
-
-    // Split text into words at every space character
-    // Each word will be on its own line to prevent any overlap
-    let text_len = text.len();
-    let mut current_word = "";
-    let mut has_word = false;
-
-    let mut i = 0;
-    loop {
-        if i >= text_len {
-            // Add final word if it exists
-            if has_word {
-                lines.append(current_word.clone());
-            }
-            break;
-        }
-
-        let char_option = text.at(i);
-        match char_option {
-            Option::Some(char) => {
-                if char == 32 { // ASCII space - end of word
-                    if has_word {
-                        lines.append(current_word.clone());
-                        current_word = "";
-                        has_word = false;
-                    }
-                } else {
-                    // Add character to current word
-                    current_word = format!("{}{}", current_word, byte_to_char(char));
-                    has_word = true;
-                }
-            },
-            Option::None => {},
-        }
-        i += 1;
-    };
-
-    // If no words were found (no spaces), return original text as single line
-    if lines.len() == 0 {
-        lines.append(text);
+/// @notice Converts u256 value to string representation for display
+/// @dev Handles large numbers efficiently, builds string digit by digit
+/// @param value The u256 value to convert to string
+/// @return ByteArray containing the string representation
+pub fn u256_to_string(value: u256) -> ByteArray {
+    if value == 0 {
+        return "0";
     }
 
-    lines
-}
-
-// Helper function to convert byte to character representation
-fn byte_to_char(byte: u8) -> ByteArray {
     let mut result = "";
-    result.append_byte(byte);
-    result
-}
+    let mut val = value;
+    let mut digits: Array<u8> = array![];
 
-// @notice Extract substring from ByteArray
-// @param text Source text
-// @param start Starting position
-// @param length Length to extract
-// @return Substring as ByteArray
-fn extract_substring(text: ByteArray, start: u32, length: u32) -> ByteArray {
-    let mut result = "";
-    let mut i = 0;
+    while val > 0 {
+        let digit = (val % 10).try_into().unwrap();
+        digits.append(digit + 48); // Convert to ASCII
+        val = val / 10;
+    }
 
-    loop {
-        if i >= length || start + i >= text.len() {
-            break;
-        }
-
-        let char_option = text.at(start + i);
-        match char_option {
-            Option::Some(char) => { result.append_byte(char); },
-            Option::None => { break; },
-        }
-
-        i += 1;
-    };
+    let mut i = digits.len();
+    while i > 0 {
+        i -= 1;
+        result.append_byte(*digits.at(i));
+    }
 
     result
 }
 
-pub fn create_stat_component(
-    label: ByteArray, value: ByteArray, position: SVGPosition, theme: @SVGTheme,
-) -> ByteArray {
-    let label_element = create_text_component(label, position, 14, theme, "start", "text-top");
-    let value_position = SVGPosition { x: position.x, y: position.y + 20 };
-    let value_element = create_text_component(
-        value, value_position, 20, theme, "start", "text-top",
-    );
-    label_element + value_element
-}
-
-pub fn create_health_bar_component(
-    current: u32, max: u32, position: SVGPosition, size: SVGSize, theme: @SVGTheme,
-) -> ByteArray {
-    let health_percent = (current * size.width) / max;
-    let bg_rect = format!(
-        "<rect x='{}' y='{}' width='{}' height='{}' fill='{}' stroke='{}'/>",
-        position.x,
-        position.y,
-        size.width,
-        size.height,
-        theme.secondary_color,
-        theme.border_color,
-    );
-    let health_fill = format!(
-        "<rect x='{}' y='{}' width='{}' height='{}' fill='{}'/>",
-        position.x + 1,
-        position.y + 1,
-        health_percent - 2,
-        size.height - 2,
-        theme.primary_color,
-    );
-    bg_rect + health_fill
-}
-
-pub fn create_inventory_slot_component(
-    slot_id: u32, item_name: ByteArray, position: SVGPosition, theme: @SVGTheme,
-) -> ByteArray {
-    let slot_size = SVGSize { width: 40, height: 40 };
-    let slot_rect = format!(
-        "<rect x='{}' y='{}' width='{}' height='{}' fill='{}' stroke='{}'/>",
-        position.x,
-        position.y,
-        slot_size.width,
-        slot_size.height,
-        theme.secondary_color,
-        theme.border_color,
-    );
-    let item_icon = get_item_icon_by_name(item_name.clone());
-    let icon_element = if item_icon.len() > 0 {
-        format!(
-            "<g transform='translate({},{}) scale(1.5)' fill='{}'>{}</g>",
-            position.x + 5,
-            position.y + 5,
-            theme.primary_color,
-            item_icon,
-        )
+/// @notice Calculates equipment greatness/level from experience points
+/// @dev Mimics death-mountain's get_greatness function using square root calculation
+/// @param xp The experience points of the equipment item
+/// @return Equipment level/greatness value (1-20, capped at MAX_GREATNESS)
+pub fn get_greatness(xp: u16) -> u8 {
+    if xp == 0 {
+        1
     } else {
-        ""
-    };
-    let text_position = SVGPosition { x: position.x + 20, y: position.y + 42 };
-    let text_element = create_multiline_text_component(
-        item_name, text_position, 5, theme, "middle", "text-top", 20,
-    );
-    let slot_number = create_text_component(
-        format!("{}", slot_id),
-        SVGPosition { x: position.x + 36, y: position.y + 12 },
-        6,
-        theme,
-        "end",
-        "text-top",
-    );
-
-    slot_rect + icon_element + text_element + slot_number
+        // Calculate square root of xp for level
+        let level = sqrt_u16(xp);
+        if level > MAX_GREATNESS {
+            MAX_GREATNESS
+        } else {
+            level
+        }
+    }
 }
 
-fn get_item_icon_by_name(item_name: ByteArray) -> ByteArray {
-    if item_name.len() == 0 || item_name == "Empty" || item_name == "None Equipped" {
+/// @notice Simple integer square root implementation for u16 values
+/// @dev Uses Newton's method for efficient square root calculation, with overflow protection
+/// @param value The u16 value to calculate square root of
+/// @return u8 containing the integer square root
+pub fn sqrt_u16(value: u16) -> u8 {
+    if value == 0 {
+        return 0;
+    }
+
+    // Use u32 for intermediate calculations to prevent overflow
+    let mut x: u32 = value.into();
+    let mut y: u32 = (x + 1) / 2;
+
+    while y < x {
+        x = y;
+        let value_u32: u32 = value.into();
+        y = (x + value_u32 / x) / 2;
+    }
+
+    // Cap result to u8 max if needed
+    if x > 255 {
+        255
+    } else {
+        x.try_into().unwrap()
+    }
+}
+
+/// @notice Maximum equipment greatness level (matching death-mountain implementation)
+const MAX_GREATNESS: u8 = 20;
+
+/// @notice Converts felt252 value to ByteArray string representation
+/// @dev Extracts bytes from felt252 and builds string, skipping null bytes
+/// @param value The felt252 value to convert (typically item names from database)
+/// @return ByteArray containing the string representation
+pub fn felt252_to_string(value: felt252) -> ByteArray {
+    // Cairo felt252 values that represent strings are directly convertible to ByteArray
+    // Most felt252 string constants in the item database are stored as string literals
+    let mut result = "";
+
+    // Handle the zero case
+    if value == 0 {
         return "";
     }
-    // Simple pattern matching for item types - using contains-like logic
-    let item_lower = item_name.clone(); // In real implementation, would convert to lowercase
-    if item_lower.len() > 0 {
-        // For now, just return appropriate icons based on simple logic
-        // This is a simplified version - in practice you'd implement proper string matching
-        weapon()
-    } else {
-        ""
+
+    // Convert felt252 to u256 first for bit manipulation
+    let val_u256: u256 = value.into();
+    let mut temp_val = val_u256;
+    let mut bytes: Array<u8> = array![];
+
+    // Extract bytes from the u256 value
+    while temp_val > 0 {
+        let byte = (temp_val % 256).try_into().unwrap();
+        if byte != 0 { // Skip null bytes
+            bytes.append(byte);
+        }
+        temp_val = temp_val / 256;
     }
+
+    // Reverse the bytes since we extracted them in reverse order
+    let mut i = bytes.len();
+    while i > 0 {
+        i -= 1;
+        result.append_byte(*bytes.at(i));
+    }
+
+    result
 }
 
-pub fn create_logo_component(position: SVGPosition, scale: u32, theme: @SVGTheme) -> ByteArray {
-    format!(
-        "<g transform='translate({},{}) scale({})' fill='{}'>{}</g>",
-        position.x,
-        position.y,
-        scale,
-        theme.primary_color,
-        logo(),
-    )
+// Get the character length of a felt252 string
+pub fn felt252_length(value: felt252) -> u32 {
+    // Handle the zero case
+    if value == 0 {
+        return 0;
+    }
+
+    // Convert felt252 to u256 first for bit manipulation
+    let val_u256: u256 = value.into();
+    let mut temp_val = val_u256;
+    let mut length: u32 = 0;
+
+    // Count non-zero bytes
+    while temp_val > 0 {
+        let byte = (temp_val % 256).try_into().unwrap();
+        if byte != 0 { // Skip null bytes
+            length += 1;
+        }
+        temp_val = temp_val / 256;
+    }
+
+    length
 }
 
-pub fn create_page_header_component(
-    title: ByteArray, subtitle: ByteArray, position: SVGPosition, theme: @SVGTheme,
-) -> ByteArray {
-    let logo_element = create_logo_component(
-        SVGPosition { x: position.x, y: position.y }, 4, theme,
-    );
-    let title_position = SVGPosition { x: position.x + 100, y: position.y + 45 };
-    let title_element = create_text_component(
-        title, title_position, 16, theme, "start", "text-top",
-    );
-    let subtitle_position = SVGPosition { x: position.x + 230, y: position.y + 45 };
-    let subtitle_element = create_text_component(
-        subtitle, subtitle_position, 12, theme, "start", "text-top",
-    );
+// Generate dynamic adventurer stats text elements for the 7 core stats
+fn generate_stats_text(stats: Stats) -> ByteArray {
+    let mut stats_text = "";
 
-    logo_element + title_element + subtitle_element
+    // STR (Strength) - stat name on top, value below - aligned with logo/level at y=124
+    stats_text += "<text x=\"195\" y=\"124\" fill=\"#78E846\" class=\"s16\">STR</text>";
+    stats_text += "<text x=\"195\" y=\"164\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += u8_to_string(stats.strength);
+    stats_text += "</text>";
+
+    // DEX (Dexterity) - stat name on top, value below
+    stats_text += "<text x=\"195\" y=\"224\" fill=\"#78E846\" class=\"s16\">DEX</text>";
+    stats_text += "<text x=\"195\" y=\"264\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += u8_to_string(stats.dexterity);
+    stats_text += "</text>";
+
+    // VIT (Vitality) - stat name on top, value below
+    stats_text += "<text x=\"195\" y=\"324\" fill=\"#78E846\" class=\"s16\">VIT</text>";
+    stats_text += "<text x=\"195\" y=\"364\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += u8_to_string(stats.vitality);
+    stats_text += "</text>";
+
+    // INT (Intelligence) - stat name on top, value below
+    stats_text += "<text x=\"195\" y=\"424\" fill=\"#78E846\" class=\"s16\">INT</text>";
+    stats_text += "<text x=\"195\" y=\"464\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += u8_to_string(stats.intelligence);
+    stats_text += "</text>";
+
+    // WIS (Wisdom) - stat name on top, value below
+    stats_text += "<text x=\"195\" y=\"524\" fill=\"#78E846\" class=\"s16\">WIS</text>";
+    stats_text += "<text x=\"195\" y=\"564\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += u8_to_string(stats.wisdom);
+    stats_text += "</text>";
+
+    // CHA (Charisma) - stat name on top, value below
+    stats_text += "<text x=\"195\" y=\"624\" fill=\"#78E846\" class=\"s16\">CHA</text>";
+    stats_text += "<text x=\"195\" y=\"664\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += u8_to_string(stats.charisma);
+    stats_text += "</text>";
+
+    // LUCK - stat name on top, value below
+    stats_text += "<text x=\"195\" y=\"724\" fill=\"#78E846\" class=\"s16\">LUCK</text>";
+    stats_text += "<text x=\"195\" y=\"764\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += u8_to_string(stats.luck);
+    stats_text += "</text>";
+
+    stats_text
 }
 
-pub fn create_xp_badge_component(xp: ByteArray, position: SVGPosition) -> ByteArray {
-    let badge_size = SVGSize { width: 50, height: 25 };
-    let badge_rect = format!(
-        "<rect x='{}' y='{}' width='{}' height='{}' fill='#E8A746' rx='4'/>",
-        position.x,
-        position.y,
-        badge_size.width,
-        badge_size.height,
-    );
-    let xp_text = format!(
-        "<text x='{}' y='{}' font-size='14' text-anchor='middle' fill='#2C1A0A'>{}</text>",
-        position.x + 25,
-        position.y + 17,
-        xp,
-    );
-    let xp_label = format!(
-        "<text x='{}' y='{}' font-size='10' text-anchor='start' fill='#E8A746'>XP</text>",
-        position.x + 5,
-        position.y - 5,
-    );
 
-    badge_rect + xp_text + xp_label
+// Generate dynamic adventurer name text as SVG with responsive font sizing
+pub fn generate_adventurer_name_text(name: ByteArray) -> ByteArray {
+    let mut name_text = "";
+
+    // Truncate name if longer than 31 characters to ensure smooth UI display
+    let truncated_name = if name.len() > 31 {
+        let mut result = "";
+        let mut i = 0;
+        while i < 28 {
+            if i < name.len() {
+                result.append_byte(name.at(i).unwrap());
+            }
+            i += 1;
+        }
+        result += "...";
+        result
+    } else {
+        name
+    };
+
+    // Get the length of the (potentially truncated) adventurer name to determine font size
+    let name_length = truncated_name.len();
+
+    let font_size = if name_length <= 10 {
+        "24px"
+    } else if name_length <= 16 {
+        "18px"
+    } else {
+        "10px"
+    };
+
+    // Use dynamic text rendering with calculated font size
+    name_text += "<text x=\"339\" y=\"160\" fill=\"#78E846\" style=\"font-size:";
+    name_text += font_size;
+    name_text += "\" text-anchor=\"left\">";
+    name_text += truncated_name;
+    name_text += "</text>";
+
+    name_text
 }
 
-// Layout components
-fn create_stats_layout(
-    adventurer: Adventurer, position: SVGPosition, theme: @SVGTheme,
-) -> ByteArray {
-    let mut stats_elements: ByteArray = "";
-    let spacing = 50;
+// Generate the logo SVG path - decorative "S" element only
+pub fn generate_logo() -> ByteArray {
+    let mut logo = "";
 
-    // STR
-    stats_elements +=
-        create_stat_component("STR", format!("{}", adventurer.stats.strength), position, theme);
+    logo +=
+        "<path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M288.5 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM286 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
 
-    // DEX
-    let dex_pos = SVGPosition { x: position.x, y: position.y + spacing };
-    stats_elements +=
-        create_stat_component("DEX", format!("{}", adventurer.stats.dexterity), dex_pos, theme);
-
-    // INT
-    let int_pos = SVGPosition { x: position.x, y: position.y + spacing * 2 };
-    stats_elements +=
-        create_stat_component("INT", format!("{}", adventurer.stats.intelligence), int_pos, theme);
-
-    // VIT
-    let vit_pos = SVGPosition { x: position.x, y: position.y + spacing * 3 };
-    stats_elements +=
-        create_stat_component("VIT", format!("{}", adventurer.stats.vitality), vit_pos, theme);
-
-    // WIS
-    let wis_pos = SVGPosition { x: position.x, y: position.y + spacing * 4 };
-    stats_elements +=
-        create_stat_component("WIS", format!("{}", adventurer.stats.wisdom), wis_pos, theme);
-
-    // CHA
-    let cha_pos = SVGPosition { x: position.x, y: position.y + spacing * 5 };
-    stats_elements +=
-        create_stat_component("CHA", format!("{}", adventurer.stats.charisma), cha_pos, theme);
-
-    // LUCK
-    let luck_pos = SVGPosition { x: position.x, y: position.y + spacing * 6 };
-    stats_elements +=
-        create_stat_component("LUCK", format!("{}", adventurer.stats.luck), luck_pos, theme);
-
-    stats_elements
+    logo
 }
 
-fn create_inventory_layout(
-    adventurer: Adventurer, position: SVGPosition, theme: @SVGTheme,
-) -> ByteArray {
-    let mut inventory_elements: ByteArray = "";
-    let _slot_size = 50;
 
-    // Inventory title
-    let title_pos = SVGPosition { x: position.x, y: position.y - 20 };
-    inventory_elements +=
-        create_text_component("INVENTORY", title_pos, 12, theme, "start", "text-top");
+// Generate SVG header and container elements
+fn generate_svg_header() -> ByteArray {
+    let mut header = "";
+    header +=
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"862\" height=\"1270\" fill=\"none\">";
+    header += "<g filter=\"url(#a)\"><g clip-path=\"url(#b)\">";
+    header += "<rect width=\"567\" height=\"862\" x=\"147.2\" y=\"27\" fill=\"#000\" rx=\"10\"/>";
+    header
+}
+
+// Generate gold display UI components
+fn generate_gold_display(gold: u16) -> ByteArray {
+    let mut gold_display = "";
+    // Add dark main rectangle for gold display
+    gold_display +=
+        "<rect width=\"91\" height=\"61.1\" x=\"541.7\" y=\"113\" fill=\"#2C1A0A\" rx=\"6\"/>";
+    // Add small lighter orange rectangle for "GOLD" label with subtle offset beyond main box
+    gold_display +=
+        "<rect width=\"32\" height=\"16\" x=\"608\" y=\"106\" fill=\"#E8A746\" rx=\"2\"/>";
+    // Add "GOLD" text in black on the lighter orange rectangle
+    gold_display +=
+        "<text x=\"624\" y=\"117\" fill=\"#000\" class=\"s12\" text-anchor=\"middle\">GOLD</text>";
+    // Add gold value in orange on the darker background
+    gold_display +=
+        "<text x=\"587\" y=\"150\" fill=\"#E8A746\" class=\"s24\" text-anchor=\"middle\">";
+    gold_display += u256_to_string(gold.into());
+    gold_display += "</text>";
+    gold_display
+}
+
+// Generate level display text
+fn generate_level_display(level: u8) -> ByteArray {
+    let mut level_display = "";
+    level_display += "<text x=\"339\" y=\"124\" fill=\"#78E846\" class=\"s16\">LEVEL ";
+    level_display += u8_to_string(level);
+    level_display += "</text>";
+    level_display
+}
+
+// Generate dynamic health bar with color coding
+fn generate_health_bar(stats: Stats, health: u16) -> ByteArray {
+    let mut health_bar = "";
+    let max_health = stats.get_max_health();
+    let MAX_BAR_WIDTH: u256 = 300; // Maximum bar width in pixels
+    let MIN_FILLED_WIDTH: u256 = 2; // Minimum visible width when HP > 0
+
+    // Calculate dynamic filled width
+    let filled_width = if max_health > 0 {
+        let health_u256: u256 = health.into();
+        let max_health_u256: u256 = max_health.into();
+        let calculated = (health_u256 * MAX_BAR_WIDTH) / max_health_u256;
+        // Ensure minimum visibility when health > 0
+        if health > 0 && calculated < MIN_FILLED_WIDTH {
+            MIN_FILLED_WIDTH
+        } else {
+            calculated
+        }
+    } else {
+        0
+    };
+
+    // Determine health bar color based on HP percentage
+    let health_percentage = if max_health > 0 {
+        let health_u256: u256 = health.into();
+        let max_health_u256: u256 = max_health.into();
+        (health_u256 * 100) / max_health_u256
+    } else {
+        0
+    };
+
+    let bar_color = if health_percentage >= 75 {
+        "#78E846" // Green (healthy - 75-100%)
+    } else if health_percentage >= 25 {
+        "#FFD700" // Yellow/Gold (wounded - 25-74%)
+    } else if health > 0 {
+        "#FF4444" // Red (critical - 1-24%)
+    } else {
+        "#FF4444" // Red for zero health
+    };
+
+    // Generate background bar (full width, dark color)
+    health_bar +=
+        "<path stroke=\"#171D10\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M286 234h";
+    health_bar += u256_to_string(MAX_BAR_WIDTH);
+    health_bar += "\"/>";
+
+    // Generate filled health bar (dynamic width, color-coded)
+    health_bar += "<path stroke=\"";
+    health_bar += bar_color;
+    health_bar +=
+        "\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M286 234h";
+    health_bar += u256_to_string(filled_width);
+    health_bar += "\"/>";
+
+    // Add HP display (current HP / max HP)
+    health_bar += "<text x=\"286\" y=\"270\" fill=\"#78E846\" class=\"s16\">";
+    health_bar += u256_to_string(health.into());
+    health_bar += "/";
+    health_bar += u256_to_string(max_health.into());
+    health_bar += " HP</text>";
+
+    health_bar
+}
+
+// Generate inventory section header
+fn generate_inventory_header() -> ByteArray {
+    let mut inventory_header = "";
+    inventory_header += "<text x=\"286\" y=\"325\" fill=\"#78E846\" class=\"s16\">";
+    inventory_header += "INVENTORY";
+    inventory_header += "</text>";
+    inventory_header
+}
+
+// Generate equipment slot containers
+fn generate_equipment_slots() -> ByteArray {
+    let mut slots = "";
 
     // Top row equipment slots
-    let weapon_pos = SVGPosition { x: position.x, y: position.y };
-    inventory_elements +=
-        create_inventory_slot_component(
-            1, generate_item(adventurer.equipment.weapon, false), weapon_pos, theme,
-        );
-
-    let chest_pos = SVGPosition { x: position.x + 60, y: position.y };
-    inventory_elements +=
-        create_inventory_slot_component(
-            2, generate_item(adventurer.equipment.chest, false), chest_pos, theme,
-        );
-
-    let head_pos = SVGPosition { x: position.x + 120, y: position.y };
-    inventory_elements +=
-        create_inventory_slot_component(
-            3, generate_item(adventurer.equipment.head, false), head_pos, theme,
-        );
-
-    let waist_pos = SVGPosition { x: position.x + 180, y: position.y };
-    inventory_elements +=
-        create_inventory_slot_component(
-            4, generate_item(adventurer.equipment.waist, false), waist_pos, theme,
-        );
+    slots +=
+        "<rect width=\"71\" height=\"71\" x=\"285.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Weapon slot
+    slots +=
+        "<rect width=\"71\" height=\"71\" x=\"377.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Chest slot
+    slots +=
+        "<rect width=\"71\" height=\"71\" x=\"469.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Head slot
+    slots +=
+        "<rect width=\"71\" height=\"71\" x=\"561.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Ring slot
 
     // Bottom row equipment slots
-    let foot_pos = SVGPosition { x: position.x, y: position.y + 70 };
-    inventory_elements +=
-        create_inventory_slot_component(
-            5, generate_item(adventurer.equipment.foot, false), foot_pos, theme,
-        );
+    slots +=
+        "<rect width=\"71\" height=\"71\" x=\"285.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Hand slot
+    slots +=
+        "<rect width=\"71\" height=\"71\" x=\"377.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Neck slot
+    slots +=
+        "<rect width=\"71\" height=\"71\" x=\"469.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Foot slot
+    slots +=
+        "<rect width=\"71\" height=\"71\" x=\"561.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Waist slot
 
-    let hand_pos = SVGPosition { x: position.x + 60, y: position.y + 70 };
-    inventory_elements +=
-        create_inventory_slot_component(
-            6, generate_item(adventurer.equipment.hand, false), hand_pos, theme,
-        );
-
-    let neck_pos = SVGPosition { x: position.x + 120, y: position.y + 70 };
-    inventory_elements +=
-        create_inventory_slot_component(
-            7, generate_item(adventurer.equipment.neck, false), neck_pos, theme,
-        );
-
-    let ring_pos = SVGPosition { x: position.x + 180, y: position.y + 70 };
-    inventory_elements +=
-        create_inventory_slot_component(
-            8, generate_item(adventurer.equipment.ring, false), ring_pos, theme,
-        );
-
-    inventory_elements
+    slots
 }
 
-fn create_bag_layout(bag: Bag, position: SVGPosition, theme: @SVGTheme) -> ByteArray {
-    let mut bag_elements: ByteArray = "";
-    let _slot_size = 55;
+// Generate equipment icons within the slots
+fn generate_equipment_icons() -> ByteArray {
+    let mut icons = "";
 
-    // Create bag slots manually for now - first 3 items, rest empty
-    let slot1_pos = SVGPosition { x: position.x, y: position.y };
-    bag_elements +=
-        create_inventory_slot_component(1, generate_item(bag.item_1, true), slot1_pos, theme);
+    // Top row equipment icons - individually centered in boxes
+    icons += "<g transform=\"translate(309, 367) scale(3)\" fill=\"#78E846\">" + weapon() + "</g>";
+    icons += "<g transform=\"translate(390, 368) scale(3)\" fill=\"#78E846\">" + chest() + "</g>";
+    icons += "<g transform=\"translate(483, 378) scale(3)\" fill=\"#78E846\">" + head() + "</g>";
+    icons += "<g transform=\"translate(578, 370) scale(3)\" fill=\"#78E846\">" + ring() + "</g>";
 
-    let slot2_pos = SVGPosition { x: position.x + 65, y: position.y };
-    bag_elements +=
-        create_inventory_slot_component(2, generate_item(bag.item_2, true), slot2_pos, theme);
+    // Bottom row equipment icons - individually centered in boxes
+    icons += "<g transform=\"translate(308, 503) scale(3)\" fill=\"#78E846\">" + hand() + "</g>";
+    icons += "<g transform=\"translate(391, 506) scale(3)\" fill=\"#78E846\">" + neck() + "</g>";
+    icons += "<g transform=\"translate(483, 508) scale(3)\" fill=\"#78E846\">" + foot() + "</g>";
+    icons += "<g transform=\"translate(575, 508) scale(3)\" fill=\"#78E846\">" + waist() + "</g>";
 
-    let slot3_pos = SVGPosition { x: position.x + 130, y: position.y };
-    bag_elements +=
-        create_inventory_slot_component(3, generate_item(bag.item_3, true), slot3_pos, theme);
-
-    // Add a few empty slots for demonstration
-    let slot4_pos = SVGPosition { x: position.x + 195, y: position.y };
-    bag_elements += create_inventory_slot_component(4, "Empty", slot4_pos, theme);
-
-    let slot5_pos = SVGPosition { x: position.x + 260, y: position.y };
-    bag_elements += create_inventory_slot_component(5, "Empty", slot5_pos, theme);
-
-    bag_elements
+    icons
 }
 
-// @notice Combines elements into a single string
-// @param elements The elements to combine
-// @return The combined elements
-fn combine_elements(ref elements: Span<ByteArray>) -> ByteArray {
-    let mut count: u8 = 1;
 
-    let mut combined: ByteArray = "";
-    loop {
-        match elements.pop_front() {
-            Option::Some(element) => {
-                combined += element.clone();
-
-                count += 1;
-            },
-            Option::None(()) => { break; },
-        }
-    };
-
-    combined
-}
-
-// SVG page creators using modular components
-fn create_modular_adventurer_page(
-    adventurer: Adventurer, adventurer_name: ByteArray, adventurer_id: u64,
-) -> ByteArray {
-    let theme = get_default_theme();
-    let page_size = SVGSize { width: 360, height: 510 };
-    let page_position = SVGPosition { x: 20, y: 20 };
-
-    let mut page_elements: ByteArray = "";
-
-    // Page background and border
-    page_elements +=
-        format!(
-            "<path d='M{} {}h{}v{}H{}z' filter='url(#s)'/>",
-            page_position.x,
-            page_position.y,
-            page_size.width,
-            page_size.height,
-            page_position.x,
-        );
-    page_elements +=
-        format!(
-            "<path d='M{} {}h{}v{}H{}z'/>",
-            page_position.x + 10,
-            page_position.y + 10,
-            page_size.width - 20,
-            page_size.height - 20,
-            page_position.x + 10,
-        );
-    page_elements += create_page_border(page_size, @theme);
-
-    // Page header with logo and title
-    let header_position = SVGPosition { x: page_position.x + 30, y: page_position.y + 30 };
-    let level = format!("LEVEL {}", (adventurer.xp / 100) + 1);
-    page_elements += create_page_header_component(adventurer_name, level, header_position, @theme);
-
-    // XP badge
-    let xp_position = SVGPosition { x: 320, y: 55 };
-    page_elements += create_xp_badge_component(format!("{}", adventurer.xp), xp_position);
-
-    // Stats layout
-    let stats_position = SVGPosition { x: 40, y: 100 };
-    page_elements += create_stats_layout(adventurer, stats_position, @theme);
-
-    // Health bar
-    let health_position = SVGPosition { x: 90, y: 115 };
-    let health_size = SVGSize { width: 200, height: 8 };
-    let max_health = get_max_health(adventurer.stats.vitality);
-    page_elements +=
-        create_health_bar_component(
-            adventurer.health.into(), max_health.into(), health_position, health_size, @theme,
-        );
-
-    // Health text
-    let health_text_pos = SVGPosition { x: 90, y: 135 };
-    page_elements +=
-        create_text_component(
-            format!("{}/{} HP", adventurer.health, max_health),
-            health_text_pos,
-            12,
-            @theme,
-            "start",
-            "text-top",
-        );
-
-    // Inventory layout
-    let inventory_position = SVGPosition { x: 90, y: 180 };
-    page_elements += create_inventory_layout(adventurer, inventory_position, @theme);
-
-    // Bottom info
-    let info_position = SVGPosition { x: 40, y: 430 };
-    page_elements +=
-        format!(
-            "<rect x='{}' y='{}' width='320' height='80' fill='{}' stroke='{}'/>",
-            info_position.x,
-            info_position.y,
-            theme.secondary_color,
-            theme.border_color,
-        );
-
-    let adventurer_text_pos = SVGPosition { x: 50, y: 450 };
-    page_elements +=
-        create_text_component(
-            format!("ADVENTURER #{}", adventurer_id),
-            adventurer_text_pos,
-            12,
-            @theme,
-            "start",
-            "text-top",
-        );
-
-    let level_text_pos = SVGPosition { x: 50, y: 470 };
-    page_elements +=
-        create_text_component(
-            format!("LEVEL {} - {} XP", (adventurer.xp / 100) + 1, adventurer.xp),
-            level_text_pos,
-            12,
-            @theme,
-            "start",
-            "text-top",
-        );
-
-    page_elements
-}
-
-fn create_modular_bag_page(adventurer_name: ByteArray, bag: Bag) -> ByteArray {
-    let theme = get_bag_theme();
-    let page_size = SVGSize { width: 360, height: 510 };
-    let page_position = SVGPosition { x: 20, y: 20 };
-
-    let mut page_elements: ByteArray = "";
-
-    // Page background and border
-    page_elements +=
-        format!(
-            "<path d='M{} {}h{}v{}H{}z' filter='url(#s)' transform='translate(400)'/>",
-            page_position.x,
-            page_position.y,
-            page_size.width,
-            page_size.height,
-            page_position.x,
-        );
-    page_elements +=
-        format!(
-            "<path d='M{} {}h{}v{}H{}z'/>",
-            page_position.x + 410,
-            page_position.y + 10,
-            page_size.width - 20,
-            page_size.height - 20,
-            page_position.x + 410,
-        );
-    page_elements += create_page_border(page_size, @theme);
-
-    // Page header
-    let header_position = SVGPosition { x: 520, y: 65 };
-    page_elements +=
-        create_text_component(
-            format!("{}S", adventurer_name), header_position, 12, @theme, "start", "text-top",
-        );
-
-    let title_position = SVGPosition { x: 520, y: 85 };
-    page_elements +=
-        create_text_component("Item Bag", title_position, 16, @theme, "start", "text-top");
-
-    // Info section
-    let info_position = SVGPosition { x: 440, y: 150 };
-    page_elements +=
-        format!(
-            "<rect x='{}' y='{}' width='320' height='80' fill='{}' stroke='{}'/>",
-            info_position.x,
-            info_position.y,
-            theme.secondary_color,
-            theme.border_color,
-        );
-
-    let info_text_pos = SVGPosition { x: 450, y: 170 };
-    page_elements +=
-        create_text_component(
-            "INFORMATION ABOUT RUN GOES", info_text_pos, 12, @theme, "start", "text-top",
-        );
-
-    let info_text_pos2 = SVGPosition { x: 450, y: 190 };
-    page_elements +=
-        create_text_component("HERE AND HERE", info_text_pos2, 12, @theme, "start", "text-top");
-
-    // Bag layout
-    let bag_position = SVGPosition { x: 440, y: 250 };
-    page_elements += create_bag_layout(bag, bag_position, @theme);
-
-    page_elements
-}
-
-fn create_modular_marketplace_page(
-    adventurer_name: ByteArray, adventurer_level: u8, adventurer_seed: u64,
-) -> ByteArray {
-    let theme = get_marketplace_theme();
-    let page_size = SVGSize { width: 360, height: 510 };
-    let page_position = SVGPosition { x: 20, y: 20 };
-
-    let mut page_elements: ByteArray = "";
-
-    // Page background and border
-    page_elements +=
-        format!(
-            "<path d='M{} {}h{}v{}H{}z' filter='url(#s)' transform='translate(800)'/>",
-            page_position.x,
-            page_position.y,
-            page_size.width,
-            page_size.height,
-            page_position.x,
-        );
-    page_elements +=
-        format!(
-            "<path d='M{} {}h{}v{}H{}z'/>",
-            page_position.x + 810,
-            page_position.y + 10,
-            page_size.width - 20,
-            page_size.height - 20,
-            page_position.x + 810,
-        );
-    page_elements += create_page_border(page_size, @theme);
-
-    // Page header
-    let header_position = SVGPosition { x: 920, y: 65 };
-    page_elements +=
-        create_text_component(
-            format!("{}S", adventurer_name), header_position, 12, @theme, "start", "text-top",
-        );
-
-    let title_position = SVGPosition { x: 920, y: 85 };
-    page_elements +=
-        create_text_component("Marketplace", title_position, 16, @theme, "start", "text-top");
-
-    // Level info
-    let level_position = SVGPosition { x: 920, y: 105 };
-    page_elements +=
-        create_text_component(
-            format!("Level {}", adventurer_level), level_position, 12, @theme, "start", "text-top",
-        );
-
-    // Generate marketplace items
-    let marketplace_items = MarketplaceImpl::generate_marketplace_items(
-        adventurer_level, adventurer_seed,
-    );
-
-    // Display marketplace items grid
-    let items_start_position = SVGPosition { x: 840, y: 130 };
-    page_elements += create_marketplace_items_grid(marketplace_items, items_start_position, @theme);
-
-    page_elements
-}
-
-fn create_marketplace_items_grid(
-    marketplace_items: Array<u8>, position: SVGPosition, theme: @SVGTheme,
-) -> ByteArray {
-    let mut grid_elements: ByteArray = "";
-    let cols = 3;
-    let item_width = 100;
-    let item_height = 25;
-    let spacing = 5;
-
+// Extract individual words from equipment name
+fn extract_words(text: ByteArray) -> Array<ByteArray> {
+    let mut words: Array<ByteArray> = array![];
+    let mut current_word = "";
     let mut i = 0;
-    loop {
-        if i >= marketplace_items.len() {
-            break;
-        }
 
-        let item_id = *marketplace_items.at(i);
-        let item_name = ItemDatabaseImpl::get_item_name(item_id);
-
-        // Calculate position in grid
-        let col = i % cols;
-        let row = i / cols;
-        let x = position.x + col * (item_width + spacing);
-        let y = position.y + row * (item_height + spacing);
-
-        // Create item slot
-        let _item_pos = SVGPosition { x, y };
-        grid_elements +=
-            format!(
-                "<rect x='{}' y='{}' width='{}' height='{}' fill='{}' stroke='{}' stroke-width='1'/>",
-                x,
-                y,
-                item_width,
-                item_height,
-                theme.secondary_color,
-                theme.border_color,
-            );
-
-        // Add item name
-        let text_pos = SVGPosition { x: x + 5, y: y + 15 };
-        let mut item_name_str = Default::default();
-        item_name_str.append_word(item_name, 31);
-        grid_elements +=
-            create_text_component(item_name_str, text_pos, 10, theme, "start", "text-top");
-
-        i += 1;
-    };
-
-    grid_elements
-}
-
-fn create_modular_combat_page(
-    adventurer_name: ByteArray, adventurer: Adventurer, beast: Beast, combat_result: CombatResult,
-) -> ByteArray {
-    let theme = get_battle_theme();
-    let page_size = SVGSize { width: 360, height: 510 };
-    let page_position = SVGPosition { x: 20, y: 20 };
-
-    let mut page_elements: ByteArray = "";
-
-    // Page background and border
-    page_elements +=
-        format!(
-            "<path d='M{} {}h{}v{}H{}z' filter='url(#s)' transform='translate(1200)'/>",
-            page_position.x,
-            page_position.y,
-            page_size.width,
-            page_size.height,
-            page_position.x,
-        );
-    page_elements +=
-        format!(
-            "<path d='M{} {}h{}v{}H{}z'/>",
-            page_position.x + 1210,
-            page_position.y + 10,
-            page_size.width - 20,
-            page_size.height - 20,
-            page_position.x + 1210,
-        );
-    page_elements += create_page_border(page_size, @theme);
-
-    // Page header
-    let header_position = SVGPosition { x: 1320, y: 65 };
-    page_elements +=
-        create_text_component(
-            format!("{}S", adventurer_name), header_position, 12, @theme, "start", "text-top",
-        );
-
-    let title_position = SVGPosition { x: 1320, y: 85 };
-    page_elements +=
-        create_text_component("Combat Analysis", title_position, 16, @theme, "start", "text-top");
-
-    // Combat stats display
-    let combat_stats_position = SVGPosition { x: 1240, y: 120 };
-    page_elements += create_combat_stats_display(combat_result, combat_stats_position, @theme);
-
-    // Beast info
-    let beast_info_position = SVGPosition { x: 1240, y: 300 };
-    page_elements += create_beast_info_display(beast, beast_info_position, @theme);
-
-    // Elemental effectiveness indicator
-    let effectiveness_position = SVGPosition { x: 1240, y: 400 };
-    page_elements +=
-        create_effectiveness_indicator(
-            combat_result.elemental_effectiveness, effectiveness_position, @theme,
-        );
-
-    page_elements
-}
-
-fn create_combat_stats_display(
-    combat_result: CombatResult, position: SVGPosition, theme: @SVGTheme,
-) -> ByteArray {
-    let mut stats_elements: ByteArray = "";
-    let line_height = 18;
-
-    // Title
-    stats_elements +=
-        create_text_component("Combat Stats:", position, 14, theme, "start", "text-top");
-
-    // Base Attack
-    let base_attack_pos = SVGPosition { x: position.x, y: position.y + line_height };
-    stats_elements +=
-        create_text_component(
-            format!("Base Attack: {}", combat_result.base_attack),
-            base_attack_pos,
-            12,
-            theme,
-            "start",
-            "text-top",
-        );
-
-    // Elemental Damage
-    let elemental_pos = SVGPosition { x: position.x, y: position.y + line_height * 2 };
-    stats_elements +=
-        create_text_component(
-            format!("Elemental: {}", combat_result.elemental_adjusted_damage),
-            elemental_pos,
-            12,
-            theme,
-            "start",
-            "text-top",
-        );
-
-    // Strength Bonus
-    let strength_pos = SVGPosition { x: position.x, y: position.y + line_height * 3 };
-    stats_elements +=
-        create_text_component(
-            format!("Strength: +{}", combat_result.strength_bonus),
-            strength_pos,
-            12,
-            theme,
-            "start",
-            "text-top",
-        );
-
-    // Critical Hit
-    if combat_result.is_critical {
-        let critical_pos = SVGPosition { x: position.x, y: position.y + line_height * 4 };
-        stats_elements +=
-            create_text_component(
-                format!("CRITICAL: +{}", combat_result.critical_hit_bonus),
-                critical_pos,
-                12,
-                theme,
-                "start",
-                "text-top",
-            );
-    }
-
-    // Weapon Special
-    let special_pos = SVGPosition { x: position.x, y: position.y + line_height * 5 };
-    stats_elements +=
-        create_text_component(
-            format!("Special: +{}", combat_result.weapon_special_bonus),
-            special_pos,
-            12,
-            theme,
-            "start",
-            "text-top",
-        );
-
-    // Armor Penetration
-    let armor_pen_pos = SVGPosition { x: position.x, y: position.y + line_height * 6 };
-    stats_elements +=
-        create_text_component(
-            format!("Armor Pen: {}", combat_result.armor_penetration),
-            armor_pen_pos,
-            12,
-            theme,
-            "start",
-            "text-top",
-        );
-
-    // Total Damage
-    let total_pos = SVGPosition { x: position.x, y: position.y + line_height * 7 };
-    stats_elements +=
-        create_text_component(
-            format!("Total: {}", combat_result.total_damage),
-            total_pos,
-            14,
-            theme,
-            "start",
-            "text-top",
-        );
-
-    stats_elements
-}
-
-fn create_beast_info_display(beast: Beast, position: SVGPosition, theme: @SVGTheme) -> ByteArray {
-    let mut beast_elements: ByteArray = "";
-    let line_height = 18;
-
-    // Title
-    beast_elements +=
-        create_text_component("Beast Info:", position, 14, theme, "start", "text-top");
-
-    // Beast ID and Health
-    let id_pos = SVGPosition { x: position.x, y: position.y + line_height };
-    beast_elements +=
-        create_text_component(
-            format!("ID: {} HP: {}", beast.id, beast.starting_health),
-            id_pos,
-            12,
-            theme,
-            "start",
-            "text-top",
-        );
-
-    // Beast Level
-    let level_pos = SVGPosition { x: position.x, y: position.y + line_height * 2 };
-    beast_elements +=
-        create_text_component(
-            format!("Level: {}", beast.combat_spec.level),
-            level_pos,
-            12,
-            theme,
-            "start",
-            "text-top",
-        );
-
-    // Beast Tier
-    let tier_text: ByteArray = match beast.combat_spec.tier {
-        ls2_renderer::mocks::mock_beast::Tier::T1 => "T1",
-        ls2_renderer::mocks::mock_beast::Tier::T2 => "T2",
-        ls2_renderer::mocks::mock_beast::Tier::T3 => "T3",
-        ls2_renderer::mocks::mock_beast::Tier::T4 => "T4",
-        ls2_renderer::mocks::mock_beast::Tier::T5 => "T5",
-        _ => "Unknown",
-    };
-    let tier_pos = SVGPosition { x: position.x, y: position.y + line_height * 3 };
-    beast_elements +=
-        create_text_component(
-            format!("Tier: {}", tier_text), tier_pos, 12, theme, "start", "text-top",
-        );
-
-    beast_elements
-}
-
-fn create_effectiveness_indicator(
-    effectiveness: u8, position: SVGPosition, theme: @SVGTheme,
-) -> ByteArray {
-    let mut indicator_elements: ByteArray = "";
-
-    let effectiveness_text = match effectiveness {
-        2 => "Super Effective!",
-        1 => "Normal Damage",
-        0 => "Not Very Effective",
-        _ => "Unknown",
-    };
-
-    let color: ByteArray = match effectiveness {
-        2 => "#00FF00", // Green for super effective
-        1 => "#FFFF00", // Yellow for normal
-        0 => "#FF0000", // Red for not very effective
-        _ => "#FFFFFF" // White for unknown
-    };
-
-    // Background for effectiveness
-    let bg_color: ByteArray = "#000000";
-    indicator_elements +=
-        format!(
-            "<rect x='{}' y='{}' width='120' height='25' fill='{}' stroke='{}' stroke-width='2' rx='5'/>",
-            position.x - 5,
-            position.y - 15,
-            bg_color,
-            color,
-        );
-
-    // Effectiveness text
-    indicator_elements +=
-        create_text_component(effectiveness_text, position, 12, theme, "start", "text-top");
-
-    indicator_elements
-}
-
-fn create_modular_svg_with_components(
-    adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag,
-) -> ByteArray {
-    let mut _name = Default::default();
-    _name
-        .append_word(
-            adventurer_name, U256BytesUsedTraitImpl::bytes_used(adventurer_name.into()).into(),
-        );
-
-    let svg_defs: ByteArray =
-        "<defs><filter id='s'><feDropShadow dx='0' dy='10' flood-opacity='.3' stdDeviation='10'/></filter><style>@import url(https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&amp;family=MedievalSharp&amp;display=swap);text{font-family:\"Pixelify Sans\",\"Courier New\",\"Monaco\",\"Lucida Console\",monospace;font-weight:700;text-rendering:optimizeSpeed;shape-rendering:crispEdges}</style></defs>";
-
-    let slide_container_start: ByteArray = "<g id='slideContainer'>";
-
-    // Page 1: Adventurer stats
-    let page1_start: ByteArray = "<g id='page1'>";
-    let page1_content = create_modular_adventurer_page(adventurer, _name.clone(), adventurer_id);
-    let page1_end: ByteArray = "</g>";
-
-    // Page 2: Bag
-    let page2_start: ByteArray = "<g id='page2' transform='translate(400,0)'>";
-    let page2_content = create_modular_bag_page(_name.clone(), bag);
-    let page2_end: ByteArray = "</g>";
-
-    // Page 3: Marketplace
-    let page3_start: ByteArray = "<g id='page3' transform='translate(800,0)'>";
-    let adventurer_level = ((adventurer.xp / 100) + 1).try_into().unwrap();
-    let adventurer_seed = adventurer_id + adventurer.xp.into();
-    let page3_content = create_modular_marketplace_page(
-        _name.clone(), adventurer_level, adventurer_seed,
-    );
-    let page3_end: ByteArray = "</g>";
-
-    // Animation for 3 pages
-    let _animation: ByteArray =
-        "<animateTransform attributeName='transform' type='translate' values='0,0; 0,0; -400,0; -400,0; -800,0; -800,0; 0,0' keyTimes='0; 0.27; 0.33; 0.6; 0.67; 0.93; 1' dur='30s' calcMode='spline' keySplines='0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1' repeatCount='indefinite'/>";
-
-    let _slide_container_end: ByteArray = "</g>";
-
-    format!(
-        "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='550' viewBox='0 0 400 550'>{}{}{}{}{}{}{}{}{}{}{}</svg>",
-        svg_defs,
-        slide_container_start,
-        page1_start,
-        page1_content,
-        page1_end,
-        page2_start,
-        page2_content,
-        page2_end,
-        page3_start,
-        page3_content,
-        page3_end,
-    )
-}
-
-// @notice Generates an SVG string for adventurer token uri
-// @param internals The internals of the SVG
-// @return The generated SVG string
-fn create_svg(internals: ByteArray) -> ByteArray {
-    "<svg xmlns='http://www.w3.org/2000/svg' width='600' height='900'><style>text{text-transform: uppercase;font-family: Courier, monospace;fill: #3DEC00;}g{fill: #3DEC00;}</style>"
-        + internals
-        + "</svg>"
-}
-
-// @notice Generates an item string for adventurer token uri
-// @param item The item to generate a string for
-// @param bag Whether the item is in the bag or not
-// @return The generated item string
-pub fn generate_item(item: Item, bag: bool) -> ByteArray {
-    if item.id == 0 {
-        if (bag) {
-            return "Empty";
+    while i < text.len() {
+        let byte = text.at(i).unwrap();
+        if byte == 32 { // ASCII code for space
+            if current_word.len() > 0 {
+                words.append(current_word);
+                current_word = "";
+            }
         } else {
-            return "None Equipped";
+            current_word.append_byte(byte);
         }
+        i += 1;
     }
 
-    // Calculate greatness using sqrt(item_xp)
-    let greatness = calculate_greatness(item.xp);
-
-    // Get base item name from database
-    let base_name_felt = ItemDatabaseImpl::get_item_name(item.id);
-    let mut base_name = Default::default();
-    base_name
-        .append_word(
-            base_name_felt, U256BytesUsedTraitImpl::bytes_used(base_name_felt.into()).into(),
-        );
-
-    // Build the full item name with prefix and suffix
-    let mut full_name = "";
-
-    // Add prefix if greatness >= 19
-    if greatness >= PREFIXES_UNLOCK_GREATNESS {
-        let prefix_id = generate_prefix_id(item.id, item.xp);
-        let prefix = get_prefix_string(prefix_id);
-        full_name += format!("{} ", prefix);
+    // Add the last word if it exists
+    if current_word.len() > 0 {
+        words.append(current_word);
     }
 
-    // Add base name
-    full_name += format!("{}", base_name);
-
-    // Add suffix if greatness >= 15
-    if greatness >= SUFFIX_UNLOCK_GREATNESS {
-        let suffix_id = generate_suffix_id(item.id, item.xp);
-        let suffix = get_suffix_string(suffix_id);
-        full_name += format!(" {}", suffix);
-    }
-
-    full_name
+    words
 }
 
-fn generate_logo() -> ByteArray {
-    "<g transform='translate(25,25) scale(4)'>" + logo() + "</g>"
+// Split equipment name into words for line-by-line rendering
+fn get_equipment_words(item_name: felt252) -> Array<ByteArray> {
+    if item_name == 0 {
+        return array![];
+    }
+
+    let name_str = felt252_to_string(item_name);
+
+    // If name is empty, return empty array
+    if name_str.len() == 0 {
+        return array![];
+    }
+
+    extract_words(name_str)
 }
 
-// @notice Generates the shinobi SVG template with dynamic substitution (4-page version with battle)
+// Helper function to render equipment name words at given x position and base y
+fn render_equipment_words(words: Array<ByteArray>, x: u16, base_y: u16) -> ByteArray {
+    let mut name_text = "";
+    let mut i = 0;
+
+    while i < words.len() {
+        let y_u32: u32 = base_y.into() + (i * 14); // 14px line spacing
+        // Clamp y to prevent u16 overflow, use u32 directly for display
+        name_text += "<text x=\"";
+        name_text += u256_to_string(x.into());
+        name_text += "\" y=\"";
+        name_text += u256_to_string(y_u32.into());
+        name_text += "\" fill=\"#78E846\" class=\"s12\" text-anchor=\"middle\">";
+        name_text += words.at(i).clone();
+        name_text += "</text>";
+        i += 1;
+    }
+
+    name_text
+}
+
+// Generate equipment names below the slots
+fn generate_equipment_names(equipment: EquipmentVerbose) -> ByteArray {
+    let mut names = "";
+
+    // Equipment names - Top row (below equipment boxes)
+    let weapon_words = get_equipment_words(equipment.weapon.name);
+    names += render_equipment_words(weapon_words, 321, 442);
+
+    let chest_words = get_equipment_words(equipment.chest.name);
+    names += render_equipment_words(chest_words, 413, 442);
+
+    let head_words = get_equipment_words(equipment.head.name);
+    names += render_equipment_words(head_words, 505, 442);
+
+    let ring_words = get_equipment_words(equipment.ring.name);
+    names += render_equipment_words(ring_words, 597, 442);
+
+    // Equipment names - Bottom row (below equipment boxes)
+    let hand_words = get_equipment_words(equipment.hand.name);
+    names += render_equipment_words(hand_words, 321, 576);
+
+    let neck_words = get_equipment_words(equipment.neck.name);
+    names += render_equipment_words(neck_words, 413, 576);
+
+    let foot_words = get_equipment_words(equipment.foot.name);
+    names += render_equipment_words(foot_words, 505, 576);
+
+    let waist_words = get_equipment_words(equipment.waist.name);
+    names += render_equipment_words(waist_words, 597, 576);
+
+    names
+}
+
+// Generate level badges for each equipment slot
+fn generate_equipment_level_badges(equipment: EquipmentVerbose) -> ByteArray {
+    let mut badges = "";
+
+    // Top row equipment level badges - positioned like gold badge (top-right, extending beyond
+    // slot)
+    // Weapon level badge (top-left slot)
+    badges += "<rect width=\"38\" height=\"16\" x=\"335\" y=\"355\" fill=\"#78E846\" rx=\"2\"/>";
+    badges +=
+        "<text x=\"354\" y=\"366\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+    badges += u8_to_string(get_greatness(equipment.weapon.xp));
+    badges += "</text>";
+
+    // Chest level badge (top-middle-left slot)
+    badges += "<rect width=\"38\" height=\"16\" x=\"427\" y=\"355\" fill=\"#78E846\" rx=\"2\"/>";
+    badges +=
+        "<text x=\"446\" y=\"366\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+    badges += u8_to_string(get_greatness(equipment.chest.xp));
+    badges += "</text>";
+
+    // Head level badge (top-middle-right slot)
+    badges += "<rect width=\"38\" height=\"16\" x=\"519\" y=\"355\" fill=\"#78E846\" rx=\"2\"/>";
+    badges +=
+        "<text x=\"538\" y=\"366\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+    badges += u8_to_string(get_greatness(equipment.head.xp));
+    badges += "</text>";
+
+    // Ring level badge (top-right slot)
+    badges += "<rect width=\"38\" height=\"16\" x=\"611\" y=\"355\" fill=\"#78E846\" rx=\"2\"/>";
+    badges +=
+        "<text x=\"630\" y=\"366\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+    badges += u8_to_string(get_greatness(equipment.ring.xp));
+    badges += "</text>";
+
+    // Bottom row equipment level badges
+    // Hand level badge (bottom-left slot)
+    badges += "<rect width=\"38\" height=\"16\" x=\"335\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
+    badges +=
+        "<text x=\"354\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+    badges += u8_to_string(get_greatness(equipment.hand.xp));
+    badges += "</text>";
+
+    // Neck level badge (bottom-middle-left slot)
+    badges += "<rect width=\"38\" height=\"16\" x=\"427\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
+    badges +=
+        "<text x=\"446\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+    badges += u8_to_string(get_greatness(equipment.neck.xp));
+    badges += "</text>";
+
+    // Foot level badge (bottom-middle-right slot)
+    badges += "<rect width=\"38\" height=\"16\" x=\"519\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
+    badges +=
+        "<text x=\"538\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+    badges += u8_to_string(get_greatness(equipment.foot.xp));
+    badges += "</text>";
+
+    // Waist level badge (bottom-right slot)
+    badges += "<rect width=\"38\" height=\"16\" x=\"611\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
+    badges +=
+        "<text x=\"630\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+    badges += u8_to_string(get_greatness(equipment.waist.xp));
+    badges += "</text>";
+
+    badges
+}
+
+// Generate decorative border and background elements
+fn generate_border() -> ByteArray {
+    let mut border = "";
+    border +=
+        "<path fill=\"#78E846\" d=\"M686 863h-6v-7h6v7Z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M153 428h8V104h6v342h-14c1 3-1 22 1 23h13v342h-6V488h-8v348h-6V482h14v-6h-14v-35h13v-7h-13V80h6v348Zm0 17v1l1-1h-1Zm561-11h-14v7h14v35h-14v6h14v354h-6V488h-8v323l-6-1V470l1-1h13v-23h-13l-1-341 6-1v324c2 2 6 0 8 0V80h6v354Zm-4 48-2 1 2-1Zm-5-12a35 35 0 0 1 1 0h-1Zm3 0h-1 1Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"M694 819Z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M700 462h-6v-8h6v8Zm-5-8h4-4Zm-528 8h-6v-8h6v8Zm-1-1h-4 4v-7 7Zm-4-7h2-2ZM658 53h14v13h-1 15c0 1 0 0 0 0l1 1h-1v13-1l1 1h13v17h-6V85h-12V75h-1l-1-2h-14V60l-1-1h-12V45h-3 3-8v-5h13v13Zm30 28h11-11Zm-8-9h-13 13Zm-27-15v1h12l2 2-2-2h-12v-1Zm5-4 4 1-4-1Zm11 1h2-2Zm-23-9Zm-430 0h-7 6-6l-1 1v13h-12c-2 1 0 11-1 14h-15v12c-2 2-10 0-13 1v11h-5V81h11l1-1V66h16V54v12h-1V54l1-1h13V40h13v5Zm-16 13h6-6Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"m174 80-1 1h-11v16h-1V80h13Zm507-5h1v10h12v1h-12l-1-1V75Z\"/><path fill=\"#78E846\" d=\"M682 86h-1v-1l1 1Zm-1-11Z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M666 28c4-2 9-1 13-1v6h-7v-2 9h14l1-1V28h26-26v11l-1 1V27h28v26h-14v13h9-1v-5c1-2 3-1 5-1-2 0-4-1-5 1v-2h6v14h-20V45h-28V28h13v3-3h-13Zm26 12h8v7c2 2 6 0 8 0V33h-16v7Zm7 4v1-1ZM181 28c5-2 9-1 14-1l-4 1 4-1v18h-28l-1 7 1-7v28h-20V59h6v8l8-1 1-1-1 1V53h-14V27h28v13h-1 15v-7h-8v-5Zm-15 40v4h-18 18v-4Zm-14-8v5-5Zm18-27h-17v15l8-1c-1-9 1-7 9-7v-7Zm-22-5h25l1 4-1-4h-25Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"M679 53c9-1 8 0 8 8h-8v-8Z\"/>";
+    border +=
+        "<path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M714 857h-6v-8h-8v14l-1-1 1 1h14v26h-28v-13h-15l1-1-1 1v7-1c2 2 7 0 9 1v6h-14v-2l13 1-13-1v-11 1-8h28v-27c7 2 14 0 20 0v15Zm-9 27h-8 8Zm-5-15v7h-8v7h16v1-2c2 1 1-1 1-2v-10 10c0 1 1 3-1 2v-13h-8Zm-1 6h-7 7Zm-33-5 1 3-1-3Zm42-2v1-1Zm-270-5v6l-1-1v-1l1 2h16v14c-2-4-1-9-1-13 0 4-1 9 1 13v1-1h13v-14h166v7H515l118-1v-5 5l-118 1h-25l5-1h1l-6 1h-3v7h171v6H480v-13h-7c-2 2 0 9-1 12 1-3-1-10 1-12v13c-4-1-23 1-25-1-2-1 0-10-1-12l-13-1v-6h-7v6h-14v13h-24 24v-13h14v-6 7h-13v13h-25c-2 0-1-12-1-13h1-8v13H203v-6h171l-171 1v4-4l171-1v-7H228v-7h166v14-1l3 1 11-1v-13h14c1 0 0 0 0 0v-6h16Zm-59 13v12-12Zm76 8Zm-10-9h-8 8Zm-8-12 1 1-1-1Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"M154 868h6-6Z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M167 869h28v19h-13v-5h7v-7h-14v1l-1-1 1 1v12h-28v-26h13l1-1v-13h-7c-2 1-1 6-1 8h-5l-1-1h1-1v-13h20v26Zm-7-1h-7v5l-1 1 1-1v10h17v-7c-1-2-8-1-8-1s7-1 8 1h-9v-7l-1-1Zm-8 13v1-1Zm0-6Zm24 0h-1 1Zm-15-10Zm-9-2h2-3 1Zm-4-7Zm291 32h-17v-5h17v5Zm-2-1v-3 3Zm257-68c2-2 4-1 6-1v18h-14v13h-15v14h-12c2-2 9 0 12-1-3 1-10-1-12 1l-1 1v12h-12l-1-1h13-13c-2-7 1-6 7-6v-12h14v-14h14v-12l1-1h13v-11h5-5Zm-28 24v14-14Zm-499-13h13v13h15v14h13v12c1 2 4 1 6 1h1c-2 0-6 1-7-1h8v7h-13v-13h-14v-14h-14l-1-1v-12h-13v-18h6v12Zm41 36h-1 1Zm0 0Zm-5-4Zm-24-29v10-10Zm-16 2h-1 1Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"M408 869v1h-1l1-1Z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M181 863h-7v-7h7v7Zm-1-1h-5 5v-6 6Z\" clip-rule=\"evenodd\"/>";
+    border +=
+        "<path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M181 60h-7v-7h7v7Zm-1-1v-5 5Zm199-19h9l1-1V28v11l-1 1V27h26v12l-1 1 1-1 2 1h11v6c9 0 5-1 7-5 1-3 11 0 13-2 2-1 1-9 1-11 0 2 1 10-1 11V27h26l-1 13h8V27h178v6H487l-1 7h147v5H467V33h-13v8h-1 1v4h-15v6l-2 1h-14l-1-1v-6h-14V33h-14v12H227v-5h147v-7H203v-6h176v13Zm14-7v12-12Zm74 0v12-12Zm14 7V28v12Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"M439 33h-17v-6h17v6Zm227-5Z\"/>";
+    border
+}
+
+// Generate SVG footer with definitions and closing tags
+fn generate_svg_footer() -> ByteArray {
+    let mut footer = "";
+    footer +=
+        "</g></g><defs><style>text{font-family:VT323,IBM Plex Mono,Roboto Mono,Source Code Pro,monospace;font-weight:bold}.s8{font-size:8px}.s10{font-size:10px}.s12{font-size:12px}.s16{font-size:16px}.s24{font-size:24px}.s32{font-size:32px}</style><clipPath id=\"b\"><rect width=\"567\" height=\"862\" x=\"147.2\" y=\"27\" fill=\"#fff\" rx=\"10\"/></clipPath><clipPath id=\"c\"><path fill=\"#fff\" d=\"M302 373h37v37h-37z\"/></clipPath><clipPath id=\"d\"><path fill=\"#fff\" d=\"M298 504h47v47h-47z\"/></clipPath><filter id=\"a\" width=\"861\" height=\"1402\" x=\".2\" y=\"0\" color-interpolation-filters=\"sRGB\" filterUnits=\"userSpaceOnUse\"><feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/><feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/><feOffset dy=\"23\"/><feGaussianBlur stdDeviation=\"25\"/><feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.26 0\"/><feBlend in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_19_3058\"/><feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/><feOffset dy=\"92\"/><feGaussianBlur stdDeviation=\"46\"/><feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.22 0\"/><feBlend in2=\"effect1_dropShadow_19_3058\" result=\"effect2_dropShadow_19_3058\"/><feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/><feOffset dy=\"206\"/><feGaussianBlur stdDeviation=\"62\"/><feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0\"/><feBlend in2=\"effect2_dropShadow_19_3058\" result=\"effect3_dropShadow_19_3058\"/><feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/><feOffset dy=\"366\"/><feGaussianBlur stdDeviation=\"73.5\"/><feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0\"/><feBlend in2=\"effect3_dropShadow_19_3058\" result=\"effect4_dropShadow_19_3058\"/><feBlend in=\"SourceGraphic\" in2=\"effect4_dropShadow_19_3058\" result=\"shape\"/></filter></defs></svg>";
+    footer
+}
+
+// Generate dynamic SVG with adventurer stats and equipment - now using modular functions
+pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
+    let mut svg = "";
+
+    svg += generate_svg_header();
+    svg += generate_stats_text(adventurer.stats);
+    svg += generate_adventurer_name_text(adventurer.name);
+    svg += generate_logo();
+    svg += generate_gold_display(adventurer.gold);
+    svg += generate_level_display(adventurer.level);
+    svg += generate_health_bar(adventurer.stats, adventurer.health);
+    svg += generate_inventory_header();
+    svg += generate_equipment_slots();
+    svg += generate_equipment_icons();
+    svg += generate_equipment_level_badges(adventurer.equipment);
+    svg += generate_equipment_names(adventurer.equipment);
+    svg += generate_border();
+    svg += generate_svg_footer();
+
+    svg
+}
+
+// @notice Generates adventurer details for the adventurer token uri
 // @param adventurer_id The adventurer's ID
 // @param adventurer The adventurer
 // @param adventurer_name The adventurer's name
 // @param bag The adventurer's bag
-// @param beast The beast being fought
-// @param beast_name The name of the beast
-// @return The generated shinobi SVG with dynamic values including battle page
-fn create_battle_svg(
-    adventurer_id: u64,
-    adventurer: Adventurer,
-    adventurer_name: felt252,
-    bag: Bag,
-    beast: Beast,
-    beast_name: felt252,
-) -> ByteArray {
-    let mut _name = Default::default();
-    _name
-        .append_word(
-            adventurer_name, U256BytesUsedTraitImpl::bytes_used(adventurer_name.into()).into(),
-        );
+// @return The generated adventurer details
+pub fn generate_details(adventurer: AdventurerVerbose) -> Span<GameDetail> {
+    let xp = format!("{}", adventurer.xp);
+    let level = format!("{}", adventurer.level);
 
-    let mut _beast_name = Default::default();
-    _beast_name
-        .append_word(beast_name, U256BytesUsedTraitImpl::bytes_used(beast_name.into()).into());
+    let health = format!("{}", adventurer.health);
 
-    let _level = format!("{}", (adventurer.xp / 100) + 1);
-    let _str = format!("{}", adventurer.stats.strength);
-    let _dex = format!("{}", adventurer.stats.dexterity);
-    let _int = format!("{}", adventurer.stats.intelligence);
-    let _vit = format!("{}", adventurer.stats.vitality);
-    let _wis = format!("{}", adventurer.stats.wisdom);
-    let _cha = format!("{}", adventurer.stats.charisma);
-    let _luck = format!("{}", adventurer.stats.luck);
-    let _health = format!("{}", adventurer.health);
-    let _max_health = format!(
-        "{}", get_max_health(adventurer.stats.vitality),
-    ); // Dynamic max health based on vitality
-    let _xp = format!("{}", adventurer.xp);
-    let _gold = format!("{}", adventurer.gold);
-
-    // Beast stats for battle interface
-    let _beast_level = format!("{}", beast.combat_spec.level);
-    let _beast_health = format!("{}", beast.starting_health);
-    let _beast_max_health = format!("{}", beast.starting_health); // For display purposes
-    let _beast_power = format!("{}", beast.combat_spec.level + 20); // Simulated power calculation
-
-    // Calculate actual combat damage using combat system
-    let attacker_spec = CombatImpl::create_attack_spec_from_weapon(
-        adventurer.equipment.weapon, ((adventurer.xp / 100) + 1).try_into().unwrap(),
-    );
-    let defender_spec = CombatImpl::create_defense_spec_from_beast(beast);
-    let luck_seed = (adventurer_id * 42) % 100; // Deterministic luck seed
-    let combat_result = CombatImpl::calculate_damage(
-        attacker_spec, defender_spec, adventurer.stats, luck_seed,
-    );
-    let _damage = format!("{}", combat_result.total_damage);
-    let _base_attack = format!("{}", combat_result.base_attack);
-    let _elemental_effectiveness: ByteArray = match combat_result.elemental_effectiveness {
-        2 => "Super Effective",
-        1 => "Normal",
-        0 => "Not Very Effective",
-        _ => "Unknown",
-    };
-    let _is_critical: ByteArray = if combat_result.is_critical {
-        "CRITICAL HIT!"
+    let gold = format!("{}", adventurer.gold);
+    let str = if adventurer.level == 1 {
+        "?"
     } else {
-        ""
+        format!("{}", adventurer.stats.strength)
     };
-
-    // Generate equipped item names for inventory slots
-    let _weapon_name = generate_item(adventurer.equipment.weapon, false);
-    let _chest_name = generate_item(adventurer.equipment.chest, false);
-    let _head_name = generate_item(adventurer.equipment.head, false);
-    let _waist_name = generate_item(adventurer.equipment.waist, false);
-    let _foot_name = generate_item(adventurer.equipment.foot, false);
-    let _hand_name = generate_item(adventurer.equipment.hand, false);
-    let _neck_name = generate_item(adventurer.equipment.neck, false);
-    let _ring_name = generate_item(adventurer.equipment.ring, false);
-
-    // Generate bag item names for page 2
-    let _bag_item_1 = generate_item(bag.item_1, true);
-    let _bag_item_2 = generate_item(bag.item_2, true);
-    let _bag_item_3 = generate_item(bag.item_3, true);
-
-    // Create the optimized 4-page SVG (based on optimized multi_page_nft.svg template)
-    format!(
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"550\"><defs><linearGradient id=\"border_gradient\" x1=\"200\" x2=\"200\" y1=\"20\" y2=\"530\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"#FE9676\"/><stop offset=\"1\" stop-color=\"#58F54C\"/></linearGradient><linearGradient id=\"battle_gradient\" x1=\"0%\" x2=\"100%\" y1=\"0%\" y2=\"100%\"><stop offset=\"0%\" stop-color=\"#F44\"/><stop offset=\"100%\" stop-color=\"#800\"/></linearGradient><filter id=\"s\"><feDropShadow dx=\"0\" dy=\"10\" flood-opacity=\".3\" stdDeviation=\"10\"/></filter><style>@import url(https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&amp;family=MedievalSharp&amp;display=swap);text{{font-family:\"Pixelify Sans\",\"Courier New\",\"Monaco\",\"Lucida Console\",monospace;font-weight:700;text-rendering:optimizeSpeed;shape-rendering:crispEdges}}</style></defs><g id=\"slideContainer\"><g id=\"page1\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\"/><path d=\"M30 30h340v490H30z\"/><path fill=\"#78E846\" d=\"M20 20h360v2H20zm0 508h360v2H20zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"m92 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2H92zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5H94V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#78E846\" font-size=\"14\"><text x=\"130\" y=\"70\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\">{}</text><text x=\"250\" y=\"70\" font-size=\"12\">LEVEL {}</text><text x=\"40\" y=\"100\">STR</text><text x=\"40\" y=\"120\" font-size=\"20\">{}</text><text x=\"40\" y=\"150\">DEX</text><text x=\"40\" y=\"170\" font-size=\"20\">{}</text><text x=\"40\" y=\"200\">INT</text><text x=\"40\" y=\"220\" font-size=\"20\">{}</text><text x=\"40\" y=\"250\">HIT</text><text x=\"40\" y=\"270\" font-size=\"20\">{}</text><text x=\"40\" y=\"300\">WIS</text><text x=\"40\" y=\"320\" font-size=\"20\">{}</text><text x=\"40\" y=\"350\">CHA</text><text x=\"40\" y=\"370\" font-size=\"20\">{}</text><text x=\"40\" y=\"400\">LUCK</text><text x=\"40\" y=\"420\" font-size=\"20\">{}</text><text x=\"90\" y=\"160\" font-size=\"12\">INVENTORY</text><text x=\"90\" y=\"135\" font-size=\"12\">{}/{} HP</text></g><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M90 115h200v8H90z\"/><path fill=\"#78E846\" d=\"M91 116h160v6H91z\"/><path fill=\"#E8A746\" d=\"M320 55h50v25h-50z\"/><text x=\"330\" y=\"70\" fill=\"#2C1A0A\" font-size=\"14\">{}</text><text x=\"325\" y=\"50\" fill=\"#E8A746\" font-size=\"10\">XP</text><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M90 180h40v40H90zm60 0h40v40h-40zm60 0h40v40h-40zm60 0h40v40h-40zM90 250h40v40H90zm60 0h40v40h-40zm60 0h40v40h-40zm60 0h40v40h-40z\"/><path fill=\"#78E846\" d=\"M95 190h2v20h-2m-2-20h6v4h-6zm12 0h4v4h-4zm61-20h20v15h-20zm5 15h10v8h-10zm55-5h20v15h-20m5-20h10v8h-10zm55 2h20v4h-20m5-8h2v16h-2zm8 2h4v8h-4M95 260h2v20h-2zm3 3h12v2H98zm0 10h12v2H98zm12-8h2v8h-2zm50-2h10v16h-10m2-18h6v4h-6zm53 9h8v10h-8zm12 0h8v10h-8m-12-13h20v6h-20zm63-4h14v14h-14zm-153-78h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm-180 70h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8z\"/><path fill=\"#2C1A0A\" d=\"M217 205h4v6h-4zm-54 60h4v8h-4zm119 2h6v6h-6z\"/><g fill=\"#78E846\" font-size=\"8\"><text x=\"95\" y=\"230\">{}</text><text x=\"155\" y=\"230\">{}</text><text x=\"215\" y=\"230\">{}</text><text x=\"275\" y=\"230\">{}</text><text x=\"95\" y=\"300\">{}</text><text x=\"155\" y=\"300\">{}</text><text x=\"215\" y=\"300\">{}</text><text x=\"275\" y=\"300\">{}</text></g><g font-size=\"6\"><text x=\"126\" y=\"192\">01</text><text x=\"186\" y=\"192\">02</text><text x=\"246\" y=\"192\">03</text><text x=\"306\" y=\"192\">04</text><text x=\"126\" y=\"262\">05</text><text x=\"186\" y=\"262\">06</text><text x=\"246\" y=\"262\">07</text><text x=\"306\" y=\"262\">08</text></g><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M40 430h320v80H40z\"/><g fill=\"#78E846\" font-size=\"12\"><text x=\"50\" y=\"450\">ADVENTURER #{}</text><text x=\"50\" y=\"470\">LEVEL {} - {} XP</text></g></g><g id=\"page2\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\" transform=\"translate(400)\"/><path d=\"M430 30h340v490H430z\"/><path fill=\"#E89446\" d=\"M420 20h360v2H420zm0 508h360v2H420zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#E89446\" fill-rule=\"evenodd\" d=\"m450 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2h-17zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5h-11V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#E89446\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\" transform=\"translate(400)\">{}&apos;S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\" transform=\"translate(400)\">Item Bag</text></g><path fill=\"#2C1A0A\" stroke=\"#E89446\" d=\"M440 150h320v80H440z\"/><g fill=\"#E89446\" font-size=\"12\"><text x=\"50\" y=\"170\" transform=\"translate(400)\">INFORMATION ABOUT RUN GOES</text><text x=\"50\" y=\"190\" transform=\"translate(400)\">HERE AND HERE</text></g><path fill=\"none\" stroke=\"#663D17\" d=\"M440 250h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 65h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 65h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 65h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55z\"/><g fill=\"#E89446\" transform=\"translate(400)\"><circle cx=\"67\" cy=\"277\" r=\"8\" fill=\"none\" stroke=\"#E89446\" stroke-width=\"2\"/><path d=\"M63 265h8v6h-8z\"/><path fill=\"none\" stroke=\"#E89446\" d=\"M127 270h11v14h-11z\"/><path stroke=\"#E89446\" d=\"M130 272h5m-5 4h5m-5 4h3\"/><circle cx=\"197\" cy=\"277\" r=\"8\" fill=\"none\" stroke=\"#E89446\" stroke-width=\"2\"/><text x=\"197\" y=\"281\" font-size=\"8\" text-anchor=\"middle\">$</text></g><g fill=\"#E89446\" font-size=\"8\"><text x=\"67\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">{}</text><text x=\"132\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">{}</text><text x=\"197\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">{}</text><text x=\"262\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">EMPTY</text><text x=\"327\" y=\"295\" text-anchor=\"middle\" transform=\"translate(400)\">EMPTY</text></g><g fill=\"#E89446\" font-size=\"6\"><text x=\"47\" y=\"260\" transform=\"translate(400)\">01</text><text x=\"112\" y=\"260\" transform=\"translate(400)\">02</text><text x=\"177\" y=\"260\" transform=\"translate(400)\">03</text><text x=\"242\" y=\"260\" transform=\"translate(400)\">04</text><text x=\"307\" y=\"260\" transform=\"translate(400)\">05</text><text x=\"47\" y=\"325\" transform=\"translate(400)\">06</text><text x=\"112\" y=\"325\" transform=\"translate(400)\">07</text><text x=\"177\" y=\"325\" transform=\"translate(400)\">08</text><text x=\"242\" y=\"325\" transform=\"translate(400)\">09</text><text x=\"307\" y=\"325\" transform=\"translate(400)\">10</text><text x=\"47\" y=\"390\" transform=\"translate(400)\">11</text><text x=\"112\" y=\"390\" transform=\"translate(400)\">12</text><text x=\"177\" y=\"390\" transform=\"translate(400)\">13</text><text x=\"242\" y=\"390\" transform=\"translate(400)\">14</text><text x=\"307\" y=\"390\" transform=\"translate(400)\">15</text></g></g><g id=\"page3\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\" transform=\"translate(800)\"/><path d=\"M830 30h340v490H830z\"/><path fill=\"#77EDFF\" d=\"M820 20h360v2H820zm0 508h360v2H820zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#77EDFF\" fill-rule=\"evenodd\" d=\"m850 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2h-17zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5h-11V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#77EDFF\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\" transform=\"translate(800)\">{}&apos;S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\" transform=\"translate(800)\">Marketplace</text></g><path fill=\"none\" stroke=\"#77EDFF\" d=\"M840 100h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 85h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 85h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm-260 85h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55z\"/><g fill=\"#77EDFF\" transform=\"translate(800)\"><path d=\"M60 115h15v25H60z\"/><circle cx=\"132\" cy=\"127\" r=\"8\"/><path d=\"M125 135h14v8h-14zm60-15h20v15h-20z\"/><circle cx=\"257\" cy=\"127\" r=\"8\"/><path d=\"M250 135h14v8h-14zm65-15h20v15h-20z\"/><circle cx=\"67\" cy=\"212\" r=\"8\"/><path d=\"M120 200h25v20h-25zm65 5h20v15h-20z\"/><circle cx=\"257\" cy=\"212\" r=\"8\"/><path d=\"M315 205h20v15h-20z\"/><circle cx=\"67\" cy=\"297\" r=\"8\"/><path d=\"M120 285h25v20h-25zm65 5h20v15h-20z\"/><circle cx=\"257\" cy=\"297\" r=\"8\"/><path d=\"M315 290h20v15h-20z\"/><circle cx=\"67\" cy=\"382\" r=\"8\"/><path d=\"M120 370h25v20h-25zm65 5h20v15h-20z\"/><circle cx=\"257\" cy=\"382\" r=\"8\"/><path d=\"M315 375h20v15h-20z\"/></g><g fill=\"#77EDFF\" font-size=\"8\"><text x=\"67\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">FIRE</text><text x=\"67\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"132\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">HEALTH</text><text x=\"132\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"197\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">WATER</text><text x=\"197\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"170\" text-anchor=\"middle\" transform=\"translate(800)\">FIRE</text><text x=\"327\" y=\"178\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"67\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">CHARISMA</text><text x=\"67\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"132\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">OCEAN</text><text x=\"132\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">NECKLACE</text><text x=\"197\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"197\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"255\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"327\" y=\"263\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"67\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">CHARISMA</text><text x=\"67\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"132\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">OCEAN</text><text x=\"132\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">NECKLACE</text><text x=\"197\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"197\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"340\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"327\" y=\"348\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"67\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">CHARISMA</text><text x=\"67\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">RING</text><text x=\"132\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">OCEAN</text><text x=\"132\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">NECKLACE</text><text x=\"197\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"197\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text><text x=\"262\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">MAGIC</text><text x=\"262\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">POTION</text><text x=\"327\" y=\"425\" text-anchor=\"middle\" transform=\"translate(800)\">THUNDER</text><text x=\"327\" y=\"433\" text-anchor=\"middle\" transform=\"translate(800)\">SCROLL</text></g><g fill=\"#77EDFF\" font-size=\"6\"><text x=\"47\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"110\" transform=\"translate(800)\">ITEM</text><text x=\"47\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"195\" transform=\"translate(800)\">ITEM</text><text x=\"47\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"280\" transform=\"translate(800)\">ITEM</text><text x=\"47\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"112\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"177\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"242\" y=\"365\" transform=\"translate(800)\">ITEM</text><text x=\"307\" y=\"365\" transform=\"translate(800)\">ITEM</text></g></g><g id=\"page4\" transform=\"translate(1200)\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\"/><path d=\"M30 30h340v490H30z\"/><linearGradient id=\"page4_border\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"1\"><stop offset=\"0%\" stop-color=\"#FE9676\"/><stop offset=\"100%\" stop-color=\"#78E846\"/></linearGradient><path fill=\"url(#page4_border)\" stroke=\"url(#page4_border)\" stroke-width=\"2\" d=\"M20 20h360v2H20zm0 508h360v2H20zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#FE9676\" fill-rule=\"evenodd\" d=\"m50 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2H50zm7 10v3h-4v-3l-1-3h5zm8 0v3h-4v-6h4zm-4 5v2h-4v-4h4zm-13 5v20h8l7 1v-5H52V71h-2zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6H59v-2h10v-5h-7z\" clip-rule=\"evenodd\"/><g fill=\"#FE9676\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\">{}&apos;S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\">Current Battle</text></g><rect width=\"320\" height=\"120\" x=\"40\" y=\"110\" fill=\"#210E04\" rx=\"6\"/><rect width=\"60\" height=\"18\" x=\"55\" y=\"125\" fill=\"#FE9676\" rx=\"3\"/><text x=\"85\" y=\"138\" font-size=\"10\" text-anchor=\"middle\">{}</text><text x=\"60\" y=\"160\" fill=\"#FE9676\" font-size=\"12\">Level {}</text><text x=\"60\" y=\"180\" fill=\"#FE9676\" font-size=\"12\">Health: {}/25</text><text x=\"60\" y=\"200\" fill=\"#FE9676\" font-size=\"12\">Power: {}</text><text x=\"200\" y=\"160\" fill=\"#FE9676\" font-size=\"12\">Status: Hostile</text><text x=\"200\" y=\"180\" fill=\"#FE9676\" font-size=\"12\">Type: Magical</text><text x=\"200\" y=\"200\" fill=\"#FE9676\" font-size=\"12\">Tier: 3</text><rect width=\"320\" height=\"80\" x=\"40\" y=\"250\" fill=\"#2C1A0A\" stroke=\"#FE9676\" rx=\"6\"/><text x=\"60\" y=\"275\" fill=\"#FE9676\" font-size=\"12\">LAST ACTIVITY:</text><text x=\"60\" y=\"295\" fill=\"#FE9676\" font-size=\"11\">{} ambushed you for {} damage!</text><text x=\"60\" y=\"310\" fill=\"#FE9676\" font-size=\"11\">You attacked with {} for {} damage. {}</text><rect width=\"320\" height=\"150\" x=\"40\" y=\"350\" fill=\"#171D10\" rx=\"6\"/><rect width=\"50\" height=\"18\" x=\"55\" y=\"365\" fill=\"#78E846\" rx=\"3\"/><text x=\"80\" y=\"378\" font-size=\"10\" text-anchor=\"middle\">YOU</text><text x=\"60\" y=\"400\" fill=\"#78E846\" font-size=\"12\">Level {}</text><text x=\"60\" y=\"420\" fill=\"#78E846\" font-size=\"12\">Health: {}/100</text><text x=\"60\" y=\"440\" fill=\"#78E846\" font-size=\"12\">Power: {}</text><text x=\"60\" y=\"460\" fill=\"#78E846\" font-size=\"12\">Dexterity: {}</text><text x=\"200\" y=\"400\" fill=\"#78E846\" font-size=\"12\">XP: 1250</text><text x=\"200\" y=\"420\" fill=\"#78E846\" font-size=\"12\">Beast Health: 10</text><text x=\"200\" y=\"440\" fill=\"#78E846\" font-size=\"12\">Weapon: Katana</text><text x=\"200\" y=\"460\" fill=\"#78E846\" font-size=\"12\">Armor: Iron</text></g><animateTransform attributeName=\"transform\" calcMode=\"spline\" dur=\"40s\" keySplines=\"0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1\" keyTimes=\"0; 0.22; 0.28; 0.47; 0.53; 0.72; 0.78; 0.97; 1\" repeatCount=\"indefinite\" type=\"translate\" values=\"0,0; 0,0; -400,0; -400,0; -800,0; -800,0; -1200,0; -1200,0; 0,0\"/></g></svg>",
-        _name,
-        _level,
-        _str,
-        _dex,
-        _int,
-        _vit,
-        _wis,
-        _cha,
-        _luck,
-        _health,
-        _max_health,
-        _xp,
-        _weapon_name,
-        _chest_name,
-        _head_name,
-        _waist_name,
-        _foot_name,
-        _hand_name,
-        _neck_name,
-        _ring_name,
-        adventurer_id,
-        _level,
-        _xp,
-        _name,
-        _bag_item_1,
-        _bag_item_2,
-        _bag_item_3,
-        _name,
-        _beast_name,
-        _beast_level,
-        _beast_health,
-        _beast_power,
-        _beast_name,
-        _base_attack,
-        _weapon_name,
-        _damage,
-        _is_critical,
-        _level,
-        _health,
-        _str,
-        _dex,
-        _name,
-    )
-}
-
-// @notice Generates the shinobi SVG template with dynamic substitution (modular component version)
-// @param adventurer_id The adventurer's ID
-// @param adventurer The adventurer
-// @param adventurer_name The adventurer's name
-// @param bag The adventurer's bag
-// @return The generated shinobi SVG with dynamic values using modular components
-fn create_shinobi_svg(
-    adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag,
-) -> ByteArray {
-    // Use the new modular component system
-    create_modular_svg_with_components(adventurer_id, adventurer, adventurer_name, bag)
-}
-
-// Legacy function kept for backward compatibility
-fn create_shinobi_svg_legacy(
-    adventurer_id: u64, adventurer: Adventurer, adventurer_name: felt252, bag: Bag,
-) -> ByteArray {
-    let mut _name = Default::default();
-    _name
-        .append_word(
-            adventurer_name, U256BytesUsedTraitImpl::bytes_used(adventurer_name.into()).into(),
-        );
-
-    let _level = format!("{}", (adventurer.xp / 100) + 1);
-    let _str = format!("{}", adventurer.stats.strength);
-    let _dex = format!("{}", adventurer.stats.dexterity);
-    let _int = format!("{}", adventurer.stats.intelligence);
-    let _vit = format!("{}", adventurer.stats.vitality);
-    let _wis = format!("{}", adventurer.stats.wisdom);
-    let _cha = format!("{}", adventurer.stats.charisma);
-    let _luck = format!("{}", adventurer.stats.luck);
-    let _health = format!("{}", adventurer.health);
-    let _max_health = format!(
-        "{}", get_max_health(adventurer.stats.vitality),
-    ); // Dynamic max health based on vitality
-    let _xp = format!("{}", adventurer.xp);
-
-    // Generate equipped item names for inventory slots
-    let _weapon_name = generate_item(adventurer.equipment.weapon, false);
-    let _chest_name = generate_item(adventurer.equipment.chest, false);
-    let _head_name = generate_item(adventurer.equipment.head, false);
-    let _waist_name = generate_item(adventurer.equipment.waist, false);
-    let _foot_name = generate_item(adventurer.equipment.foot, false);
-    let _hand_name = generate_item(adventurer.equipment.hand, false);
-    let _neck_name = generate_item(adventurer.equipment.neck, false);
-    let _ring_name = generate_item(adventurer.equipment.ring, false);
-
-    // Generate bag item names for page 2
-    let _bag_item_1 = generate_item(bag.item_1, true);
-    let _bag_item_2 = generate_item(bag.item_2, true);
-    let _bag_item_3 = generate_item(bag.item_3, true);
-
-    // Create the optimized multi-page SVG with dynamic values
-    format!(
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"550\" viewBox=\"0 0 400 550\"><defs><filter id=\"s\"><feDropShadow dx=\"0\" dy=\"10\" flood-opacity=\".3\" stdDeviation=\"10\"/></filter><style>@import url(https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&amp;family=MedievalSharp&amp;display=swap);text{{font-family:\"Pixelify Sans\",\"Courier New\",\"Monaco\",\"Lucida Console\",monospace;font-weight:700;text-rendering:optimizeSpeed;shape-rendering:crispEdges}}</style></defs><g id=\"slideContainer\"><g id=\"page1\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\"/><path d=\"M30 30h340v490H30z\"/><path fill=\"#78E846\" d=\"M20 20h360v2H20zm0 508h360v2H20zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"m92 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2H92v2Zm7 10v3h-4v-3l-1-3h5v3Zm8 0v3h-4v-6h4v3Zm-4 5v2h-4v-4h4v2Zm-13 5v20h8l7 1v-5H94V71h-2l-2 1Zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7l-8 1Z\" clip-rule=\"evenodd\"/><g fill=\"#78E846\" font-size=\"14\"><text x=\"130\" y=\"70\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\">{}</text><text x=\"250\" y=\"70\" font-size=\"12\">LEVEL {}</text><text x=\"40\" y=\"100\">STR</text><text x=\"40\" y=\"120\" font-size=\"20\">{}</text><text x=\"40\" y=\"150\">DEX</text><text x=\"40\" y=\"170\" font-size=\"20\">{}</text><text x=\"40\" y=\"200\">INT</text><text x=\"40\" y=\"220\" font-size=\"20\">{}</text><text x=\"40\" y=\"250\">HIT</text><text x=\"40\" y=\"270\" font-size=\"20\">{}</text><text x=\"40\" y=\"300\">WIS</text><text x=\"40\" y=\"320\" font-size=\"20\">{}</text><text x=\"40\" y=\"350\">CHA</text><text x=\"40\" y=\"370\" font-size=\"20\">{}</text><text x=\"40\" y=\"400\">LUCK</text><text x=\"40\" y=\"420\" font-size=\"20\">{}</text><text x=\"90\" y=\"160\" font-size=\"12\">INVENTORY</text><text x=\"90\" y=\"135\" font-size=\"12\">{}/{} HP</text></g><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M90 115h200v8H90z\"/><path fill=\"#78E846\" d=\"M91 116h160v6H91z\"/><path d=\"M320 55h50v25H320z\" fill=\"#E8A746\" rx=\"4\"/><text x=\"330\" y=\"70\" fill=\"#2C1A0A\" font-size=\"14\">{}</text><text x=\"325\" y=\"50\" fill=\"#E8A746\" font-size=\"10\">XP</text><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M90 180h40v40H90zm60 0h40v40h-40zm60 0h40v40h-40zm60 0h40v40h-40zM90 250h40v40H90zm60 0h40v40h-40zm60 0h40v40h-40zm60 0h40v40h-40z\"/><path fill=\"#78E846\" d=\"M95 190h2v20h-2m-2-20h6v4h-6zm1 20h4v4h-4zm61-20h20v15h-20zm5 15h10v8h-10zm55-5h20v15h-20m5-20h10v8h-10zm55 2h20v4h-20m5-8h2v16h-2zm8 2h4v8h-4M95 260h2v20h-2zm3 3h12v2H98zm0 10h12v2H98zm12-8h2v8h-2zm50-2h10v16h-10m2-18h6v4h-6zm53 9h8v10h-8zm12 0h8v10h-8m-12-13h20v6h-20zm63-4h14v14h-14zm-153-78h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm-180 70h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8zm60 0h8v4h-8z\"/><path fill=\"#2C1A0A\" d=\"M217 205h4v6h-4zm-54 60h4v8h-4zm119 2h6v6h-6z\"/><g fill=\"#78E846\" font-size=\"8\"><text x=\"95\" y=\"230\">{}</text><text x=\"155\" y=\"230\">{}</text><text x=\"215\" y=\"230\">{}</text><text x=\"275\" y=\"230\">{}</text><text x=\"95\" y=\"300\">{}</text><text x=\"155\" y=\"300\">{}</text><text x=\"215\" y=\"300\">{}</text><text x=\"275\" y=\"300\">{}</text></g><g font-size=\"6\"><text x=\"126\" y=\"192\">01</text><text x=\"186\" y=\"192\">02</text><text x=\"246\" y=\"192\">03</text><text x=\"306\" y=\"192\">04</text><text x=\"126\" y=\"262\">05</text><text x=\"186\" y=\"262\">06</text><text x=\"246\" y=\"262\">07</text><text x=\"306\" y=\"262\">08</text></g><path fill=\"#2C1A0A\" stroke=\"#78E846\" d=\"M40 430h320v80H40z\"/><g fill=\"#78E846\" font-size=\"12\"><text x=\"50\" y=\"450\">ADVENTURER #{}</text><text x=\"50\" y=\"470\">LEVEL {} - {} XP</text></g></g><g id=\"page2\" transform=\"translate(400,0)\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\"/><path d=\"M30 30h340v490H30z\"/><path fill=\"#E89446\" d=\"M20 20h360v2H20zm0 508h360v2H20zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#E89446\" fill-rule=\"evenodd\" d=\"m50 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2H50v2Zm7 10v3h-4v-3l-1-3h5v3Zm8 0v3h-4v-6h4v3Zm-4 5v2h-4v-4h4v2Zm-13 5v20h8l7 1v-5H52V71h-2l-2 1Zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7l-8 1Z\" clip-rule=\"evenodd\"/><g fill=\"#E89446\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\">{}'S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\">Item Bag</text></g><path d=\"M40 150h320v80H40z\" rx=\"5\" fill=\"#2C1A0A\" stroke=\"#E89446\"/><g fill=\"#E89446\" font-size=\"12\"><text x=\"50\" y=\"170\">INFORMATION ABOUT RUN GOES</text><text x=\"50\" y=\"190\">HERE AND HERE</text></g><g stroke=\"#663D17\"><path d=\"M40 250h55v55H40zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zM40 315h55v55H40zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zM40 380h55v55H40zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55z\" rx=\"5\" fill=\"none\"/></g><g fill=\"#E89446\"><circle cx=\"67\" cy=\"277\" r=\"8\" fill=\"none\" stroke=\"#E89446\" stroke-width=\"2\"/><path d=\"M63 265h8v6h-8z\"/><path d=\"M127 270h11v14h-11z\" fill=\"none\" stroke=\"#E89446\" stroke-width=\"1\"/><path d=\"M130 272h5M130 276h5M130 280h3\" stroke=\"#E89446\" stroke-width=\"1\"/><circle cx=\"197\" cy=\"277\" r=\"8\" fill=\"none\" stroke=\"#E89446\" stroke-width=\"2\"/><text x=\"197\" y=\"281\" font-size=\"8\" text-anchor=\"middle\">$</text></g><g fill=\"#E89446\" font-size=\"8\"><text x=\"67\" y=\"295\" text-anchor=\"middle\">{}</text><text x=\"67\" y=\"303\" text-anchor=\"middle\"></text><text x=\"132\" y=\"295\" text-anchor=\"middle\">{}</text><text x=\"132\" y=\"303\" text-anchor=\"middle\"></text><text x=\"197\" y=\"295\" text-anchor=\"middle\">{}</text><text x=\"197\" y=\"303\" text-anchor=\"middle\"></text><text x=\"262\" y=\"295\" text-anchor=\"middle\">EMPTY</text><text x=\"327\" y=\"295\" text-anchor=\"middle\">EMPTY</text></g><g font-size=\"6\" fill=\"#E89446\"><text x=\"47\" y=\"260\">01</text><text x=\"112\" y=\"260\">02</text><text x=\"177\" y=\"260\">03</text><text x=\"242\" y=\"260\">04</text><text x=\"307\" y=\"260\">05</text><text x=\"47\" y=\"325\">06</text><text x=\"112\" y=\"325\">07</text><text x=\"177\" y=\"325\">08</text><text x=\"242\" y=\"325\">09</text><text x=\"307\" y=\"325\">10</text><text x=\"47\" y=\"390\">11</text><text x=\"112\" y=\"390\">12</text><text x=\"177\" y=\"390\">13</text><text x=\"242\" y=\"390\">14</text><text x=\"307\" y=\"390\">15</text></g></g><g id=\"page3\" transform=\"translate(800,0)\"><path d=\"M20 20h360v510H20z\" filter=\"url(#s)\"/><path d=\"M30 30h340v490H30z\"/><path fill=\"#77EDFF\" d=\"M20 20h360v2H20zm0 508h360v2H20zm0-506h2v506h-2zm358 0h2v506h-2z\"/><path fill=\"#77EDFF\" fill-rule=\"evenodd\" d=\"m50 52-1 2h-1v15h6v2l1 3h3c5 0 5 0 5-3v-2h6V54h-1l-1-2v-2H50v2Zm7 10v3h-4v-3l-1-3h5v3Zm8 0v3h-4v-6h4v3Zm-4 5v2h-4v-4h4v2Zm-13 5v20h8l7 1v-5H52V71h-2l-2 1Zm6 4v5l1 5h10v8h-8l-9 1v4h19v-2l1-2h1v-7l1-6h-11v-2h10v-5h-7l-8 1Z\" clip-rule=\"evenodd\"/><g fill=\"#77EDFF\" font-size=\"14\"><text x=\"120\" y=\"65\" font-size=\"12\">{}'S</text><text x=\"120\" y=\"85\" font-size=\"16\" style=\"font-family:&quot;MedievalSharp&quot;,&quot;Pixelify Sans&quot;,&quot;Courier New&quot;,&quot;Monaco&quot;,&quot;Lucida Console&quot;,monospace\">Marketplace</text></g><g stroke=\"#77EDFF\" fill=\"none\"><path d=\"M40 100h55v55H40zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zM40 185h55v55H40zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zM40 270h55v55H40zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zM40 355h55v55H40zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55zm65 0h55v55h-55z\" rx=\"3\"/></g><g fill=\"#77EDFF\"><path d=\"M60 115h15v25H60z\"/><circle cx=\"132\" cy=\"127\" r=\"8\"/><path d=\"M125 135h14v8h-14z\"/><path d=\"M185 120h20v15h-20z\"/><circle cx=\"257\" cy=\"127\" r=\"8\"/><path d=\"M250 135h14v8h-14z\"/><path d=\"M315 120h20v15h-20z\"/><circle cx=\"67\" cy=\"212\" r=\"8\"/><path d=\"M120 200h25v20h-25z\"/><path d=\"M185 205h20v15h-20z\"/><circle cx=\"257\" cy=\"212\" r=\"8\"/><path d=\"M315 205h20v15h-20z\"/><circle cx=\"67\" cy=\"297\" r=\"8\"/><path d=\"M120 285h25v20h-25z\"/><path d=\"M185 290h20v15h-20z\"/><circle cx=\"257\" cy=\"297\" r=\"8\"/><path d=\"M315 290h20v15h-20z\"/><circle cx=\"67\" cy=\"382\" r=\"8\"/><path d=\"M120 370h25v20h-25z\"/><path d=\"M185 375h20v15h-20z\"/><circle cx=\"257\" cy=\"382\" r=\"8\"/><path d=\"M315 375h20v15h-20z\"/></g><g fill=\"#77EDFF\" font-size=\"8\"><text x=\"67\" y=\"170\" text-anchor=\"middle\">FIRE</text><text x=\"67\" y=\"178\" text-anchor=\"middle\">SCROLL</text><text x=\"132\" y=\"170\" text-anchor=\"middle\">HEALTH</text><text x=\"132\" y=\"178\" text-anchor=\"middle\">POTION</text><text x=\"197\" y=\"170\" text-anchor=\"middle\">WATER</text><text x=\"197\" y=\"178\" text-anchor=\"middle\">SCROLL</text><text x=\"262\" y=\"170\" text-anchor=\"middle\">MAGIC</text><text x=\"262\" y=\"178\" text-anchor=\"middle\">POTION</text><text x=\"327\" y=\"170\" text-anchor=\"middle\">FIRE</text><text x=\"327\" y=\"178\" text-anchor=\"middle\">SCROLL</text><text x=\"67\" y=\"255\" text-anchor=\"middle\">CHARISMA</text><text x=\"67\" y=\"263\" text-anchor=\"middle\">RING</text><text x=\"132\" y=\"255\" text-anchor=\"middle\">OCEAN</text><text x=\"132\" y=\"263\" text-anchor=\"middle\">NECKLACE</text><text x=\"197\" y=\"255\" text-anchor=\"middle\">THUNDER</text><text x=\"197\" y=\"263\" text-anchor=\"middle\">SCROLL</text><text x=\"262\" y=\"255\" text-anchor=\"middle\">MAGIC</text><text x=\"262\" y=\"263\" text-anchor=\"middle\">POTION</text><text x=\"327\" y=\"255\" text-anchor=\"middle\">THUNDER</text><text x=\"327\" y=\"263\" text-anchor=\"middle\">RING</text><text x=\"67\" y=\"340\" text-anchor=\"middle\">CHARISMA</text><text x=\"67\" y=\"348\" text-anchor=\"middle\">RING</text><text x=\"132\" y=\"340\" text-anchor=\"middle\">OCEAN</text><text x=\"132\" y=\"348\" text-anchor=\"middle\">NECKLACE</text><text x=\"197\" y=\"340\" text-anchor=\"middle\">THUNDER</text><text x=\"197\" y=\"348\" text-anchor=\"middle\">SCROLL</text><text x=\"262\" y=\"340\" text-anchor=\"middle\">MAGIC</text><text x=\"262\" y=\"348\" text-anchor=\"middle\">POTION</text><text x=\"327\" y=\"340\" text-anchor=\"middle\">THUNDER</text><text x=\"327\" y=\"348\" text-anchor=\"middle\">SCROLL</text><text x=\"67\" y=\"425\" text-anchor=\"middle\">CHARISMA</text><text x=\"67\" y=\"433\" text-anchor=\"middle\">RING</text><text x=\"132\" y=\"425\" text-anchor=\"middle\">OCEAN</text><text x=\"132\" y=\"433\" text-anchor=\"middle\">NECKLACE</text><text x=\"197\" y=\"425\" text-anchor=\"middle\">THUNDER</text><text x=\"197\" y=\"433\" text-anchor=\"middle\">SCROLL</text><text x=\"262\" y=\"425\" text-anchor=\"middle\">MAGIC</text><text x=\"262\" y=\"433\" text-anchor=\"middle\">POTION</text><text x=\"327\" y=\"425\" text-anchor=\"middle\">THUNDER</text><text x=\"327\" y=\"433\" text-anchor=\"middle\">SCROLL</text></g><g fill=\"#77EDFF\" font-size=\"6\"><text x=\"47\" y=\"110\">ITEM</text><text x=\"112\" y=\"110\">ITEM</text><text x=\"177\" y=\"110\">ITEM</text><text x=\"242\" y=\"110\">ITEM</text><text x=\"307\" y=\"110\">ITEM</text><text x=\"47\" y=\"195\">ITEM</text><text x=\"112\" y=\"195\">ITEM</text><text x=\"177\" y=\"195\">ITEM</text><text x=\"242\" y=\"195\">ITEM</text><text x=\"307\" y=\"195\">ITEM</text><text x=\"47\" y=\"280\">ITEM</text><text x=\"112\" y=\"280\">ITEM</text><text x=\"177\" y=\"280\">ITEM</text><text x=\"242\" y=\"280\">ITEM</text><text x=\"307\" y=\"280\">ITEM</text><text x=\"47\" y=\"365\">ITEM</text><text x=\"112\" y=\"365\">ITEM</text><text x=\"177\" y=\"365\">ITEM</text><text x=\"242\" y=\"365\">ITEM</text><text x=\"307\" y=\"365\">ITEM</text></g></g><animateTransform attributeName=\"transform\" type=\"translate\" values=\"0,0; 0,0; -400,0; -400,0; -800,0; -800,0; 0,0\" keyTimes=\"0; 0.3; 0.37; 0.63; 0.7; 0.97; 1\" dur=\"30s\" calcMode=\"spline\" keySplines=\"0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1\" repeatCount=\"indefinite\"/></g></svg>",
-        _name,
-        _level,
-        _str,
-        _dex,
-        _int,
-        _vit,
-        _wis,
-        _cha,
-        _luck,
-        _health,
-        _max_health,
-        _xp,
-        _weapon_name,
-        _chest_name,
-        _head_name,
-        _waist_name,
-        _foot_name,
-        _hand_name,
-        _neck_name,
-        _ring_name,
-        adventurer_id,
-        _level,
-        _xp,
-        _name,
-        _bag_item_1,
-        _bag_item_2,
-        _bag_item_3,
-        _name,
-    )
-}
+    let dex = if adventurer.level == 1 {
+        "?"
+    } else {
+        format!("{}", adventurer.stats.dexterity)
+    };
+    let int = if adventurer.level == 1 {
+        "?"
+    } else {
+        format!("{}", adventurer.stats.intelligence)
+    };
+    let vit = if adventurer.level == 1 {
+        "?"
+    } else {
+        format!("{}", adventurer.stats.vitality)
+    };
+    let wis = if adventurer.level == 1 {
+        "?"
+    } else {
+        format!("{}", adventurer.stats.wisdom)
+    };
+    let cha = if adventurer.level == 1 {
+        "?"
+    } else {
+        format!("{}", adventurer.stats.charisma)
+    };
+    let luck = format!("{}", adventurer.stats.luck);
 
 
-// @notice Generates JSON metadata for the adventurer token uri using Shinobi template with battle
-// interface @param adventurer_id The adventurer's ID
-// @param adventurer The adventurer
-// @param adventurer_name The adventurer's name
-// @param bag The adventurer's bag
-// @param beast The beast being fought
-// @param beast_name The name of the beast
-// @return The generated JSON metadata with battle interface
-pub fn create_metadata(
-    adventurer_id: u64,
-    adventurer: Adventurer,
-    adventurer_name: felt252,
-    bag: Bag,
-    beast: Beast,
-    beast_name: felt252,
-) -> ByteArray {
-    let mut _name = Default::default();
-    _name
-        .append_word(
-            adventurer_name, U256BytesUsedTraitImpl::bytes_used(adventurer_name.into()).into(),
-        );
-
-    let _adventurer_id = format!("{}", adventurer_id);
-    let _xp = format!("{}", adventurer.xp);
-    let _level = format!("{}", (adventurer.xp / 100) + 1);
-    let _health = format!("{}", adventurer.health);
-    let _gold = format!("{}", adventurer.gold);
-    let _str = format!("{}", adventurer.stats.strength);
-    let _dex = format!("{}", adventurer.stats.dexterity);
-    let _int = format!("{}", adventurer.stats.intelligence);
-    let _vit = format!("{}", adventurer.stats.vitality);
-    let _wis = format!("{}", adventurer.stats.wisdom);
-    let _cha = format!("{}", adventurer.stats.charisma);
-    let _luck = format!("{}", adventurer.stats.luck);
-
-    // Generate equipped item names
-    let _equiped_weapon = generate_item(adventurer.equipment.weapon, false);
-    let _equiped_chest = generate_item(adventurer.equipment.chest, false);
-    let _equiped_head = generate_item(adventurer.equipment.head, false);
-    let _equiped_waist = generate_item(adventurer.equipment.waist, false);
-    let _equiped_foot = generate_item(adventurer.equipment.foot, false);
-    let _equiped_hand = generate_item(adventurer.equipment.hand, false);
-    let _equiped_neck = generate_item(adventurer.equipment.neck, false);
-    let _equiped_ring = generate_item(adventurer.equipment.ring, false);
-
-    // Beast metadata
-    let mut _beast_name_str = Default::default();
-    _beast_name_str
-        .append_word(beast_name, U256BytesUsedTraitImpl::bytes_used(beast_name.into()).into());
-    let _beast_level = format!("{}", beast.combat_spec.level);
-    let _beast_health = format!("{}", beast.starting_health);
-
-    // Generate the shinobi SVG with battle interface
-    let image = create_battle_svg(
-        adventurer_id, adventurer, adventurer_name, bag, beast, beast_name,
-    );
-
-    let base64_image = format!("data:image/svg+xml;base64,{}", bytes_base64_encode(image));
-
-    // Build JSON metadata string
-    let mut metadata: ByteArray = "{";
-    metadata += "\"name\":\"" + _name.clone() + " #" + _adventurer_id + "\",";
-    metadata +=
-        "\"description\":\"A legendary adventurer NFT with on-chain metadata rendered using the Shinobi template with battle interface.\",";
-    metadata += "\"image\":\"" + base64_image + "\",";
-    metadata += "\"attributes\":[";
-    metadata += "{\"trait_type\":\"Name\",\"value\":\"" + _name + "\"},";
-    metadata += "{\"trait_type\":\"XP\",\"value\":" + _xp + "},";
-    metadata += "{\"trait_type\":\"Level\",\"value\":" + _level + "},";
-    metadata += "{\"trait_type\":\"Health\",\"value\":" + _health + "},";
-    metadata += "{\"trait_type\":\"Gold\",\"value\":" + _gold + "},";
-    metadata += "{\"trait_type\":\"Strength\",\"value\":" + _str + "},";
-    metadata += "{\"trait_type\":\"Dexterity\",\"value\":" + _dex + "},";
-    metadata += "{\"trait_type\":\"Intelligence\",\"value\":" + _int + "},";
-    metadata += "{\"trait_type\":\"Vitality\",\"value\":" + _vit + "},";
-    metadata += "{\"trait_type\":\"Wisdom\",\"value\":" + _wis + "},";
-    metadata += "{\"trait_type\":\"Charisma\",\"value\":" + _cha + "},";
-    metadata += "{\"trait_type\":\"Luck\",\"value\":" + _luck + "},";
-    metadata += "{\"trait_type\":\"Weapon\",\"value\":\"" + _equiped_weapon + "\"},";
-    metadata += "{\"trait_type\":\"Chest Armor\",\"value\":\"" + _equiped_chest + "\"},";
-    metadata += "{\"trait_type\":\"Head Armor\",\"value\":\"" + _equiped_head + "\"},";
-    metadata += "{\"trait_type\":\"Waist Armor\",\"value\":\"" + _equiped_waist + "\"},";
-    metadata += "{\"trait_type\":\"Foot Armor\",\"value\":\"" + _equiped_foot + "\"},";
-    metadata += "{\"trait_type\":\"Hand Armor\",\"value\":\"" + _equiped_hand + "\"},";
-    metadata += "{\"trait_type\":\"Necklace\",\"value\":\"" + _equiped_neck + "\"},";
-    metadata += "{\"trait_type\":\"Ring\",\"value\":\"" + _equiped_ring + "\"},";
-    metadata += "{\"trait_type\":\"Battle Beast\",\"value\":\"" + _beast_name_str + "\"},";
-    metadata += "{\"trait_type\":\"Beast Level\",\"value\":" + _beast_level + "},";
-    metadata += "{\"trait_type\":\"Beast Health\",\"value\":" + _beast_health + "}";
-    metadata += "]}";
-
-    format!("data:application/json;base64,{}", bytes_base64_encode(metadata))
-}
-
-
-#[cfg(test)]
-mod tests {
-    use ls2_renderer::mocks::mock_adventurer::{Adventurer, Bag, Equipment, Stats, Item};
-    use ls2_renderer::mocks::mock_beast::{Beast, CombatSpec, Tier, Type, SpecialPowers, Category};
-    use super::create_metadata;
-
-    #[test]
-    fn test_metadata() {
-        let _adventurer = Adventurer {
-            health: 100,
-            xp: 1000,
-            gold: 500,
-            beast_health: 50,
-            stat_upgrades_available: 0,
-            stats: Stats {
-                strength: 10,
-                dexterity: 50,
-                vitality: 50,
-                intelligence: 50,
-                wisdom: 50,
-                charisma: 50,
-                luck: 100,
-            },
-            equipment: Equipment {
-                weapon: Item { id: 42, xp: 400 },
-                chest: Item { id: 49, xp: 400 },
-                head: Item { id: 53, xp: 400 },
-                waist: Item { id: 59, xp: 400 },
-                foot: Item { id: 64, xp: 400 },
-                hand: Item { id: 69, xp: 400 },
-                neck: Item { id: 1, xp: 400 },
-                ring: Item { id: 7, xp: 400 },
-            },
-            item_specials_seed: 0,
-            action_count: 0,
-        };
-
-        let _bag = Bag {
-            item_1: Item { id: 8, xp: 400 },
-            item_2: Item { id: 40, xp: 400 },
-            item_3: Item { id: 57, xp: 400 },
-            item_4: Item { id: 83, xp: 400 },
-            item_5: Item { id: 12, xp: 400 },
-            item_6: Item { id: 77, xp: 400 },
-            item_7: Item { id: 68, xp: 400 },
-            item_8: Item { id: 100, xp: 400 },
-            item_9: Item { id: 94, xp: 400 },
-            item_10: Item { id: 54, xp: 400 },
-            item_11: Item { id: 87, xp: 400 },
-            item_12: Item { id: 81, xp: 400 },
-            item_13: Item { id: 30, xp: 400 },
-            item_14: Item { id: 11, xp: 400 },
-            item_15: Item { id: 29, xp: 400 },
-            mutated: false,
-        };
-
-        let _beast = Beast {
-            id: 7,
-            starting_health: 25,
-            combat_spec: CombatSpec {
-                tier: Tier::T2,
-                item_type: Type::Blade_or_Hide,
-                level: 5,
-                specials: SpecialPowers { special1: 1, special2: 2, special3: 3 },
-            },
-            category: Category::Magical,
-        };
-
-        let _current_1 = create_metadata(
-            1000000, _adventurer, 'testadventurer', _bag, _beast, 'testbeast',
-        );
-
-        // Test passes if no panic occurs
-        assert!(true);
-    }
+    array![
+        GameDetail { name: "XP", value: xp },
+        GameDetail { name: "Level", value: level },
+        GameDetail { name: "Health", value: health },
+        GameDetail { name: "Gold", value: gold },
+        GameDetail { name: "Strength", value: str },
+        GameDetail { name: "Dexterity", value: dex },
+        GameDetail { name: "Intelligence", value: int },
+        GameDetail { name: "Vitality", value: vit },
+        GameDetail { name: "Wisdom", value: wis },
+        GameDetail { name: "Charisma", value: cha },
+        GameDetail { name: "Luck", value: luck },
+    ]
+        .span()
 }

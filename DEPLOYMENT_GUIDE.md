@@ -60,7 +60,7 @@ Deploy the mock contracts (no constructor arguments needed):
 Declare the main NFT contract:
 
 ```bash
-./scripts/declare_nft_contract.sh
+./scripts/declare_renderer_contract.sh
 ```
 
 **What it does:**
@@ -73,7 +73,7 @@ Declare the main NFT contract:
 Deploy the NFT contract with constructor arguments:
 
 ```bash
-./scripts/deploy_nft_contract.sh
+./scripts/deploy_renderer_contract.sh
 ```
 
 **What it does:**
@@ -139,8 +139,7 @@ constructor(
     name: ByteArray,           // "Loot Survivor 2.0"
     symbol: ByteArray,         // "LS2"
     base_uri: ByteArray,       // "https://loot-survivor.io/nft/"
-    mock_adventurer_address: ContractAddress,
-    mock_beast_address: ContractAddress,
+    adventurer_contract: ContractAddress,  // Only adventurer contract needed
 )
 ```
 
@@ -148,8 +147,7 @@ constructor(
 - `name`: `0x4c6f6f74205375727669766f7220322e30` (hex-encoded "Loot Survivor 2.0")
 - `symbol`: `0x4c533220` (hex-encoded "LS2")
 - `base_uri`: `0x68747470733a2f2f6c6f6f742d7375727669766f722e696f2f6e66742f` (hex-encoded URL)
-- `mock_adventurer_address`: Contract address from deployment
-- `mock_beast_address`: Contract address from deployment
+- `adventurer_contract`: Contract address from adventurer deployment
 
 ## ByteArray Serialization
 
@@ -177,8 +175,8 @@ After running the deployment scripts, you'll have:
 scripts/
 ├── declare_mock_contracts.sh         # Declare mock contracts
 ├── deploy_mock_contracts.sh          # Deploy mock contracts
-├── declare_nft_contract.sh           # Declare NFT contract
-├── deploy_nft_contract.sh            # Deploy NFT contract
+├── declare_renderer_contract.sh      # Declare Renderer contract
+├── deploy_renderer_contract.sh       # Deploy Renderer contract
 ├── test_contracts.sh                 # Test all contracts
 ├── mint_nft.sh                       # Mint NFTs
 ├── query_nft.sh                      # Query NFT data

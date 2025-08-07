@@ -1,215 +1,173 @@
 // SPDX-License-Identifier: MIT
 // Mock Adventurer contract for SVG metadata rendering
 
-#[derive(Copy, Drop, PartialEq, Serde, Debug)]
-pub struct Item {
-    pub id: u8,
-    pub xp: u16,
-}
-
-#[derive(Copy, Drop, PartialEq, Serde, Debug)]
-pub struct Equipment {
-    pub weapon: Item,
-    pub chest: Item,
-    pub head: Item,
-    pub waist: Item,
-    pub foot: Item,
-    pub hand: Item,
-    pub neck: Item,
-    pub ring: Item,
-}
-
-#[derive(Copy, Drop, PartialEq, Serde, Debug)]
-pub struct Stats {
-    pub strength: u8,
-    pub dexterity: u8,
-    pub vitality: u8,
-    pub intelligence: u8,
-    pub wisdom: u8,
-    pub charisma: u8,
-    pub luck: u8,
-}
-
-#[derive(Copy, Drop, PartialEq, Serde, Debug)]
-pub struct Adventurer {
-    pub health: u16,
-    pub xp: u16,
-    pub gold: u16,
-    pub beast_health: u16,
-    pub stat_upgrades_available: u8,
-    pub stats: Stats,
-    pub equipment: Equipment,
-    pub item_specials_seed: u16,
-    pub action_count: u16,
-}
-
-#[derive(Copy, Drop, PartialEq, Serde, Debug)]
-pub struct Bag {
-    pub item_1: Item,
-    pub item_2: Item,
-    pub item_3: Item,
-    pub item_4: Item,
-    pub item_5: Item,
-    pub item_6: Item,
-    pub item_7: Item,
-    pub item_8: Item,
-    pub item_9: Item,
-    pub item_10: Item,
-    pub item_11: Item,
-    pub item_12: Item,
-    pub item_13: Item,
-    pub item_14: Item,
-    pub item_15: Item,
-    pub mutated: bool,
-}
-
-#[starknet::interface]
-pub trait IMockAdventurer<T> {
-    fn get_adventurer(self: @T, adventurer_id: u64) -> Adventurer;
-    fn get_bag(self: @T, adventurer_id: u64) -> Bag;
-    fn get_adventurer_name(self: @T, adventurer_id: u64) -> felt252;
-    fn get_level(self: @T, xp: u16) -> u8;
-    fn get_item_name(self: @T, item_id: u8) -> felt252;
-    fn get_item_type(self: @T, item_id: u8) -> u8;
-    fn get_item_slot(self: @T, item_id: u8) -> u8;
-    fn get_item_tier(self: @T, item_id: u8) -> u8;
-    fn generate_item_display(self: @T, item_id: u8, xp: u16) -> felt252;
-}
-
 #[starknet::contract]
 pub mod mock_adventurer {
-    use super::{Adventurer, Bag, Item, Equipment, Stats};
-    use super::IMockAdventurer;
-    use crate::utils::item_database::ItemDatabaseTrait;
+    use death_mountain_renderer::interfaces::adventurer_interface::IAdventurerSystems;
+    use death_mountain_renderer::models::models::{
+        Adventurer, AdventurerVerbose, BagVerbose, Equipment,
+        EquipmentVerbose, Item, ItemVerbose, Slot, Stats, Tier, Type,
+    };
 
     #[storage]
     struct Storage {}
 
+
     #[abi(embed_v0)]
-    impl MockAdventurerImpl of IMockAdventurer<ContractState> {
-        fn get_adventurer(self: @ContractState, adventurer_id: u64) -> Adventurer {
+    pub impl AdventurerSystemsImpl of IAdventurerSystems<ContractState> {
+        fn get_adventurer_verbose(self: @ContractState, adventurer_id: u64) -> AdventurerVerbose {
+            let adventurer = self.get_adventurer_data(adventurer_id);
+            let name_felt = self.get_name_felt(adventurer_id);
+            let level = self.calc_level(adventurer.xp);
+
+            // Convert felt252 name to ByteArray
+            let mut name = "";
+            if name_felt != 0 {
+                // Convert felt252 to ByteArray (simple implementation)
+                let name_u256: u256 = name_felt.into();
+                let mut temp_val = name_u256;
+                let mut bytes: Array<u8> = array![];
+
+                // Extract bytes from the u256 value
+                while temp_val != 0 {
+                    let byte = (temp_val % 256).try_into().unwrap();
+                    if byte != 0 { // Skip null bytes
+                        bytes.append(byte);
+                    }
+                    temp_val = temp_val / 256;
+                }
+
+                // Reverse the bytes since we extracted them in reverse order
+                let mut i = bytes.len();
+                while i != 0 {
+                    i -= 1;
+                    name.append_byte(*bytes.at(i));
+                }
+            }
+
+            // Convert Equipment to EquipmentVerbose
+            let equipment_verbose = EquipmentVerbose {
+                weapon: convert_item_to_verbose(adventurer.equipment.weapon),
+                chest: convert_item_to_verbose(adventurer.equipment.chest),
+                head: convert_item_to_verbose(adventurer.equipment.head),
+                waist: convert_item_to_verbose(adventurer.equipment.waist),
+                foot: convert_item_to_verbose(adventurer.equipment.foot),
+                hand: convert_item_to_verbose(adventurer.equipment.hand),
+                neck: convert_item_to_verbose(adventurer.equipment.neck),
+                ring: convert_item_to_verbose(adventurer.equipment.ring),
+            };
+
+            // Create empty bag (for testing purposes)
+            let empty_item = ItemVerbose {
+                name: 'Empty',
+                id: 0,
+                xp: 0,
+                tier: Tier::None,
+                item_type: Type::None,
+                slot: Slot::None,
+            };
+
+            let bag_verbose = BagVerbose {
+                item_1: empty_item,
+                item_2: empty_item,
+                item_3: empty_item,
+                item_4: empty_item,
+                item_5: empty_item,
+                item_6: empty_item,
+                item_7: empty_item,
+                item_8: empty_item,
+                item_9: empty_item,
+                item_10: empty_item,
+                item_11: empty_item,
+                item_12: empty_item,
+                item_13: empty_item,
+                item_14: empty_item,
+                item_15: empty_item,
+                // mutated: false,
+            };
+
+            AdventurerVerbose {
+                name,
+                health: adventurer.health,
+                xp: adventurer.xp,
+                level,
+                gold: adventurer.gold,
+                beast_health: adventurer.beast_health,
+                stat_upgrades_available: adventurer.stat_upgrades_available,
+                stats: adventurer.stats,
+                equipment: equipment_verbose,
+                item_specials_seed: adventurer.item_specials_seed,
+                action_count: adventurer.action_count,
+                bag: bag_verbose,
+            }
+        }
+    }
+
+    // Helper methods for the IAdventurerSystems implementation
+    #[generate_trait]
+    impl HelperImpl of HelperTrait {
+        fn get_adventurer_data(self: @ContractState, adventurer_id: u64) -> Adventurer {
+            // Use modulo to prevent overflow for large token IDs
+            let safe_id = adventurer_id % 1000000_u64; // Keep reasonable range
+            
             Adventurer {
-                health: 100_u16 + (adventurer_id % 50_u64).try_into().unwrap(),
-                xp: ((adventurer_id * 7_u64) % 5000_u64).try_into().unwrap(),
-                gold: ((adventurer_id * 13_u64) % 200_u64).try_into().unwrap(),
-                beast_health: 20_u16 + (adventurer_id % 30_u64).try_into().unwrap(),
-                stat_upgrades_available: (adventurer_id % 5_u64).try_into().unwrap(),
+                health: 100_u16 + (safe_id % 50_u64).try_into().unwrap(),
+                xp: ((safe_id * 7_u64) % 5000_u64).try_into().unwrap(),
+                gold: ((safe_id * 13_u64) % 200_u64).try_into().unwrap(),
+                beast_health: 20_u16 + (safe_id % 30_u64).try_into().unwrap(),
+                stat_upgrades_available: (safe_id % 5_u64).try_into().unwrap(),
                 stats: Stats {
-                    strength: ((adventurer_id / 1) % 10_u64).try_into().unwrap() + 1_u8,
-                    dexterity: ((adventurer_id / 2) % 10_u64).try_into().unwrap() + 1_u8,
-                    vitality: ((adventurer_id / 4) % 10_u64).try_into().unwrap() + 1_u8,
-                    intelligence: ((adventurer_id / 8) % 10_u64).try_into().unwrap() + 1_u8,
-                    wisdom: ((adventurer_id / 16) % 10_u64).try_into().unwrap() + 1_u8,
-                    charisma: ((adventurer_id / 32) % 10_u64).try_into().unwrap() + 1_u8,
-                    luck: ((adventurer_id / 64) % 10_u64).try_into().unwrap() + 1_u8,
+                    strength: ((safe_id) % 10_u64).try_into().unwrap() + 1_u8,
+                    dexterity: ((safe_id / 2) % 10_u64).try_into().unwrap() + 1_u8,
+                    vitality: ((safe_id / 4) % 10_u64).try_into().unwrap() + 1_u8,
+                    intelligence: ((safe_id / 8) % 10_u64).try_into().unwrap() + 1_u8,
+                    wisdom: ((safe_id / 16) % 10_u64).try_into().unwrap() + 1_u8,
+                    charisma: ((safe_id / 32) % 10_u64).try_into().unwrap() + 1_u8,
+                    luck: ((safe_id / 64) % 10_u64).try_into().unwrap() + 1_u8,
                 },
                 equipment: Equipment {
                     weapon: Item {
-                        id: ((adventurer_id + 1) % 101_u64).try_into().unwrap() + 1_u8,
-                        xp: ((adventurer_id * 2) % 100_u64).try_into().unwrap(),
+                        id: get_weapon_item_id(safe_id),
+                        xp: ((safe_id * 2) % 100_u64).try_into().unwrap(),
                     },
                     chest: Item {
-                        id: ((adventurer_id + 2) % 101_u64).try_into().unwrap() + 1_u8,
-                        xp: ((adventurer_id * 3) % 100_u64).try_into().unwrap(),
+                        id: get_chest_item_id(safe_id),
+                        xp: ((safe_id * 3) % 100_u64).try_into().unwrap(),
                     },
                     head: Item {
-                        id: ((adventurer_id + 3) % 101_u64).try_into().unwrap() + 1_u8,
-                        xp: ((adventurer_id * 4) % 100_u64).try_into().unwrap(),
+                        id: get_head_item_id(safe_id),
+                        xp: ((safe_id * 4) % 100_u64).try_into().unwrap(),
                     },
                     waist: Item {
-                        id: ((adventurer_id + 4) % 101_u64).try_into().unwrap() + 1_u8,
-                        xp: ((adventurer_id * 5) % 100_u64).try_into().unwrap(),
+                        id: get_waist_item_id(safe_id),
+                        xp: ((safe_id * 5) % 100_u64).try_into().unwrap(),
                     },
                     foot: Item {
-                        id: ((adventurer_id + 5) % 101_u64).try_into().unwrap() + 1_u8,
-                        xp: ((adventurer_id * 6) % 100_u64).try_into().unwrap(),
+                        id: get_foot_item_id(safe_id),
+                        xp: ((safe_id * 6) % 100_u64).try_into().unwrap(),
                     },
                     hand: Item {
-                        id: ((adventurer_id + 6) % 101_u64).try_into().unwrap() + 1_u8,
-                        xp: ((adventurer_id * 7) % 100_u64).try_into().unwrap(),
+                        id: get_hand_item_id(safe_id),
+                        xp: ((safe_id * 7) % 100_u64).try_into().unwrap(),
                     },
                     neck: Item {
-                        id: ((adventurer_id + 7) % 101_u64).try_into().unwrap() + 1_u8,
-                        xp: ((adventurer_id * 8) % 100_u64).try_into().unwrap(),
+                        id: get_neck_item_id(safe_id),
+                        xp: ((safe_id * 8) % 100_u64).try_into().unwrap(),
                     },
                     ring: Item {
-                        id: ((adventurer_id + 8) % 101_u64).try_into().unwrap() + 1_u8,
-                        xp: ((adventurer_id * 9) % 100_u64).try_into().unwrap(),
+                        id: get_ring_item_id(safe_id),
+                        xp: ((safe_id * 9) % 100_u64).try_into().unwrap(),
                     },
                 },
-                item_specials_seed: ((adventurer_id * 3_u64) % 65536_u64).try_into().unwrap(),
-                action_count: ((adventurer_id * 11_u64) % 100_u64).try_into().unwrap(),
-            }
-        }
-        fn get_bag(self: @ContractState, adventurer_id: u64) -> Bag {
-            Bag {
-                item_1: Item {
-                    id: ((adventurer_id + 1) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 2) % 100_u64).try_into().unwrap(),
-                },
-                item_2: Item {
-                    id: ((adventurer_id + 2) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 3) % 100_u64).try_into().unwrap(),
-                },
-                item_3: Item {
-                    id: ((adventurer_id + 3) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 4) % 100_u64).try_into().unwrap(),
-                },
-                item_4: Item {
-                    id: ((adventurer_id + 4) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 5) % 100_u64).try_into().unwrap(),
-                },
-                item_5: Item {
-                    id: ((adventurer_id + 5) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 6) % 100_u64).try_into().unwrap(),
-                },
-                item_6: Item {
-                    id: ((adventurer_id + 6) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 7) % 100_u64).try_into().unwrap(),
-                },
-                item_7: Item {
-                    id: ((adventurer_id + 7) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 8) % 100_u64).try_into().unwrap(),
-                },
-                item_8: Item {
-                    id: ((adventurer_id + 8) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 9) % 100_u64).try_into().unwrap(),
-                },
-                item_9: Item {
-                    id: ((adventurer_id + 9) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 10) % 100_u64).try_into().unwrap(),
-                },
-                item_10: Item {
-                    id: ((adventurer_id + 10) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 11) % 100_u64).try_into().unwrap(),
-                },
-                item_11: Item {
-                    id: ((adventurer_id + 11) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 12) % 100_u64).try_into().unwrap(),
-                },
-                item_12: Item {
-                    id: ((adventurer_id + 12) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 13) % 100_u64).try_into().unwrap(),
-                },
-                item_13: Item {
-                    id: ((adventurer_id + 13) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 14) % 100_u64).try_into().unwrap(),
-                },
-                item_14: Item {
-                    id: ((adventurer_id + 14) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 15) % 100_u64).try_into().unwrap(),
-                },
-                item_15: Item {
-                    id: ((adventurer_id + 15) % 101_u64).try_into().unwrap() + 1_u8,
-                    xp: ((adventurer_id * 16) % 100_u64).try_into().unwrap(),
-                },
-                mutated: (adventurer_id % 2_u64) == 1_u64,
+                item_specials_seed: ((safe_id * 3_u64) % 65536_u64).try_into().unwrap(),
+                action_count: ((safe_id * 11_u64) % 100_u64).try_into().unwrap(),
             }
         }
 
-        fn get_adventurer_name(self: @ContractState, adventurer_id: u64) -> felt252 {
+        fn get_name_felt(self: @ContractState, adventurer_id: u64) -> felt252 {
             // Generate deterministic names based on adventurer ID
-            match adventurer_id % 20 {
+            let safe_id = adventurer_id % 1000000_u64; // Keep consistent with get_adventurer_data
+            match safe_id % 20 {
                 0 => 'Aragorn',
                 1 => 'Legolas',
                 2 => 'Gimli',
@@ -233,7 +191,7 @@ pub mod mock_adventurer {
             }
         }
 
-        fn get_level(self: @ContractState, xp: u16) -> u8 {
+        fn calc_level(self: @ContractState, xp: u16) -> u8 {
             // Simple level calculation: every 100 XP = 1 level, minimum level 1
             let level = (xp / 100) + 1;
             if level > 255 {
@@ -242,25 +200,109 @@ pub mod mock_adventurer {
                 level.try_into().unwrap()
             }
         }
+    }
 
-        fn get_item_name(self: @ContractState, item_id: u8) -> felt252 {
-            ItemDatabaseTrait::get_item_name(item_id)
+    // Helper function to convert Item to ItemVerbose
+    fn convert_item_to_verbose(item: Item) -> ItemVerbose {
+        ItemVerbose {
+            name: 'test',
+            id: item.id,
+            xp: item.xp,
+            tier: match 1 {
+                0 => Tier::None,
+                1 => Tier::T1,
+                2 => Tier::T2,
+                3 => Tier::T3,
+                4 => Tier::T4,
+                5 => Tier::T5,
+                _ => Tier::None,
+            },
+            item_type: match 1 {
+                0 => Type::None,
+                1 => Type::Magic_or_Cloth,
+                2 => Type::Blade_or_Hide,
+                3 => Type::Bludgeon_or_Metal,
+                4 => Type::Necklace,
+                5 => Type::Ring,
+                _ => Type::None,
+            },
+            slot: match 1 {
+                0 => Slot::None,
+                1 => Slot::Neck,
+                2 => Slot::Ring,
+                3 => Slot::Weapon,
+                4 => Slot::Chest,
+                5 => Slot::Head,
+                6 => Slot::Waist,
+                7 => Slot::Foot,
+                8 => Slot::Hand,
+                _ => Slot::None,
+            },
         }
+    }
 
-        fn get_item_type(self: @ContractState, item_id: u8) -> u8 {
-            ItemDatabaseTrait::get_item_type(item_id)
-        }
+    // Helper functions for slot-based item assignment based on death-mountain logic
 
-        fn get_item_slot(self: @ContractState, item_id: u8) -> u8 {
-            ItemDatabaseTrait::get_item_slot(item_id)
-        }
+    // Weapon items: IDs 9-16, 42-46, 72-76
+    fn get_weapon_item_id(adventurer_id: u64) -> u8 {
+        let weapon_items = array![
+            9, 10, 11, 12, 13, 14, 15, 16, 42, 43, 44, 45, 46, 72, 73, 74, 75, 76,
+        ];
+        let index = (adventurer_id % weapon_items.len().into()).try_into().unwrap();
+        *weapon_items.at(index)
+    }
 
-        fn get_item_tier(self: @ContractState, item_id: u8) -> u8 {
-            ItemDatabaseTrait::get_item_tier(item_id)
-        }
+    // Chest items: IDs 17-21, 47-51, 77-81
+    fn get_chest_item_id(adventurer_id: u64) -> u8 {
+        let chest_items = array![17, 18, 19, 20, 21, 47, 48, 49, 50, 51, 77, 78, 79, 80, 81];
+        let index = ((adventurer_id + 1) % chest_items.len().into()).try_into().unwrap();
+        *chest_items.at(index)
+    }
 
-        fn generate_item_display(self: @ContractState, item_id: u8, xp: u16) -> felt252 {
-            ItemDatabaseTrait::generate_item_display(item_id, xp)
-        }
+    // Head items: IDs 22-26, 52-56, 82-86
+    fn get_head_item_id(adventurer_id: u64) -> u8 {
+        let head_items = array![22, 23, 24, 25, 26, 52, 53, 54, 55, 56, 82, 83, 84, 85, 86];
+        let index = ((adventurer_id + 2) % head_items.len().into()).try_into().unwrap();
+        *head_items.at(index)
+    }
+
+    // Waist items: IDs 27-31, 57-61, 87-91
+    fn get_waist_item_id(adventurer_id: u64) -> u8 {
+        let waist_items = array![27, 28, 29, 30, 31, 57, 58, 59, 60, 61, 87, 88, 89, 90, 91];
+        let index = ((adventurer_id + 3) % waist_items.len().into()).try_into().unwrap();
+        *waist_items.at(index)
+    }
+
+    // Foot items: IDs 32-36, 62-66, 92-96
+    fn get_foot_item_id(adventurer_id: u64) -> u8 {
+        let foot_items = array![32, 33, 34, 35, 36, 62, 63, 64, 65, 66, 92, 93, 94, 95, 96];
+        let index = ((adventurer_id + 4) % foot_items.len().into()).try_into().unwrap();
+        *foot_items.at(index)
+    }
+
+    // Hand items: IDs 37-41, 67-71, 97-101
+    fn get_hand_item_id(adventurer_id: u64) -> u8 {
+        let hand_items = array![37, 38, 39, 40, 41, 67, 68, 69, 70, 71, 97, 98, 99, 100, 101];
+        let index = ((adventurer_id + 5) % hand_items.len().into()).try_into().unwrap();
+        *hand_items.at(index)
+    }
+
+    // Neck items: IDs 1-3
+    fn get_neck_item_id(adventurer_id: u64) -> u8 {
+        let neck_items = array![1, 2, 3];
+        let index = ((adventurer_id + 6) % neck_items.len().into()).try_into().unwrap();
+        *neck_items.at(index)
+    }
+
+    // Ring items: IDs 4-8
+    fn get_ring_item_id(adventurer_id: u64) -> u8 {
+        let ring_items = array![4, 5, 6, 7, 8];
+        let index = ((adventurer_id + 7) % ring_items.len().into()).try_into().unwrap();
+        *ring_items.at(index)
+    }
+
+    // Random item for bag slots (any valid item)
+    fn get_random_item_id(adventurer_id: u64, slot_offset: u64) -> u8 {
+        ((adventurer_id + slot_offset) % 101_u64).try_into().unwrap() + 1_u8
     }
 }

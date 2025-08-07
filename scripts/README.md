@@ -17,12 +17,12 @@ This will execute all steps from contract declaration to testing automatically.
 ### Declaration Scripts
 
 - **`declare_mock_contracts.sh`** - Declares mock adventurer and beast contracts
-- **`declare_nft_contract.sh`** - Declares the main NFT contract
+- **`declare_renderer_contract.sh`** - Declares the main Renderer contract
 
 ### Deployment Scripts
 
 - **`deploy_mock_contracts.sh`** - Deploys the mock contracts (run after declaration)
-- **`deploy_nft_contract.sh`** - Deploys the NFT contract with proper constructor arguments
+- **`deploy_renderer_contract.sh`** - Deploys the Renderer contract with proper constructor arguments
 
 ### Testing Scripts
 
@@ -55,10 +55,10 @@ After running the scripts, you'll have these files with deployment information:
 ./deploy_mock_contracts.sh
 
 # 3. Declare NFT contract
-./declare_nft_contract.sh
+./declare_renderer_contract.sh
 
 # 4. Deploy NFT contract
-./deploy_nft_contract.sh
+./deploy_renderer_contract.sh
 
 # 5. Test everything
 ./test_contracts.sh
