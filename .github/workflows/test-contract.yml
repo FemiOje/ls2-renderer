@@ -1,0 +1,53 @@
+name: test-ls2-renderer
+
+env:
+  SCARB_VERSION: 2.10.1
+  SNFORGE_VERSION: 0.45.0
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  setup-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl
+
+  snforge-test:
+    needs: [setup-environment]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: ${{ env.SCARB_VERSION }}
+      - name: Setup Starknet Foundry
+        uses: foundry-rs/setup-snfoundry@v4
+        with:
+          starknet-foundry-version: ${{ env.SNFORGE_VERSION }}
+      - name: Run Scarb Build
+        run: scarb build
+      - name: Run Tests
+        run: scarb test
+
+  scarb-fmt:
+    needs: [setup-environment]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: ${{ env.SCARB_VERSION }}
+      - run: scarb fmt --check

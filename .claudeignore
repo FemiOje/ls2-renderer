@@ -1,0 +1,55 @@
+# Build artifacts and cache
+assets/
+target/
+.snfoundry_cache/
+build/
+out/
+
+# Lock files (usually auto-generated)
+Scarb.lock
+*.lock
+
+# Test artifacts
+snfoundry_trace/
+coverage/
+*.coverage
+*.profraw
+*.profdata
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+logs/
+tmp/
+temp/
+
+# Large binary files
+*.bin
+*.dat
+*.db
+*.sqlite
+
+
+# Documentation build outputs
+docs/_build/
+docs/build/
+site/
+
+# Environment files (may contain secrets)
+.env
+.env.*
+!.env.example
+
+# Compiled or minified files
+*.min.js
+*.min.css
+dist/

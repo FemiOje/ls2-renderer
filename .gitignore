@@ -1,0 +1,15 @@
+target
+.snfoundry_cache/
+snfoundry_trace/
+coverage/
+profile/
+
+# Generated deployment files - each user should generate these from scratch
+scripts/mock_contracts_class_hashes.txt
+scripts/nft_contract_class_hash.txt
+scripts/mock_contracts_addresses.txt
+scripts/full_deployment_addresses.txt
+
+output.svg
+output.png
+output/
