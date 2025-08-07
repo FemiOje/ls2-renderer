@@ -3,10 +3,10 @@
 
 #[starknet::contract]
 pub mod mock_adventurer {
-    use death_mountain_renderer::interfaces::adventurer_interface::IAdventurerSystems;
+    use death_mountain_renderer::interfaces::adventurer_interface::IDeathMountainSystems;
     use death_mountain_renderer::models::models::{
-        Adventurer, AdventurerVerbose, BagVerbose, Equipment,
-        EquipmentVerbose, Item, ItemVerbose, Slot, Stats, Tier, Type,
+        Adventurer, AdventurerVerbose, BagVerbose, Equipment, EquipmentVerbose, Item, ItemVerbose,
+        Slot, Stats, Tier, Type,
     };
 
     #[storage]
@@ -14,7 +14,7 @@ pub mod mock_adventurer {
 
 
     #[abi(embed_v0)]
-    pub impl AdventurerSystemsImpl of IAdventurerSystems<ContractState> {
+    pub impl AdventurerSystemsImpl of IDeathMountainSystems<ContractState> {
         fn get_adventurer_verbose(self: @ContractState, adventurer_id: u64) -> AdventurerVerbose {
             let adventurer = self.get_adventurer_data(adventurer_id);
             let name_felt = self.get_name_felt(adventurer_id);
@@ -109,7 +109,7 @@ pub mod mock_adventurer {
         fn get_adventurer_data(self: @ContractState, adventurer_id: u64) -> Adventurer {
             // Use modulo to prevent overflow for large token IDs
             let safe_id = adventurer_id % 1000000_u64; // Keep reasonable range
-            
+
             Adventurer {
                 health: 100_u16 + (safe_id % 50_u64).try_into().unwrap(),
                 xp: ((safe_id * 7_u64) % 5000_u64).try_into().unwrap(),

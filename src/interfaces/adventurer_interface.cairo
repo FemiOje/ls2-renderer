@@ -3,6 +3,6 @@
 use death_mountain_renderer::models::models::AdventurerVerbose;
 
 #[starknet::interface]
-pub trait IAdventurerSystems<T> {
+pub trait IDeathMountainSystems<T> {
     fn get_adventurer_verbose(self: @T, adventurer_id: u64) -> AdventurerVerbose;
 }

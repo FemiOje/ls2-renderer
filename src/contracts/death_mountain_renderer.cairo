@@ -16,91 +16,63 @@ pub trait IMinigameDetailsSVG<TState> {
 
 #[starknet::interface]
 pub trait IRenderer<TState> {
-    fn get_adventurer_contract_address(self: @TState) -> ContractAddress;
+    fn get_death_mountain_address(self: @TState) -> ContractAddress;
 }
 
 #[starknet::contract]
 pub mod renderer_contract {
+    use core::num::traits::Zero;
     use death_mountain_renderer::interfaces::adventurer_interface::{
-        IAdventurerSystemsDispatcher, IAdventurerSystemsDispatcherTrait,
+        IDeathMountainSystemsDispatcher, IDeathMountainSystemsDispatcherTrait,
     };
     use death_mountain_renderer::models::models::{AdventurerVerbose, GameDetail};
     use death_mountain_renderer::utils::renderer::Renderer;
-    use death_mountain_renderer::utils::renderer_utils::generate_details;
     use starknet::ContractAddress;
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
-    use core::num::traits::Zero;
 
-    /// @notice Contract storage structure
     #[storage]
     pub struct Storage {
-        /// @notice Dispatcher for the adventurer systems contract
-        /// @dev Used by the renderer to fetch adventurer stats and equipment with resolved item
-        /// names
-        adventurer_address: ContractAddress,
+        death_mountain_dispatcher: IDeathMountainSystemsDispatcher,
     }
 
-    /// @notice Contract constructor
-    /// @dev Initializes the NFT contract with the adventurer systems dispatcher
-    /// @param adventurer_dispatcher The dispatcher for the adventurer systems contract
     #[constructor]
-    fn constructor(ref self: ContractState, adventurer_address: ContractAddress) {
-        assert!(!adventurer_address.is_zero(), "Adventurer address cannot be zero");
-        self.adventurer_address.write(adventurer_address);
+    fn constructor(ref self: ContractState, death_mountain_address: ContractAddress) {
+        assert!(!death_mountain_address.is_zero(), "Death Mountain address cannot be zero");
+        let death_mountain_dispatcher = IDeathMountainSystemsDispatcher {
+            contract_address: death_mountain_address,
+        };
+        self.death_mountain_dispatcher.write(death_mountain_dispatcher);
     }
 
     #[abi(embed_v0)]
     impl MinigameImpl of super::IMinigameDetails<ContractState> {
         fn game_details(self: @ContractState, token_id: u64) -> Span<GameDetail> {
-            let adventurer_id: u64 = token_id.try_into().unwrap();
-            let adventurer_address = self.adventurer_address.read();
-            let adventurer_dispatcher = IAdventurerSystemsDispatcher {
-                contract_address: adventurer_address,
-            };
-
-            let adventurer_verbose: AdventurerVerbose = adventurer_dispatcher
-                .get_adventurer_verbose(adventurer_id);
-
-            let game_details: Span<GameDetail> = generate_details(adventurer_verbose);
-            game_details
+            let death_mountain_dispatcher = self.death_mountain_dispatcher.read();
+            let adventurer_verbose: AdventurerVerbose = death_mountain_dispatcher
+                .get_adventurer_verbose(token_id);
+            Renderer::get_traits(adventurer_verbose)
         }
 
         fn token_description(self: @ContractState, token_id: u64) -> ByteArray {
-            let adventurer_id: u64 = token_id.try_into().unwrap();
-            let adventurer_address = self.adventurer_address.read();
-            let adventurer_dispatcher = IAdventurerSystemsDispatcher {
-                contract_address: adventurer_address,
-            };
-
-            let adventurer_verbose: AdventurerVerbose = adventurer_dispatcher
-                .get_adventurer_verbose(adventurer_id);
-
-            let (description, _, _) = Renderer::render(token_id.into(), adventurer_verbose);
-            description
+            Renderer::get_description()
         }
     }
 
     #[abi(embed_v0)]
     impl MinigameDetailsImpl of super::IMinigameDetailsSVG<ContractState> {
         fn game_details_svg(self: @ContractState, token_id: u64) -> ByteArray {
-            let adventurer_id: u64 = token_id.try_into().unwrap();
-            let adventurer_address = self.adventurer_address.read();
-            let adventurer_dispatcher = IAdventurerSystemsDispatcher {
-                contract_address: adventurer_address,
-            };
-            let adventurer_verbose: AdventurerVerbose = adventurer_dispatcher
-                .get_adventurer_verbose(adventurer_id);
-
-            let (_, image, _) = Renderer::render(token_id.into(), adventurer_verbose);
-            image
+            let death_mountain_dispatcher = self.death_mountain_dispatcher.read();
+            let adventurer_verbose: AdventurerVerbose = death_mountain_dispatcher
+                .get_adventurer_verbose(token_id);
+            Renderer::get_image(adventurer_verbose)
         }
     }
 
 
     #[abi(embed_v0)]
     impl RendererImpl of super::IRenderer<ContractState> {
-        fn get_adventurer_contract_address(self: @ContractState) -> ContractAddress {
-            self.adventurer_address.read()
+        fn get_death_mountain_address(self: @ContractState) -> ContractAddress {
+            self.death_mountain_dispatcher.read().contract_address
         }
     }
 }

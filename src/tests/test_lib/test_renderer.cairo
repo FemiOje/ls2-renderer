@@ -241,7 +241,7 @@ fn test_basic_render() {
                 item_type: Type::None,
                 slot: Slot::None,
             },
-            },
+        },
     };
     let token_id: u256 = 42;
     let (_, _, result) = Renderer::render(token_id, adventurer_verbose);
@@ -335,14 +335,14 @@ fn test_different_adventurer_stats() {
 fn test_invalid_adventurer_data_handling() {
     let mut invalid_adventurer = get_simple_adventurer_verbose();
     invalid_adventurer.health = 0; // Invalid health
-    
+
     let token_id: u256 = 1;
-    
+
     // PRECONDITION: Adventurer has invalid health
     assert(invalid_adventurer.health == 0, 'health should be zero');
-    
+
     let (_description, _json, result) = Renderer::render(token_id, invalid_adventurer);
-    
+
     // STRICT POSTCONDITION: Still generates output without panic
     assert(result.len() > 0, 'should handle invalid data');
 }
@@ -361,7 +361,13 @@ fn test_empty_adventurer_data_rendering() {
         beast_health: 0,
         stat_upgrades_available: 0,
         stats: Stats {
-            strength: 0, dexterity: 0, vitality: 0, intelligence: 0, wisdom: 0, charisma: 0, luck: 0,
+            strength: 0,
+            dexterity: 0,
+            vitality: 0,
+            intelligence: 0,
+            wisdom: 0,
+            charisma: 0,
+            luck: 0,
         },
         equipment: EquipmentVerbose {
             weapon: ItemVerbose {
@@ -393,15 +399,15 @@ fn test_empty_adventurer_data_rendering() {
         action_count: 0,
         bag: create_empty_bag(),
     };
-    
+
     let token_id: u256 = 1;
-    
+
     // PRECONDITION: Adventurer has minimal data
     assert(empty_adventurer.name.len() == 0, 'name should be empty');
     assert(empty_adventurer.xp == 0, 'xp should be zero');
-    
+
     let (_description, _json, result) = Renderer::render(token_id, empty_adventurer);
-    
+
     // STRICT POSTCONDITION: Generates valid output for empty data
     assert(result.len() > 0, 'should handle empty data');
 }
@@ -413,12 +419,12 @@ fn test_empty_adventurer_data_rendering() {
 fn test_maximum_values_adventurer_rendering() {
     let max_adventurer = get_max_stats_adventurer();
     let token_id: u256 = 1;
-    
+
     // PRECONDITION: Adventurer has maximum stats
     assert(max_adventurer.stats.strength == 255, 'max strength not set');
-    
+
     let (_description, _json, result) = Renderer::render(token_id, max_adventurer);
-    
+
     // STRICT POSTCONDITION: Handles maximum values without overflow
     assert(result.len() > 0, 'should handle max values');
 }
@@ -430,12 +436,12 @@ fn test_maximum_values_adventurer_rendering() {
 fn test_minimum_values_adventurer_rendering() {
     let min_adventurer = get_min_stats_adventurer();
     let token_id: u256 = 1;
-    
+
     // PRECONDITION: Adventurer has minimum stats
     assert(min_adventurer.stats.strength <= 1, 'min strength not set');
-    
+
     let (_description, _json, result) = Renderer::render(token_id, min_adventurer);
-    
+
     // STRICT POSTCONDITION: Handles minimum values correctly
     assert(result.len() > 0, 'should handle min values');
 }
@@ -448,24 +454,24 @@ fn test_health_bar_rendering_states() {
     let mut full_health = get_simple_adventurer_verbose();
     let mut half_health = get_simple_adventurer_verbose();
     let mut low_health = get_simple_adventurer_verbose();
-    
+
     // Set up different health states
     let max_health = full_health.stats.get_max_health();
     full_health.health = max_health;
     half_health.health = max_health / 2;
     low_health.health = max_health / 10;
-    
+
     let token_id: u256 = 1;
-    
+
     // PRECONDITION: Different health percentages set
     assert(full_health.health == max_health, 'full health incorrect');
     assert(half_health.health < max_health, 'half health incorrect');
     assert(low_health.health < half_health.health, 'low health incorrect');
-    
+
     let (_d1, _j1, result1) = Renderer::render(token_id, full_health);
     let (_d2, _j2, result2) = Renderer::render(token_id, half_health);
     let (_d3, _j3, result3) = Renderer::render(token_id, low_health);
-    
+
     // STRICT POSTCONDITION: All health states generate different outputs
     assert(result1 != result2, 'full/half should differ');
     assert(result2 != result3, 'half/low should differ');
@@ -478,7 +484,7 @@ fn test_health_bar_rendering_states() {
 #[test]
 fn test_equipment_display_all_slots() {
     let mut adventurer = get_simple_adventurer_verbose();
-    
+
     // Fill all equipment slots with unique items
     adventurer.equipment.weapon.name = 'TestWeapon';
     adventurer.equipment.chest.name = 'TestChest';
@@ -488,15 +494,15 @@ fn test_equipment_display_all_slots() {
     adventurer.equipment.hand.name = 'TestHand';
     adventurer.equipment.neck.name = 'TestNeck';
     adventurer.equipment.ring.name = 'TestRing';
-    
+
     let token_id: u256 = 1;
-    
+
     // PRECONDITION: All equipment slots have names
     assert(adventurer.equipment.weapon.name != '', 'weapon name missing');
     assert(adventurer.equipment.chest.name != '', 'chest name missing');
-    
+
     let (_description, _json, result) = Renderer::render(token_id, adventurer);
-    
+
     // STRICT POSTCONDITION: Equipment data reflected in output
     assert(result.len() > 0, 'equipment should render');
 }
@@ -507,7 +513,7 @@ fn test_equipment_display_all_slots() {
 #[test]
 fn test_equipment_display_empty_slots() {
     let mut adventurer = get_simple_adventurer_verbose();
-    
+
     // Clear all equipment
     let empty_item = ItemVerbose {
         name: '', id: 0, xp: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None,
@@ -520,15 +526,15 @@ fn test_equipment_display_empty_slots() {
     adventurer.equipment.hand = empty_item;
     adventurer.equipment.neck = empty_item;
     adventurer.equipment.ring = empty_item;
-    
+
     let token_id: u256 = 1;
-    
+
     // PRECONDITION: All equipment slots are empty
     assert(adventurer.equipment.weapon.name == '', 'weapon should be empty');
     assert(adventurer.equipment.chest.name == '', 'chest should be empty');
-    
+
     let (_description, _json, result) = Renderer::render(token_id, adventurer);
-    
+
     // STRICT POSTCONDITION: Empty equipment handled without error
     assert(result.len() > 0, 'should handle empty equipment');
 }
@@ -1037,13 +1043,13 @@ fn test_name_truncation_over_31_chars() {
     let mut adventurer_verbose = get_simple_adventurer_verbose();
     // Create a name that is 35 characters long (over the 31 character limit)
     adventurer_verbose.name = "ThisIsAnExtremelyLongAdventurerName"; // 35 chars
-    
+
     // PRECONDITION: Name is longer than 31 characters
     assert(adventurer_verbose.name.len() == 35, 'name should be 35 chars');
-    
+
     let token_id: u256 = 1;
     let (_, _, result) = Renderer::render(token_id, adventurer_verbose);
-    
+
     // STRICT POSTCONDITION: SVG generated and name should be truncated in display
     assert(result.len() > 0, 'svg should not be empty');
     // The SVG should contain the truncated name followed by "..."
@@ -1053,25 +1059,25 @@ fn test_name_truncation_over_31_chars() {
 
 /// @notice Test name at exactly 31 characters (boundary case)
 /// @dev STRICT PRECONDITION: Adventurer name is exactly 31 characters
-/// @dev STRICT POSTCONDITION: Name is truncated to 28 characters + "..." 
-#[test] 
+/// @dev STRICT POSTCONDITION: Name is truncated to 28 characters + "..."
+#[test]
 fn test_name_truncation_exactly_31_chars() {
     let mut adventurer_verbose = get_simple_adventurer_verbose();
     // Create a name that is exactly 31 characters long
     adventurer_verbose.name = "ThisNameIsExactlyThirtyOneChars"; // 31 chars
-    
+
     // PRECONDITION: Name is exactly 31 characters
     assert(adventurer_verbose.name.len() == 31, 'name should be 31 chars');
-    
+
     let token_id: u256 = 2;
     let (_, _, result) = Renderer::render(token_id, adventurer_verbose);
-    
+
     // STRICT POSTCONDITION: SVG generated and name should be truncated
     assert(result.len() > 0, 'svg should not be empty');
     println!("31-char boundary SVG metadata: {}", result);
 }
 
-/// @notice Test name at exactly 32 characters (just over boundary)  
+/// @notice Test name at exactly 32 characters (just over boundary)
 /// @dev STRICT PRECONDITION: Adventurer name is exactly 32 characters
 /// @dev STRICT POSTCONDITION: Name is truncated to 28 characters + "..."
 #[test]
@@ -1079,52 +1085,52 @@ fn test_name_truncation_exactly_32_chars() {
     let mut adventurer_verbose = get_simple_adventurer_verbose();
     // Create a name that is exactly 32 characters long (1 over limit)
     adventurer_verbose.name = "ThisNameIsExactlyThirtyTwoChars!"; // 32 chars
-    
-    // PRECONDITION: Name is exactly 32 characters  
+
+    // PRECONDITION: Name is exactly 32 characters
     assert(adventurer_verbose.name.len() == 32, 'name should be 32 chars');
-    
+
     let svg = generate_svg(adventurer_verbose);
-    
+
     // STRICT POSTCONDITION: SVG generated and name should be truncated
     assert(svg.len() > 0, 'svg should not be empty');
     println!("Generated SVG with name just over boundary (32 chars):");
 }
 
 /// @notice Test name under 31 characters (no truncation needed)
-/// @dev STRICT PRECONDITION: Adventurer name is under 31 characters  
+/// @dev STRICT PRECONDITION: Adventurer name is under 31 characters
 /// @dev STRICT POSTCONDITION: Name is displayed in full without truncation
 #[test]
 fn test_name_no_truncation_under_31_chars() {
     let mut adventurer_verbose = get_simple_adventurer_verbose();
     // Create a name that is under 31 characters (23 chars)
     adventurer_verbose.name = "ShortAdventurerNameTst"; // 23 chars (was 23, not 25)
-    
+
     // PRECONDITION: Name is under 31 characters
     assert(adventurer_verbose.name.len() == 22, 'name should be 22 chars');
-    
+
     let token_id: u256 = 3;
     let (_, _, result) = Renderer::render(token_id, adventurer_verbose);
-    
-    // STRICT POSTCONDITION: SVG generated and name should NOT be truncated  
+
+    // STRICT POSTCONDITION: SVG generated and name should NOT be truncated
     assert(result.len() > 0, 'svg should not be empty');
     println!("Short name SVG metadata (22 chars - no truncation): {}", result);
 }
 
 /// @notice Test name at exactly 30 characters (just under boundary)
 /// @dev STRICT PRECONDITION: Adventurer name is exactly 30 characters
-/// @dev STRICT POSTCONDITION: Name is displayed in full without truncation  
+/// @dev STRICT POSTCONDITION: Name is displayed in full without truncation
 #[test]
 fn test_name_no_truncation_exactly_30_chars() {
     let mut adventurer_verbose = get_simple_adventurer_verbose();
     // Create a name that is exactly 30 characters long (just under limit)
     adventurer_verbose.name = "ThisNameIsExactlyThirtyChars!!"; // 30 chars (was 29, not 30)
-    
+
     // PRECONDITION: Name is exactly 30 characters
     assert(adventurer_verbose.name.len() == 30, 'name should be 30 chars');
-    
+
     let token_id: u256 = 4;
     let (_, _, result) = Renderer::render(token_id, adventurer_verbose);
-    
+
     // STRICT POSTCONDITION: SVG generated and name should NOT be truncated
     assert(result.len() > 0, 'svg should not be empty');
     println!("30-char boundary SVG metadata (no truncation): {}", result);
@@ -1137,13 +1143,13 @@ fn test_name_no_truncation_exactly_30_chars() {
 fn test_name_truncation_empty_name() {
     let mut adventurer_verbose = get_simple_adventurer_verbose();
     adventurer_verbose.name = ""; // Empty name
-    
+
     // PRECONDITION: Name is empty
     assert(adventurer_verbose.name.len() == 0, 'name should be empty');
-    
+
     let token_id: u256 = 5;
     let (_, _, result) = Renderer::render(token_id, adventurer_verbose);
-    
+
     // STRICT POSTCONDITION: SVG generated without error for empty name
     assert(result.len() > 0, 'svg should not be empty');
     println!("Empty name SVG metadata: {}", result);
