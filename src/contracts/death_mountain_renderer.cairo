@@ -37,7 +37,7 @@ pub mod renderer_contract {
 
     #[constructor]
     fn constructor(ref self: ContractState, death_mountain_address: ContractAddress) {
-        assert!(!death_mountain_address.is_zero(), "Death Mountain address cannot be zero");
+        assert!(!death_mountain_address.is_zero(), "address cannot be zero");
         let death_mountain_dispatcher = IDeathMountainSystemsDispatcher {
             contract_address: death_mountain_address,
         };

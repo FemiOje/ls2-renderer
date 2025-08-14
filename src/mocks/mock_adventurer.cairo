@@ -306,3 +306,204 @@ pub mod mock_adventurer {
         ((adventurer_id + slot_offset) % 101_u64).try_into().unwrap() + 1_u8
     }
 }
+
+// Helper functions for testing
+use death_mountain_renderer::models::models::{
+    AdventurerVerbose, Stats, EquipmentVerbose, BagVerbose, ItemVerbose, Tier, Type, Slot
+};
+
+pub fn get_simple_adventurer() -> AdventurerVerbose {
+    let stats = Stats {
+        strength: 12,
+        dexterity: 10,
+        vitality: 14,
+        intelligence: 8,
+        wisdom: 9,
+        charisma: 7,
+        luck: 5
+    };
+    
+    let weapon_item = ItemVerbose {
+        id: 1,
+        name: 'Dagger',
+        tier: Tier::T1,
+        item_type: Type::Blade_or_Hide,
+        slot: Slot::Weapon,
+        xp: 100
+    };
+    
+    let chest_item = ItemVerbose {
+        id: 2,
+        name: 'Leather Armor',
+        tier: Tier::T1,
+        item_type: Type::Blade_or_Hide,
+        slot: Slot::Chest,
+        xp: 50
+    };
+    
+    let equipment = EquipmentVerbose {
+        weapon: weapon_item,
+        chest: chest_item,
+        head: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 },
+        waist: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 },
+        foot: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 },
+        hand: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 },
+        neck: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 },
+        ring: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 }
+    };
+    
+    let empty_item = ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 };
+    
+    AdventurerVerbose {
+        health: 250,
+        level: 5,
+        stats,
+        equipment,
+        bag: BagVerbose {
+            item_1: weapon_item,
+            item_2: chest_item,
+            item_3: weapon_item,
+            item_4: empty_item,
+            item_5: empty_item,
+            item_6: empty_item,
+            item_7: empty_item,
+            item_8: empty_item,
+            item_9: empty_item,
+            item_10: empty_item,
+            item_11: empty_item,
+            item_12: empty_item,
+            item_13: empty_item,
+            item_14: empty_item,
+            item_15: empty_item,
+        },
+        name: "TestHero",
+        xp: 1000,
+        gold: 100,
+        beast_health: 0,
+        stat_upgrades_available: 0,
+        item_specials_seed: 123,
+        action_count: 0
+    }
+}
+
+pub fn get_adventurer_with_max_stats() -> AdventurerVerbose {
+    let adventurer = get_simple_adventurer();
+    AdventurerVerbose {
+        health: 65535,
+        level: 255,
+        stats: Stats {
+            strength: 255,
+            dexterity: 255,
+            vitality: 255,
+            intelligence: 255,
+            wisdom: 255,
+            charisma: 255,
+            luck: 255
+        },
+        equipment: adventurer.equipment,
+        bag: adventurer.bag,
+        name: "MaxHero",
+        xp: 65535,
+        gold: adventurer.gold,
+        beast_health: adventurer.beast_health,
+        stat_upgrades_available: adventurer.stat_upgrades_available,
+        item_specials_seed: adventurer.item_specials_seed,
+        action_count: adventurer.action_count
+    }
+}
+
+pub fn get_adventurer_with_min_stats() -> AdventurerVerbose {
+    let adventurer = get_simple_adventurer();
+    AdventurerVerbose {
+        health: 1,
+        level: 1,
+        stats: Stats {
+            strength: 1,
+            dexterity: 1,
+            vitality: 1,
+            intelligence: 1,
+            wisdom: 1,
+            charisma: 1,
+            luck: 1
+        },
+        equipment: adventurer.equipment,
+        bag: adventurer.bag,
+        name: "MinHero",
+        xp: 0,
+        gold: adventurer.gold,
+        beast_health: adventurer.beast_health,
+        stat_upgrades_available: adventurer.stat_upgrades_available,
+        item_specials_seed: adventurer.item_specials_seed,
+        action_count: adventurer.action_count
+    }
+}
+
+pub fn get_adventurer_with_long_name() -> AdventurerVerbose {
+    let adventurer = get_simple_adventurer();
+    AdventurerVerbose {
+        health: adventurer.health,
+        level: adventurer.level,
+        stats: adventurer.stats,
+        equipment: adventurer.equipment,
+        bag: adventurer.bag,
+        name: "VeryLongAdventurerNameThatExceedsNormalLengthLimits",
+        xp: adventurer.xp,
+        gold: adventurer.gold,
+        beast_health: adventurer.beast_health,
+        stat_upgrades_available: adventurer.stat_upgrades_available,
+        item_specials_seed: adventurer.item_specials_seed,
+        action_count: adventurer.action_count
+    }
+}
+
+pub fn create_custom_adventurer(health: u16, level: u8, vitality: u8) -> AdventurerVerbose {
+    let base = get_simple_adventurer();
+    AdventurerVerbose {
+        health,
+        level,
+        stats: Stats {
+            strength: base.stats.strength,
+            dexterity: base.stats.dexterity,
+            vitality,
+            intelligence: base.stats.intelligence,
+            wisdom: base.stats.wisdom,
+            charisma: base.stats.charisma,
+            luck: base.stats.luck
+        },
+        equipment: base.equipment,
+        bag: base.bag,
+        name: base.name,
+        xp: base.xp,
+        gold: base.gold,
+        beast_health: base.beast_health,
+        stat_upgrades_available: base.stat_upgrades_available,
+        item_specials_seed: base.item_specials_seed,
+        action_count: base.action_count
+    }
+}
+
+pub fn create_custom_adventurer_with_name(name: ByteArray) -> AdventurerVerbose {
+    let base = get_simple_adventurer();
+    AdventurerVerbose {
+        health: base.health,
+        level: base.level,
+        stats: Stats {
+            strength: base.stats.strength,
+            dexterity: base.stats.dexterity,
+            vitality: base.stats.vitality,
+            intelligence: base.stats.intelligence,
+            wisdom: base.stats.wisdom,
+            charisma: base.stats.charisma,
+            luck: base.stats.luck
+        },
+        equipment: base.equipment,
+        bag: base.bag,
+        name: name,
+        xp: base.xp,
+        gold: base.gold,
+        beast_health: base.beast_health,
+        stat_upgrades_available: base.stat_upgrades_available,
+        item_specials_seed: base.item_specials_seed,
+        action_count: base.action_count
+    }
+}
