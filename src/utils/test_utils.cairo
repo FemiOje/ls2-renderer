@@ -31,7 +31,10 @@ pub fn validate_health_formula(health: u16, vitality: u8) {
     let expected: u16 = (BASE_HEALTH + (vitality.into() * VITALITY_MULTIPLIER)).try_into().unwrap();
     assert!(health == expected, "Health formula must be consistent");
     assert!(health >= BASE_HEALTH.try_into().unwrap(), "Health must be at least base 100");
-    assert!(health <= (BASE_HEALTH + (MAX_VITALITY * VITALITY_MULTIPLIER)).try_into().unwrap(), "Health must not exceed max");
+    assert!(
+        health <= (BASE_HEALTH + (MAX_VITALITY * VITALITY_MULTIPLIER)).try_into().unwrap(),
+        "Health must not exceed max",
+    );
 }
 
 pub fn validate_data_uri_format(content: @ByteArray, min_length: u32) {
@@ -55,7 +58,7 @@ pub fn validate_base64_properties(input: @ByteArray, result: @ByteArray) {
 
 pub fn validate_string_conversion_invariants(value: u256, result: @ByteArray) {
     assert!(result.len() > 0, "String conversion must never be empty");
-    
+
     if value.low == 0 && value.high == 0 {
         assert!(result == @"0", "Zero must convert to 0");
     } else {

@@ -6,7 +6,7 @@
 
 use death_mountain_renderer::models::models::{AdventurerVerbose, GameDetail};
 use death_mountain_renderer::utils::encoding::bytes_base64_encode;
-use death_mountain_renderer::utils::renderer_utils::{generate_svg, u64_to_string, generate_details};
+use death_mountain_renderer::utils::renderer_utils::{generate_details, generate_svg, u64_to_string};
 
 /// @title Renderer Trait - Core rendering interface for battle interface NFTs
 /// @notice Defines the contract for rendering dynamic NFT metadata
@@ -16,9 +16,7 @@ pub trait Renderer {
     /// @param token_id The NFT token ID to render metadata for
     /// @param adventurer_verbose Pre-fetched adventurer data with resolved item names
     /// @return Base64-encoded JSON metadata string containing SVG battle interface
-    fn render(
-        token_id: u64, adventurer_verbose: AdventurerVerbose,
-    ) -> ByteArray;
+    fn render(token_id: u64, adventurer_verbose: AdventurerVerbose) -> ByteArray;
     fn get_traits(adventurer_verbose: AdventurerVerbose) -> Span<GameDetail>;
     fn get_description() -> ByteArray;
     fn get_image(adventurer_verbose: AdventurerVerbose) -> ByteArray;

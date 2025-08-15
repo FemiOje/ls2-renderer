@@ -5,7 +5,7 @@
 // @dev Tests boundary conditions, performance, and security edge cases
 
 use death_mountain_renderer::utils::encoding::{
-    bytes_base64_encode, get_base64_char_set, BytesUsedTrait
+    BytesUsedTrait, bytes_base64_encode, get_base64_char_set,
 };
 
 #[test]
@@ -66,8 +66,8 @@ fn test_base64_large_input() {
     while i < 100 {
         large_input.append_byte(65 + (i % 26_u32).try_into().unwrap()); // Generate A-Z pattern
         i += 1;
-    };
-    
+    }
+
     let input_len = large_input.len();
     let result = bytes_base64_encode(large_input);
     assert!(result.len() > 0, "Large input should produce non-empty output");
@@ -95,16 +95,17 @@ fn test_base64_char_set_completeness() {
 
 #[test]
 fn test_base64_with_json_metadata() {
-    let mut json_content = "{\"name\":\"Adventurer #1\",\"description\":\"Death Mountain Battle Interface\"}";
+    let mut json_content =
+        "{\"name\":\"Adventurer #1\",\"description\":\"Death Mountain Battle Interface\"}";
     let result = bytes_base64_encode(json_content);
-    
+
     assert!(result.len() > 0, "JSON encoding should produce non-empty output");
 }
 
 #[test]
 fn test_base64_with_realistic_svg_content() {
     let mut svg_start = "<svg width=\"400\" height=\"600\" xmlns=\"http://www.w3.org/2000/svg\">";
-    
+
     let input_len = ByteArrayTrait::len(@svg_start);
     let result = bytes_base64_encode(svg_start);
     assert!(result.len() > 0, "SVG encoding should produce output");
@@ -178,9 +179,8 @@ fn test_u256_bytes_used_high_range() {
 
 #[test]
 fn test_u256_bytes_used_maximum() {
-    let max_u256 = u256 { 
-        low: 0xffffffffffffffffffffffffffffffff, 
-        high: 0xffffffffffffffffffffffffffffffff 
+    let max_u256 = u256 {
+        low: 0xffffffffffffffffffffffffffffffff, high: 0xffffffffffffffffffffffffffffffff,
     };
     assert_eq!(max_u256.bytes_used(), 32, "Max u256 should use 32 bytes");
 }
@@ -201,10 +201,10 @@ fn fuzz_base64_encoding_random_bytes(input_value: u32) {
             input_bytes.append_byte(((input_value / 65536) % 256).try_into().unwrap());
         }
     }
-    
+
     let input_len = input_bytes.len();
     let result = bytes_base64_encode(input_bytes);
-    
+
     // Invariants that should always hold
     if input_len == 0 {
         assert_eq!(result.len(), 0, "Empty input should produce empty output");
@@ -217,22 +217,26 @@ fn fuzz_base64_encoding_random_bytes(input_value: u32) {
 #[fuzzer(runs: 500, seed: 123)]
 fn fuzz_bytes_used_u128(value: u128) {
     let bytes_used = value.bytes_used();
-    
+
     // Invariants
     assert!(bytes_used <= 16, "u128 should never use more than 16 bytes");
-    
+
     if value == 0 {
         assert_eq!(bytes_used, 0, "Zero should use 0 bytes");
     } else {
         assert!(bytes_used > 0, "Non-zero value should use at least 1 byte");
     }
-    
+
     // Check that the value fits in the reported byte count
     if bytes_used > 0 && bytes_used < 16 {
-        let max_for_bytes = if bytes_used == 1 { 255 } 
-                           else if bytes_used == 2 { 65535 } 
-                           else { return; }; // Skip complex calculations for fuzz
-        
+        let max_for_bytes = if bytes_used == 1 {
+            255
+        } else if bytes_used == 2 {
+            65535
+        } else {
+            return;
+        }; // Skip complex calculations for fuzz
+
         if bytes_used <= 2 {
             assert!(value <= max_for_bytes, "Value should fit in reported byte count");
         }
@@ -243,16 +247,16 @@ fn fuzz_bytes_used_u128(value: u128) {
 #[fuzzer(runs: 500, seed: 456)]
 fn fuzz_bytes_used_u256(value: u256) {
     let bytes_used = value.bytes_used();
-    
+
     // Invariants
     assert!(bytes_used <= 32, "u256 should never use more than 32 bytes");
-    
+
     if value == 0 {
         assert_eq!(bytes_used, 0, "Zero should use 0 bytes");
     } else {
         assert!(bytes_used > 0, "Non-zero value should use at least 1 byte");
     }
-    
+
     // High part consistency check
     if value.high == 0 {
         let low_bytes = value.low.bytes_used();
@@ -273,7 +277,7 @@ fn test_base64_encoding_functionality() {
     test_data.append_byte(108);
     test_data.append_byte(111);
     let result = bytes_base64_encode(test_data);
-    
+
     // This test ensures the function completes and produces output
     assert!(result.len() > 0, "Encoding should produce output");
 }
@@ -281,7 +285,7 @@ fn test_base64_encoding_functionality() {
 #[test]
 fn test_char_set_functionality() {
     let char_set = get_base64_char_set();
-    
+
     // Verify character set generation works
     assert_eq!(char_set.len(), 64, "Character set should have 64 characters");
 }
@@ -296,8 +300,8 @@ fn test_base64_malicious_input_sizes() {
     while i < 255 { // Reduced size to prevent issues
         max_input.append_byte(i);
         i += 1;
-    };
-    
+    }
+
     let result = bytes_base64_encode(max_input);
     assert!(result.len() > 0, "Large input should be handled gracefully");
 }

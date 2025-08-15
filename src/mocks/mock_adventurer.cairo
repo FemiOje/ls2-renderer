@@ -309,51 +309,59 @@ pub mod mock_adventurer {
 
 // Helper functions for testing
 use death_mountain_renderer::models::models::{
-    AdventurerVerbose, Stats, EquipmentVerbose, BagVerbose, ItemVerbose, Tier, Type, Slot
+    AdventurerVerbose, BagVerbose, EquipmentVerbose, ItemVerbose, Slot, Stats, Tier, Type,
 };
 
 pub fn get_simple_adventurer() -> AdventurerVerbose {
     let stats = Stats {
-        strength: 12,
-        dexterity: 10,
-        vitality: 14,
-        intelligence: 8,
-        wisdom: 9,
-        charisma: 7,
-        luck: 5
+        strength: 12, dexterity: 10, vitality: 14, intelligence: 8, wisdom: 9, charisma: 7, luck: 5,
     };
-    
+
     let weapon_item = ItemVerbose {
         id: 1,
         name: 'Dagger',
         tier: Tier::T1,
         item_type: Type::Blade_or_Hide,
         slot: Slot::Weapon,
-        xp: 100
+        xp: 100,
     };
-    
+
     let chest_item = ItemVerbose {
         id: 2,
         name: 'Leather Armor',
         tier: Tier::T1,
         item_type: Type::Blade_or_Hide,
         slot: Slot::Chest,
-        xp: 50
+        xp: 50,
     };
-    
+
     let equipment = EquipmentVerbose {
         weapon: weapon_item,
         chest: chest_item,
-        head: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 },
-        waist: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 },
-        foot: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 },
-        hand: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 },
-        neck: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 },
-        ring: ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 }
+        head: ItemVerbose {
+            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+        },
+        waist: ItemVerbose {
+            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+        },
+        foot: ItemVerbose {
+            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+        },
+        hand: ItemVerbose {
+            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+        },
+        neck: ItemVerbose {
+            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+        },
+        ring: ItemVerbose {
+            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+        },
     };
-    
-    let empty_item = ItemVerbose { id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0 };
-    
+
+    let empty_item = ItemVerbose {
+        id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+    };
+
     AdventurerVerbose {
         health: 250,
         level: 5,
@@ -382,7 +390,7 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
         beast_health: 0,
         stat_upgrades_available: 0,
         item_specials_seed: 123,
-        action_count: 0
+        action_count: 0,
     }
 }
 
@@ -398,7 +406,7 @@ pub fn get_adventurer_with_max_stats() -> AdventurerVerbose {
             intelligence: 255,
             wisdom: 255,
             charisma: 255,
-            luck: 255
+            luck: 255,
         },
         equipment: adventurer.equipment,
         bag: adventurer.bag,
@@ -408,7 +416,7 @@ pub fn get_adventurer_with_max_stats() -> AdventurerVerbose {
         beast_health: adventurer.beast_health,
         stat_upgrades_available: adventurer.stat_upgrades_available,
         item_specials_seed: adventurer.item_specials_seed,
-        action_count: adventurer.action_count
+        action_count: adventurer.action_count,
     }
 }
 
@@ -424,7 +432,7 @@ pub fn get_adventurer_with_min_stats() -> AdventurerVerbose {
             intelligence: 1,
             wisdom: 1,
             charisma: 1,
-            luck: 1
+            luck: 1,
         },
         equipment: adventurer.equipment,
         bag: adventurer.bag,
@@ -434,7 +442,7 @@ pub fn get_adventurer_with_min_stats() -> AdventurerVerbose {
         beast_health: adventurer.beast_health,
         stat_upgrades_available: adventurer.stat_upgrades_available,
         item_specials_seed: adventurer.item_specials_seed,
-        action_count: adventurer.action_count
+        action_count: adventurer.action_count,
     }
 }
 
@@ -452,7 +460,7 @@ pub fn get_adventurer_with_long_name() -> AdventurerVerbose {
         beast_health: adventurer.beast_health,
         stat_upgrades_available: adventurer.stat_upgrades_available,
         item_specials_seed: adventurer.item_specials_seed,
-        action_count: adventurer.action_count
+        action_count: adventurer.action_count,
     }
 }
 
@@ -468,7 +476,7 @@ pub fn create_custom_adventurer(health: u16, level: u8, vitality: u8) -> Adventu
             intelligence: base.stats.intelligence,
             wisdom: base.stats.wisdom,
             charisma: base.stats.charisma,
-            luck: base.stats.luck
+            luck: base.stats.luck,
         },
         equipment: base.equipment,
         bag: base.bag,
@@ -478,7 +486,7 @@ pub fn create_custom_adventurer(health: u16, level: u8, vitality: u8) -> Adventu
         beast_health: base.beast_health,
         stat_upgrades_available: base.stat_upgrades_available,
         item_specials_seed: base.item_specials_seed,
-        action_count: base.action_count
+        action_count: base.action_count,
     }
 }
 
@@ -494,7 +502,7 @@ pub fn create_custom_adventurer_with_name(name: ByteArray) -> AdventurerVerbose 
             intelligence: base.stats.intelligence,
             wisdom: base.stats.wisdom,
             charisma: base.stats.charisma,
-            luck: base.stats.luck
+            luck: base.stats.luck,
         },
         equipment: base.equipment,
         bag: base.bag,
@@ -504,6 +512,6 @@ pub fn create_custom_adventurer_with_name(name: ByteArray) -> AdventurerVerbose 
         beast_health: base.beast_health,
         stat_upgrades_available: base.stat_upgrades_available,
         item_specials_seed: base.item_specials_seed,
-        action_count: base.action_count
+        action_count: base.action_count,
     }
 }

@@ -17,19 +17,19 @@ pub fn contains_pattern(haystack: @ByteArray, needle: @ByteArray) -> bool {
     if haystack.len() < needle.len() {
         return false;
     }
-    
+
     // For short patterns, use naive search (more efficient for small patterns)
     if needle.len() <= 4 {
         return naive_search(haystack, needle);
     }
-    
+
     // For longer patterns, use optimized search with skip table
     optimized_search(haystack, needle)
 }
 
 /// @notice Naive string search algorithm for short patterns
 /// @dev Simple character-by-character comparison, optimal for patterns ≤4 characters
-/// @param haystack The ByteArray to search within  
+/// @param haystack The ByteArray to search within
 /// @param needle The pattern to search for
 /// @return bool True if pattern is found, false otherwise
 fn naive_search(haystack: @ByteArray, needle: @ByteArray) -> bool {
@@ -55,13 +55,13 @@ fn naive_search(haystack: @ByteArray, needle: @ByteArray) -> bool {
 /// @notice Optimized pattern search using first/last character matching heuristic
 /// @dev Implements a simplified Boyer-Moore-like approach for better performance
 /// @param haystack The ByteArray to search within
-/// @param needle The pattern to search for  
+/// @param needle The pattern to search for
 /// @return bool True if pattern is found, false otherwise
 fn optimized_search(haystack: @ByteArray, needle: @ByteArray) -> bool {
     // Simple optimization: check first and last character before full match
     let first_char = needle[0];
     let last_char = needle[needle.len() - 1];
-    
+
     let mut i = 0;
     while i <= haystack.len() - needle.len() {
         // Quick check: first and last characters must match
