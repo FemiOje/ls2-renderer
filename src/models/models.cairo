@@ -58,7 +58,7 @@ pub struct Adventurer {
     pub action_count: u16,
 }
 
-#[derive(Drop, Serde)]
+#[derive(Drop, Serde, Clone)]
 pub struct AdventurerVerbose {
     pub name: ByteArray,
     pub health: u16,

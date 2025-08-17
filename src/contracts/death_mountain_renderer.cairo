@@ -15,6 +15,13 @@ pub trait IMinigameDetailsSVG<TState> {
 }
 
 #[starknet::interface]
+pub trait IMinigameDetailsPaginated<TState> {
+    fn game_details_page(self: @TState, token_id: u64, page: u8) -> ByteArray;
+    fn get_page_count(self: @TState, token_id: u64) -> u8;
+    fn get_page_image(self: @TState, token_id: u64, page: u8) -> ByteArray;
+}
+
+#[starknet::interface]
 pub trait IRenderer<TState> {
     fn get_death_mountain_address(self: @TState) -> ContractAddress;
 }
@@ -26,7 +33,7 @@ pub mod renderer_contract {
         IDeathMountainSystemsDispatcher, IDeathMountainSystemsDispatcherTrait,
     };
     use death_mountain_renderer::models::models::{AdventurerVerbose, GameDetail};
-    use death_mountain_renderer::utils::renderer::Renderer;
+    use death_mountain_renderer::utils::renderer::{Renderer, PageRenderer};
     use starknet::ContractAddress;
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
 
@@ -68,6 +75,30 @@ pub mod renderer_contract {
         }
     }
 
+
+    #[abi(embed_v0)]
+    impl MinigamePaginatedImpl of super::IMinigameDetailsPaginated<ContractState> {
+        fn game_details_page(self: @ContractState, token_id: u64, page: u8) -> ByteArray {
+            let death_mountain_dispatcher = self.death_mountain_dispatcher.read();
+            let adventurer_verbose: AdventurerVerbose = death_mountain_dispatcher
+                .get_adventurer_verbose(token_id);
+            PageRenderer::render_page(token_id, adventurer_verbose, page)
+        }
+
+        fn get_page_count(self: @ContractState, token_id: u64) -> u8 {
+            let death_mountain_dispatcher = self.death_mountain_dispatcher.read();
+            let adventurer_verbose: AdventurerVerbose = death_mountain_dispatcher
+                .get_adventurer_verbose(token_id);
+            PageRenderer::get_page_count(adventurer_verbose)
+        }
+
+        fn get_page_image(self: @ContractState, token_id: u64, page: u8) -> ByteArray {
+            let death_mountain_dispatcher = self.death_mountain_dispatcher.read();
+            let adventurer_verbose: AdventurerVerbose = death_mountain_dispatcher
+                .get_adventurer_verbose(token_id);
+            PageRenderer::get_page_image(adventurer_verbose, page)
+        }
+    }
 
     #[abi(embed_v0)]
     impl RendererImpl of super::IRenderer<ContractState> {

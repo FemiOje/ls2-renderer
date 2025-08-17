@@ -83,7 +83,7 @@ pub fn ring() -> ByteArray {
 /// @dev Handles edge case of zero and builds string digit by digit
 /// @param value The u8 value to convert to string
 /// @return ByteArray containing the string representation
-fn u8_to_string(value: u8) -> ByteArray {
+pub fn u8_to_string(value: u8) -> ByteArray {
     if value == 0 {
         return "0";
     }
@@ -720,24 +720,52 @@ fn generate_svg_footer() -> ByteArray {
 
 // Generate dynamic SVG with adventurer stats and equipment - now using modular functions
 pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
-    let mut svg = "";
+    generate_svg_with_page(adventurer, 0)
+}
 
+// Generate dynamic SVG with adventurer data for specific page
+pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
+    let mut svg = "";
+    
     svg += generate_svg_header();
-    svg += generate_stats_text(adventurer.stats);
-    svg += generate_adventurer_name_text(adventurer.name);
-    svg += generate_logo();
-    svg += generate_gold_display(adventurer.gold);
-    svg += generate_level_display(adventurer.level);
-    svg += generate_health_bar(adventurer.stats, adventurer.health);
-    svg += generate_inventory_header();
-    svg += generate_equipment_slots();
-    svg += generate_equipment_icons();
-    svg += generate_equipment_level_badges(adventurer.equipment);
-    svg += generate_equipment_names(adventurer.equipment);
+    svg += generate_page_content(adventurer, page);
     svg += generate_border();
     svg += generate_svg_footer();
-
+    
     svg
+}
+
+// Generate page-specific content based on page number
+fn generate_page_content(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
+    match page {
+        0 => generate_battle_page_content(adventurer),
+        1 => generate_empty_page_content(),
+        _ => generate_battle_page_content(adventurer) // Default to battle page
+    }
+}
+
+// Generate battle interface content (current implementation)
+fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
+    let mut content = "";
+    
+    content += generate_stats_text(adventurer.stats);
+    content += generate_adventurer_name_text(adventurer.name);
+    content += generate_logo();
+    content += generate_gold_display(adventurer.gold);
+    content += generate_level_display(adventurer.level);
+    content += generate_health_bar(adventurer.stats, adventurer.health);
+    content += generate_inventory_header();
+    content += generate_equipment_slots();
+    content += generate_equipment_icons();
+    content += generate_equipment_level_badges(adventurer.equipment);
+    content += generate_equipment_names(adventurer.equipment);
+    
+    content
+}
+
+// Generate empty page content (black background only)
+fn generate_empty_page_content() -> ByteArray {
+    ""
 }
 
 // @notice Generates adventurer details for the adventurer token uri
