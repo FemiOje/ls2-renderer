@@ -79,7 +79,7 @@ pub impl PageRendererImpl of PageRenderer {
     }
 
     fn get_page_count(adventurer_verbose: AdventurerVerbose) -> u8 {
-        2 // Currently support 2 pages: battle interface (0) and empty page (1)
+        4 // Support 4 pages: Inventory (0), ItemBag (1), Marketplace (2), Battle (3)
     }
 
     fn get_page_image(adventurer_verbose: AdventurerVerbose, page: u8) -> ByteArray {

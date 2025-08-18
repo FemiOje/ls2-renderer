@@ -11,7 +11,10 @@ use death_mountain_renderer::mocks::mock_adventurer::{
 };
 use death_mountain_renderer::models::models::StatsTrait;
 use death_mountain_renderer::utils::renderer::renderer::RendererImpl;
+use death_mountain_renderer::utils::renderer::renderer_utils::generate_svg_with_page;
+use death_mountain_renderer::utils::encoding::encoding::bytes_base64_encode;
 use death_mountain_renderer::utils::string::string_utils::{contains_pattern, starts_with_pattern};
+use death_mountain_renderer::utils::renderer::page::page_renderer::PageRendererImpl;
 
 // BASIC FUNCTIONALITY TESTS
 
@@ -455,16 +458,13 @@ fn test_boundary_level_adventurer() {
     );
 }
 
-// PAGINATION TESTS (moved from test_pagination.cairo)
-
-use death_mountain_renderer::utils::renderer::page::page_renderer::PageRendererImpl;
-use death_mountain_renderer::utils::renderer::renderer_utils::generate_svg_with_page;
+// PAGINATION TESTS
 
 #[test]
 fn test_page_count() {
     let adventurer = get_simple_adventurer();
     let page_count = PageRendererImpl::get_page_count(adventurer);
-    assert_eq!(page_count, 2, "Should have 2 pages");
+    assert_eq!(page_count, 4, "Should have 4 pages");
 }
 
 #[test]
@@ -497,7 +497,7 @@ fn test_page_1_empty_background() {
         contains_pattern(@svg, @"<rect width=\"567\" height=\"862\""),
         "Should contain main container",
     );
-    assert!(contains_pattern(@svg, @"#78E846"), "Should contain green border color");
+    assert!(contains_pattern(@svg, @"#E89446"), "Should contain orange border color");
 
     // Should NOT contain battle interface elements
     assert!(!contains_pattern(@svg, @"LEVEL"), "Should not contain level display");
@@ -538,16 +538,13 @@ fn test_page_image_generation() {
         "Page 1 should be SVG data URI",
     );
 
-    // Page 0 should be longer (more content) than page 1
     assert!(
-        page_0_image.len() > page_1_image.len(),
-        "Battle page should have more content than empty page",
+        page_0_image.len() != page_1_image.len(),
+        "Battle page should have different content than bag page",
     );
 }
 
 // SVG OUTPUT TESTS (moved from test_simple_svg_output.cairo and test_svg_output.cairo)
-
-use death_mountain_renderer::utils::encoding::encoding::bytes_base64_encode;
 
 #[test]
 fn test_simple_output_page_0_svg() {
@@ -599,46 +596,28 @@ fn test_simple_svg_comparison() {
 }
 
 #[test]
-fn test_output_page_0_svg() {
+fn test_output_all_pages_svg() {
     let adventurer = get_simple_adventurer();
-    let svg = generate_svg_with_page(adventurer, 0);
+    
+    // Generate SVG for all 4 pages
+    let svg_page_0 = generate_svg_with_page(adventurer.clone(), 0);
+    let svg_page_1 = generate_svg_with_page(adventurer.clone(), 1);
+    let svg_page_2 = generate_svg_with_page(adventurer.clone(), 2);
+    let svg_page_3 = generate_svg_with_page(adventurer, 3);
 
-    println!("=== PAGE 0 SVG (Battle Interface) ===");
-    println!("{}", svg);
+    println!("=== PAGE 0 SVG (Inventory - Green Border) ===");
+    println!("{}", svg_page_0);
     println!("=== END PAGE 0 SVG ===");
 
-    // Also output base64 encoded version
-    let svg_base64 = bytes_base64_encode(svg);
-    println!("=== PAGE 0 BASE64 ===");
-    println!("data:image/svg+xml;base64,{}", svg_base64);
-    println!("=== END PAGE 0 BASE64 ===");
-}
-
-#[test]
-fn test_output_page_1_svg() {
-    let adventurer = get_simple_adventurer();
-    let svg = generate_svg_with_page(adventurer, 1);
-
-    println!("=== PAGE 1 SVG (Empty Background with Border) ===");
-    println!("{}", svg);
+    println!("=== PAGE 1 SVG (Item Bag - Orange Border) ===");
+    println!("{}", svg_page_1);
     println!("=== END PAGE 1 SVG ===");
 
-    // Also output base64 encoded version
-    let svg_base64 = bytes_base64_encode(svg);
-    println!("=== PAGE 1 BASE64 ===");
-    println!("data:image/svg+xml;base64,{}", svg_base64);
-    println!("=== END PAGE 1 BASE64 ===");
-}
+    println!("=== PAGE 2 SVG (Marketplace - Blue Border) ===");
+    println!("{}", svg_page_2);
+    println!("=== END PAGE 2 SVG ===");
 
-#[test]
-fn test_output_svg_comparison() {
-    let adventurer = get_simple_adventurer();
-    let svg_page_0 = generate_svg_with_page(adventurer.clone(), 0);
-    let svg_page_1 = generate_svg_with_page(adventurer, 1);
-
-    println!("=== SVG SIZE COMPARISON ===");
-    println!("Page 0 (Battle Interface) length: {}", svg_page_0.len());
-    println!("Page 1 (Empty Background) length: {}", svg_page_1.len());
-    println!("Difference: {}", svg_page_0.len() - svg_page_1.len());
-    println!("=== END COMPARISON ===");
+    println!("=== PAGE 3 SVG (Battle - Red Border) ===");
+    println!("{}", svg_page_3);
+    println!("=== END PAGE 3 SVG ===");
 }

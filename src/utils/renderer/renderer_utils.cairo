@@ -211,6 +211,20 @@ pub fn sqrt_u16(value: u16) -> u8 {
 /// @notice Maximum equipment greatness level (matching death-mountain implementation)
 const MAX_GREATNESS: u8 = 20;
 
+/// @notice Get theme color for a specific page
+/// @dev Returns the appropriate color string for page elements
+/// @param page The page number (0-3)
+/// @return ByteArray containing the hex color code
+pub fn get_theme_color(page: u8) -> ByteArray {
+    match page {
+        0 => "#78E846", // Page 0 (Inventory) - Green theme
+        1 => "#E89446", // Page 1 (ItemBag) - Orange theme  
+        2 => "#68CFDF", // Page 2 (Marketplace) - Blue theme
+        3 => "#FF6B6B", // Page 3 (Battle) - Red theme
+        _ => "#78E846", // Default to green
+    }
+}
+
 /// @notice Converts felt252 value to ByteArray string representation
 /// @dev Extracts bytes from felt252 and builds string, skipping null bytes
 /// @param value The felt252 value to convert (typically item names from database)
@@ -323,9 +337,10 @@ fn generate_stats_text(stats: Stats) -> ByteArray {
 }
 
 
-// Generate dynamic adventurer name text as SVG with responsive font sizing
-pub fn generate_adventurer_name_text(name: ByteArray) -> ByteArray {
+// Generate dynamic adventurer name text as SVG with responsive font sizing and theme color
+pub fn generate_adventurer_name_text_with_page(name: ByteArray, page: u8) -> ByteArray {
     let mut name_text = "";
+    let theme_color = get_theme_color(page);
 
     // Truncate name if longer than 31 characters to ensure smooth UI display
     let truncated_name = if name.len() > 31 {
@@ -354,8 +369,10 @@ pub fn generate_adventurer_name_text(name: ByteArray) -> ByteArray {
         "10px"
     };
 
-    // Use dynamic text rendering with calculated font size
-    name_text += "<text x=\"339\" y=\"160\" fill=\"#78E846\" style=\"font-size:";
+    // Use dynamic text rendering with calculated font size and theme color
+    name_text += "<text x=\"339\" y=\"160\" fill=\"";
+    name_text += theme_color;
+    name_text += "\" style=\"font-size:";
     name_text += font_size;
     name_text += "\" text-anchor=\"left\">";
     name_text += truncated_name;
@@ -364,14 +381,26 @@ pub fn generate_adventurer_name_text(name: ByteArray) -> ByteArray {
     name_text
 }
 
-// Generate the logo SVG path - decorative "S" element only
-pub fn generate_logo() -> ByteArray {
-    let mut logo = "";
+// Generate dynamic adventurer name text as SVG with responsive font sizing (legacy function)
+pub fn generate_adventurer_name_text(name: ByteArray) -> ByteArray {
+    generate_adventurer_name_text_with_page(name, 0) // Default to green theme
+}
 
-    logo +=
-        "<path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M288.5 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM286 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
+// Generate the logo SVG path - decorative "S" element with theme color
+pub fn generate_logo_with_page(page: u8) -> ByteArray {
+    let mut logo = "";
+    let theme_color = get_theme_color(page);
+
+    logo += "<path fill=\"";
+    logo += theme_color;
+    logo += "\" fill-rule=\"evenodd\" d=\"M288.5 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM286 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
 
     logo
+}
+
+// Generate the logo SVG path - decorative "S" element (legacy function)
+pub fn generate_logo() -> ByteArray {
+    generate_logo_with_page(0) // Default to green theme
 }
 
 
@@ -698,16 +727,50 @@ fn generate_equipment_level_badges(equipment: EquipmentVerbose) -> ByteArray {
     badges
 }
 
-// Generate decorative border and background elements
-fn generate_border() -> ByteArray {
+// Generate decorative border based on page type with themed colors
+fn generate_border_for_page(page: u8) -> ByteArray {
+    let border_color = get_theme_color(page);
+
     let mut border = "";
-    border +=
-        "<path fill=\"#78E846\" d=\"M686 863h-6v-7h6v7Z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M153 428h8V104h6v342h-14c1 3-1 22 1 23h13v342h-6V488h-8v348h-6V482h14v-6h-14v-35h13v-7h-13V80h6v348Zm0 17v1l1-1h-1Zm561-11h-14v7h14v35h-14v6h14v354h-6V488h-8v323l-6-1V470l1-1h13v-23h-13l-1-341 6-1v324c2 2 6 0 8 0V80h6v354Zm-4 48-2 1 2-1Zm-5-12a35 35 0 0 1 1 0h-1Zm3 0h-1 1Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"M694 819Z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M700 462h-6v-8h6v8Zm-5-8h4-4Zm-528 8h-6v-8h6v8Zm-1-1h-4 4v-7 7Zm-4-7h2-2ZM658 53h14v13h-1 15c0 1 0 0 0 0l1 1h-1v13-1l1 1h13v17h-6V85h-12V75h-1l-1-2h-14V60l-1-1h-12V45h-3 3-8v-5h13v13Zm30 28h11-11Zm-8-9h-13 13Zm-27-15v1h12l2 2-2-2h-12v-1Zm5-4 4 1-4-1Zm11 1h2-2Zm-23-9Zm-430 0h-7 6-6l-1 1v13h-12c-2 1 0 11-1 14h-15v12c-2 2-10 0-13 1v11h-5V81h11l1-1V66h16V54v12h-1V54l1-1h13V40h13v5Zm-16 13h6-6Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"m174 80-1 1h-11v16h-1V80h13Zm507-5h1v10h12v1h-12l-1-1V75Z\"/><path fill=\"#78E846\" d=\"M682 86h-1v-1l1 1Zm-1-11Z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M666 28c4-2 9-1 13-1v6h-7v-2 9h14l1-1V28h26-26v11l-1 1V27h28v26h-14v13h9-1v-5c1-2 3-1 5-1-2 0-4-1-5 1v-2h6v14h-20V45h-28V28h13v3-3h-13Zm26 12h8v7c2 2 6 0 8 0V33h-16v7Zm7 4v1-1ZM181 28c5-2 9-1 14-1l-4 1 4-1v18h-28l-1 7 1-7v28h-20V59h6v8l8-1 1-1-1 1V53h-14V27h28v13h-1 15v-7h-8v-5Zm-15 40v4h-18 18v-4Zm-14-8v5-5Zm18-27h-17v15l8-1c-1-9 1-7 9-7v-7Zm-22-5h25l1 4-1-4h-25Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"M679 53c9-1 8 0 8 8h-8v-8Z\"/>";
-    border +=
-        "<path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M714 857h-6v-8h-8v14l-1-1 1 1h14v26h-28v-13h-15l1-1-1 1v7-1c2 2 7 0 9 1v6h-14v-2l13 1-13-1v-11 1-8h28v-27c7 2 14 0 20 0v15Zm-9 27h-8 8Zm-5-15v7h-8v7h16v1-2c2 1 1-1 1-2v-10 10c0 1 1 3-1 2v-13h-8Zm-1 6h-7 7Zm-33-5 1 3-1-3Zm42-2v1-1Zm-270-5v6l-1-1v-1l1 2h16v14c-2-4-1-9-1-13 0 4-1 9 1 13v1-1h13v-14h166v7H515l118-1v-5 5l-118 1h-25l5-1h1l-6 1h-3v7h171v6H480v-13h-7c-2 2 0 9-1 12 1-3-1-10 1-12v13c-4-1-23 1-25-1-2-1 0-10-1-12l-13-1v-6h-7v6h-14v13h-24 24v-13h14v-6 7h-13v13h-25c-2 0-1-12-1-13h1-8v13H203v-6h171l-171 1v4-4l171-1v-7H228v-7h166v14-1l3 1 11-1v-13h14c1 0 0 0 0 0v-6h16Zm-59 13v12-12Zm76 8Zm-10-9h-8 8Zm-8-12 1 1-1-1Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"M154 868h6-6Z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M167 869h28v19h-13v-5h7v-7h-14v1l-1-1 1 1v12h-28v-26h13l1-1v-13h-7c-2 1-1 6-1 8h-5l-1-1h1-1v-13h20v26Zm-7-1h-7v5l-1 1 1-1v10h17v-7c-1-2-8-1-8-1s7-1 8 1h-9v-7l-1-1Zm-8 13v1-1Zm0-6Zm24 0h-1 1Zm-15-10Zm-9-2h2-3 1Zm-4-7Zm291 32h-17v-5h17v5Zm-2-1v-3 3Zm257-68c2-2 4-1 6-1v18h-14v13h-15v14h-12c2-2 9 0 12-1-3 1-10-1-12 1l-1 1v12h-12l-1-1h13-13c-2-7 1-6 7-6v-12h14v-14h14v-12l1-1h13v-11h5-5Zm-28 24v14-14Zm-499-13h13v13h15v14h13v12c1 2 4 1 6 1h1c-2 0-6 1-7-1h8v7h-13v-13h-14v-14h-14l-1-1v-12h-13v-18h6v12Zm41 36h-1 1Zm0 0Zm-5-4Zm-24-29v10-10Zm-16 2h-1 1Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"M408 869v1h-1l1-1Z\"/><path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M181 863h-7v-7h7v7Zm-1-1h-5 5v-6 6Z\" clip-rule=\"evenodd\"/>";
-    border +=
-        "<path fill=\"#78E846\" fill-rule=\"evenodd\" d=\"M181 60h-7v-7h7v7Zm-1-1v-5 5Zm199-19h9l1-1V28v11l-1 1V27h26v12l-1 1 1-1 2 1h11v6c9 0 5-1 7-5 1-3 11 0 13-2 2-1 1-9 1-11 0 2 1 10-1 11V27h26l-1 13h8V27h178v6H487l-1 7h147v5H467V33h-13v8h-1 1v4h-15v6l-2 1h-14l-1-1v-6h-14V33h-14v12H227v-5h147v-7H203v-6h176v13Zm14-7v12-12Zm74 0v12-12Zm14 7V28v12Z\" clip-rule=\"evenodd\"/><path fill=\"#78E846\" d=\"M439 33h-17v-6h17v6Zm227-5Z\"/>";
+    border += "<path fill=\"";
+    border += border_color.clone();
+    border += "\" d=\"M686 863h-6v-7h6v7Z\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" fill-rule=\"evenodd\" d=\"M153 428h8V104h6v342h-14c1 3-1 22 1 23h13v342h-6V488h-8v348h-6V482h14v-6h-14v-35h13v-7h-13V80h6v348Zm0 17v1l1-1h-1Zm561-11h-14v7h14v35h-14v6h14v354h-6V488h-8v323l-6-1V470l1-1h13v-23h-13l-1-341 6-1v324c2 2 6 0 8 0V80h6v354Zm-4 48-2 1 2-1Zm-5-12a35 35 0 0 1 1 0h-1Zm3 0h-1 1Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" d=\"M694 819Z\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" fill-rule=\"evenodd\" d=\"M700 462h-6v-8h6v8Zm-5-8h4-4Zm-528 8h-6v-8h6v8Zm-1-1h-4 4v-7 7Zm-4-7h2-2ZM658 53h14v13h-1 15c0 1 0 0 0 0l1 1h-1v13-1l1 1h13v17h-6V85h-12V75h-1l-1-2h-14V60l-1-1h-12V45h-3 3-8v-5h13v13Zm30 28h11-11Zm-8-9h-13 13Zm-27-15v1h12l2 2-2-2h-12v-1Zm5-4 4 1-4-1Zm11 1h2-2Zm-23-9Zm-430 0h-7 6-6l-1 1v13h-12c-2 1 0 11-1 14h-15v12c-2 2-10 0-13 1v11h-5V81h11l1-1V66h16V54v12h-1V54l1-1h13V40h13v5Zm-16 13h6-6Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" d=\"m174 80-1 1h-11v16h-1V80h13Zm507-5h1v10h12v1h-12l-1-1V75Z\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" d=\"M682 86h-1v-1l1 1Zm-1-11Z\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" fill-rule=\"evenodd\" d=\"M666 28c4-2 9-1 13-1v6h-7v-2 9h14l1-1V28h26-26v11l-1 1V27h28v26h-14v13h9-1v-5c1-2 3-1 5-1-2 0-4-1-5 1v-2h6v14h-20V45h-28V28h13v3-3h-13Zm26 12h8v7c2 2 6 0 8 0V33h-16v7Zm7 4v1-1ZM181 28c5-2 9-1 14-1l-4 1 4-1v18h-28l-1 7 1-7v28h-20V59h6v8l8-1 1-1-1 1V53h-14V27h28v13h-1 15v-7h-8v-5Zm-15 40v4h-18 18v-4Zm-14-8v5-5Zm18-27h-17v15l8-1c-1-9 1-7 9-7v-7Zm-22-5h25l1 4-1-4h-25Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" d=\"M679 53c9-1 8 0 8 8h-8v-8Z\"/>";
+    border += "<path fill=\"";
+    border += border_color.clone();
+    border += "\" fill-rule=\"evenodd\" d=\"M714 857h-6v-8h-8v14l-1-1 1 1h14v26h-28v-13h-15l1-1-1 1v7-1c2 2 7 0 9 1v6h-14v-2l13 1-13-1v-11 1-8h28v-27c7 2 14 0 20 0v15Zm-9 27h-8 8Zm-5-15v7h-8v7h16v1-2c2 1 1-1 1-2v-10 10c0 1 1 3-1 2v-13h-8Zm-1 6h-7 7Zm-33-5 1 3-1-3Zm42-2v1-1Zm-270-5v6l-1-1v-1l1 2h16v14c-2-4-1-9-1-13 0 4-1 9 1 13v1-1h13v-14h166v7H515l118-1v-5 5l-118 1h-25l5-1h1l-6 1h-3v7h171v6H480v-13h-7c-2 2 0 9-1 12 1-3-1-10 1-12v13c-4-1-23 1-25-1-2-1 0-10-1-12l-13-1v-6h-7v6h-14v13h-24 24v-13h14v-6 7h-13v13h-25c-2 0-1-12-1-13h1-8v13H203v-6h171l-171 1v4-4l171-1v-7H228v-7h166v14-1l3 1 11-1v-13h14c1 0 0 0 0 0v-6h16Zm-59 13v12-12Zm76 8Zm-10-9h-8 8Zm-8-12 1 1-1-1Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" d=\"M154 868h6-6Z\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" fill-rule=\"evenodd\" d=\"M167 869h28v19h-13v-5h7v-7h-14v1l-1-1 1 1v12h-28v-26h13l1-1v-13h-7c-2 1-1 6-1 8h-5l-1-1h1-1v-13h20v26Zm-7-1h-7v5l-1 1 1-1v10h17v-7c-1-2-8-1-8-1s7-1 8 1h-9v-7l-1-1Zm-8 13v1-1Zm0-6Zm24 0h-1 1Zm-15-10Zm-9-2h2-3 1Zm-4-7Zm291 32h-17v-5h17v5Zm-2-1v-3 3Zm257-68c2-2 4-1 6-1v18h-14v13h-15v14h-12c2-2 9 0 12-1-3 1-10-1-12 1l-1 1v12h-12l-1-1h13-13c-2-7 1-6 7-6v-12h14v-14h14v-12l1-1h13v-11h5-5Zm-28 24v14-14Zm-499-13h13v13h15v14h13v12c1 2 4 1 6 1h1c-2 0-6 1-7-1h8v7h-13v-13h-14v-14h-14l-1-1v-12h-13v-18h6v12Zm41 36h-1 1Zm0 0Zm-5-4Zm-24-29v10-10Zm-16 2h-1 1Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" d=\"M408 869v1h-1l1-1Z\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" fill-rule=\"evenodd\" d=\"M181 863h-7v-7h7v7Zm-1-1h-5 5v-6 6Z\" clip-rule=\"evenodd\"/>";
+    border += "<path fill=\"";
+    border += border_color.clone();
+    border += "\" fill-rule=\"evenodd\" d=\"M181 60h-7v-7h7v7Zm-1-1v-5 5Zm199-19h9l1-1V28v11l-1 1V27h26v12l-1 1 1-1 2 1h11v6c9 0 5-1 7-5 1-3 11 0 13-2 2-1 1-9 1-11 0 2 1 10-1 11V27h26l-1 13h8V27h178v6H487l-1 7h147v5H467V33h-13v8h-1 1v4h-15v6l-2 1h-14l-1-1v-6h-14V33h-14v12H227v-5h147v-7H203v-6h176v13Zm14-7v12-12Zm74 0v12-12Zm14 7V28v12Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border += border_color.clone();
+    border += "\" d=\"M439 33h-17v-6h17v6Zm227-5Z\"/>";
     border
+}
+
+// Generate decorative border and background elements (legacy function)
+fn generate_border() -> ByteArray {
+    generate_border_for_page(0) // Default to green border
 }
 
 // Generate SVG footer with definitions and closing tags
@@ -729,7 +792,7 @@ pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteAr
 
     svg += generate_svg_header();
     svg += generate_page_content(adventurer, page);
-    svg += generate_border();
+    svg += generate_border_for_page(page);
     svg += generate_svg_footer();
 
     svg
@@ -738,19 +801,21 @@ pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteAr
 // Generate page-specific content based on page number
 fn generate_page_content(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
     match page {
-        0 => generate_battle_page_content(adventurer),
-        1 => generate_empty_page_content(),
-        _ => generate_battle_page_content(adventurer) // Default to battle page
+        0 => generate_inventory_page_content(adventurer),
+        1 => generate_item_bag_page_content(adventurer),
+        2 => generate_marketplace_page_content(adventurer),
+        3 => generate_battle_page_content(adventurer),
+        _ => generate_inventory_page_content(adventurer) // Default to inventory page
     }
 }
 
-// Generate battle interface content (current implementation)
-fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
+// Generate inventory page content (Page 0 - Green theme) 
+fn generate_inventory_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
 
     content += generate_stats_text(adventurer.stats);
-    content += generate_adventurer_name_text(adventurer.name);
-    content += generate_logo();
+    content += generate_adventurer_name_text_with_page(adventurer.name, 0);
+    content += generate_logo_with_page(0);
     content += generate_gold_display(adventurer.gold);
     content += generate_level_display(adventurer.level);
     content += generate_health_bar(adventurer.stats, adventurer.health);
@@ -763,9 +828,60 @@ fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     content
 }
 
-// Generate empty page content (black background only)
-fn generate_empty_page_content() -> ByteArray {
-    ""
+// Generate item bag page content (Page 1 - Orange theme)
+fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
+    let mut content = "";
+    
+    // Add adventurer name with orange theme
+    content += generate_adventurer_name_text_with_page(adventurer.name, 1);
+    content += generate_logo_with_page(1);
+    
+    // Add page title
+    content += "<text x=\"339\" y=\"200\" fill=\"#E8A746\" class=\"s24\" text-anchor=\"left\">Item Bag</text>";
+    
+    // Placeholder text for development
+    content += "<text x=\"400\" y=\"400\" fill=\"#E8A746\" class=\"s16\" text-anchor=\"middle\">INFORMATION ABOUT BAG GOES</text>";
+    content += "<text x=\"400\" y=\"430\" fill=\"#E8A746\" class=\"s16\" text-anchor=\"middle\">HERE AND HERE.</text>";
+    
+    content
+}
+
+// Generate marketplace page content (Page 2 - Blue theme)  
+fn generate_marketplace_page_content(adventurer: AdventurerVerbose) -> ByteArray {
+    let mut content = "";
+    
+    // Add adventurer name with blue theme  
+    content += generate_adventurer_name_text_with_page(adventurer.name, 2);
+    content += generate_logo_with_page(2);
+    
+    // Add page title
+    content += "<text x=\"339\" y=\"200\" fill=\"#4A9EFF\" class=\"s24\" text-anchor=\"left\">Marketplace</text>";
+    content += "<text x=\"540\" y=\"180\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"left\">SCROLL</text>";
+    content += "<text x=\"540\" y=\"200\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"left\">OF ITEMS</text>";
+    
+    // Placeholder text for development
+    content += "<text x=\"400\" y=\"400\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"middle\">MARKETPLACE ITEMS WILL</text>";
+    content += "<text x=\"400\" y=\"430\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"middle\">BE DISPLAYED HERE.</text>";
+    
+    content
+}
+
+// Generate battle page content (Page 3 - Red theme for gradient border)
+fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
+    let mut content = "";
+    
+    // Add adventurer name  
+    content += generate_adventurer_name_text_with_page(adventurer.name, 3);
+    content += generate_logo_with_page(3);
+    
+    // Add page title  
+    content += "<text x=\"339\" y=\"200\" fill=\"#FF6B6B\" class=\"s24\" text-anchor=\"left\">Current Battle</text>";
+    content += "<text x=\"540\" y=\"180\" fill=\"#FF6B6B\" class=\"s16\" text-anchor=\"left\">TROLL</text>";
+    
+    // Placeholder text for development
+    content += "<text x=\"400\" y=\"400\" fill=\"#FF6B6B\" class=\"s16\" text-anchor=\"middle\">TROLL AMBUSHED YOU FOR 10 DMG!</text>";
+    
+    content
 }
 
 // @notice Generates adventurer details for the adventurer token uri

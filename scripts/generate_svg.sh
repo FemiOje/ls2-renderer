@@ -3,9 +3,11 @@
 # ========================================================================
 # Death Mountain Renderer - Multipage SVG Generator Script
 # ========================================================================
-# This script generates SVG and PNG outputs for both pages of the multipage NFT system
-# Page 0: Battle interface with full stats and equipment
-# Page 1: Empty black background with decorative border
+# This script generates SVG and PNG outputs for all 4 pages of the multipage NFT system
+# Page 0: Inventory (Green theme)
+# Page 1: Item Bag (Orange theme)  
+# Page 2: Marketplace (Blue theme)
+# Page 3: Battle (Red theme)
 
 set -e
 
@@ -26,7 +28,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}📋 Generating SVG outputs for both pages...${NC}"
+echo -e "${BLUE}📋 Generating SVG outputs for all 4 pages...${NC}"
 
 # Function to extract SVG from test output
 extract_svg_from_test() {
@@ -113,43 +115,36 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}✓ Build successful${NC}"
 
-echo ""
-echo -e "${BLUE}📄 Page 0: Battle Interface${NC}"
-echo "================================"
+# Function to generate page outputs
+generate_page_outputs() {
+    local page_num="$1"
+    local page_name="$2"
+    local theme_color="$3"
+    
+    echo ""
+    echo -e "${BLUE}📄 Page $page_num: $page_name ($theme_color theme)${NC}"
+    echo "================================"
+    
+    if extract_svg_from_test "test_output_all_pages_svg" "$page_num" "$TEMP_DIR/page_$page_num.svg"; then
+        local filename_base="page_${page_num}_$(echo $page_name | tr '[:upper:]' '[:lower:]' | tr ' ' '_')"
+        cp "$TEMP_DIR/page_$page_num.svg" "$OUTPUT_DIR/${filename_base}.svg"
+        
+        # Convert to PNG
+        convert_svg_to_png "$OUTPUT_DIR/${filename_base}.svg" "$OUTPUT_DIR/${filename_base}.png"
+        
+        echo -e "${GREEN}✓ Page $page_num outputs generated${NC}"
+        return 0
+    else
+        echo -e "${RED}❌ Failed to generate Page $page_num outputs${NC}"
+        return 1
+    fi
+}
 
-# Generate Page 0 (Battle Interface)
-if extract_svg_from_test "test_simple_output_page_0_svg" "0" "$TEMP_DIR/page_0.svg"; then
-    cp "$TEMP_DIR/page_0.svg" "$OUTPUT_DIR/page_0_battle_interface.svg"
-    
-    # Convert to PNG
-    convert_svg_to_png "$OUTPUT_DIR/page_0_battle_interface.svg" "$OUTPUT_DIR/page_0_battle_interface.png"
-    
-    # Extract Base64 data URI
-    extract_base64_from_test "test_simple_output_page_0_svg" "0" "$OUTPUT_DIR/page_0_battle_interface_datauri.txt"
-    
-    echo -e "${GREEN}✓ Page 0 outputs generated${NC}"
-else
-    echo -e "${RED}❌ Failed to generate Page 0 outputs${NC}"
-fi
-
-echo ""
-echo -e "${BLUE}📄 Page 1: Empty Background with Border${NC}"
-echo "========================================="
-
-# Generate Page 1 (Empty Background)
-if extract_svg_from_test "test_simple_output_page_1_svg" "1" "$TEMP_DIR/page_1.svg"; then
-    cp "$TEMP_DIR/page_1.svg" "$OUTPUT_DIR/page_1_empty_background.svg"
-    
-    # Convert to PNG
-    convert_svg_to_png "$OUTPUT_DIR/page_1_empty_background.svg" "$OUTPUT_DIR/page_1_empty_background.png"
-    
-    # Extract Base64 data URI
-    extract_base64_from_test "test_simple_output_page_1_svg" "1" "$OUTPUT_DIR/page_1_empty_background_datauri.txt"
-    
-    echo -e "${GREEN}✓ Page 1 outputs generated${NC}"
-else
-    echo -e "${RED}❌ Failed to generate Page 1 outputs${NC}"
-fi
+# Generate all 4 pages
+generate_page_outputs "0" "Inventory" "Green"
+generate_page_outputs "1" "Item Bag" "Orange" 
+generate_page_outputs "2" "Marketplace" "Blue"
+generate_page_outputs "3" "Battle" "Red"
 
 echo ""
 echo -e "${BLUE}📊 Generating size comparison...${NC}"
@@ -177,12 +172,14 @@ echo -e "${GREEN}🎉 Generation complete!${NC}"
 echo -e "${BLUE}📁 Output files created in: ${OUTPUT_DIR}/${NC}"
 echo ""
 echo "Generated files:"
-echo "├── page_0_battle_interface.svg     - Battle interface SVG"
-echo "├── page_0_battle_interface.png     - Battle interface PNG"
-echo "├── page_0_battle_interface_datauri.txt - Battle interface data URI"
-echo "├── page_1_empty_background.svg     - Empty background SVG"
-echo "├── page_1_empty_background.png     - Empty background PNG"
-echo "├── page_1_empty_background_datauri.txt - Empty background data URI"
+echo "├── page_0_inventory.svg            - Inventory page SVG (Green theme)"
+echo "├── page_0_inventory.png            - Inventory page PNG (Green theme)"
+echo "├── page_1_item_bag.svg             - Item Bag page SVG (Orange theme)"
+echo "├── page_1_item_bag.png             - Item Bag page PNG (Orange theme)"
+echo "├── page_2_marketplace.svg          - Marketplace page SVG (Blue theme)"
+echo "├── page_2_marketplace.png          - Marketplace page PNG (Blue theme)"
+echo "├── page_3_battle.svg               - Battle page SVG (Red theme)"
+echo "├── page_3_battle.png               - Battle page PNG (Red theme)"
 echo "└── size_comparison.txt             - Size comparison stats"
 echo ""
 echo -e "${BLUE}💡 Usage Tips:${NC}"
