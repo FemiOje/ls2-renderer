@@ -8,7 +8,7 @@
 use death_mountain_renderer::models::models::{
     AdventurerVerbose, EquipmentVerbose, GameDetail, Stats, StatsTrait,
 };
-use death_mountain_renderer::utils::encoding::U256BytesUsedTraitImpl;
+use death_mountain_renderer::utils::encoding::encoding::U256BytesUsedTraitImpl;
 
 
 // ============================================================================
@@ -726,12 +726,12 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
 // Generate dynamic SVG with adventurer data for specific page
 pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
     let mut svg = "";
-    
+
     svg += generate_svg_header();
     svg += generate_page_content(adventurer, page);
     svg += generate_border();
     svg += generate_svg_footer();
-    
+
     svg
 }
 
@@ -747,7 +747,7 @@ fn generate_page_content(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
 // Generate battle interface content (current implementation)
 fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
-    
+
     content += generate_stats_text(adventurer.stats);
     content += generate_adventurer_name_text(adventurer.name);
     content += generate_logo();
@@ -759,7 +759,7 @@ fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     content += generate_equipment_icons();
     content += generate_equipment_level_badges(adventurer.equipment);
     content += generate_equipment_names(adventurer.equipment);
-    
+
     content
 }
 

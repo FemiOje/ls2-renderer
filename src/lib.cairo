@@ -1,9 +1,21 @@
 pub mod utils {
-    pub mod encoding;
-    pub mod renderer;
-    pub mod renderer_utils;
-    pub mod string_utils;
-    pub mod test_utils;
+    pub mod encoding {
+        pub mod encoding;
+    }
+    pub mod renderer {
+        pub mod page {
+            pub mod page_renderer;
+        }
+        pub mod renderer;
+        pub mod renderer_utils;
+    }
+    pub mod string {
+        pub mod string_utils;
+    }
+
+    pub mod test {
+        pub mod test_utils;
+    }
 }
 
 pub mod interfaces {

@@ -33,7 +33,8 @@ pub mod renderer_contract {
         IDeathMountainSystemsDispatcher, IDeathMountainSystemsDispatcherTrait,
     };
     use death_mountain_renderer::models::models::{AdventurerVerbose, GameDetail};
-    use death_mountain_renderer::utils::renderer::{Renderer, PageRenderer};
+    use death_mountain_renderer::utils::renderer::page::page_renderer::PageRenderer;
+    use death_mountain_renderer::utils::renderer::renderer::Renderer;
     use starknet::ContractAddress;
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
 
