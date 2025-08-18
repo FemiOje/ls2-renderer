@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.starknet.io)",
+      "WebFetch(domain:foundry-rs.github.io)",
+      "WebFetch(domain:book.cairo-lang.org)",
+      "WebSearch",
+      "WebSearch"
+    ],
+    "deny": []
+  }
+}
