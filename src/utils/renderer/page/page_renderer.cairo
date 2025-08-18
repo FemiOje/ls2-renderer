@@ -1,4 +1,5 @@
 use death_mountain_renderer::models::models::AdventurerVerbose;
+use death_mountain_renderer::models::page_types::{BattleState, PageMode};
 use death_mountain_renderer::utils::encoding::encoding::bytes_base64_encode;
 use death_mountain_renderer::utils::renderer::renderer::Renderer;
 use death_mountain_renderer::utils::renderer::renderer_utils::{
@@ -24,6 +25,23 @@ pub trait PageRenderer {
     /// @param page The page number to render (0-indexed)
     /// @return Base64-encoded SVG image data URI
     fn get_page_image(adventurer_verbose: AdventurerVerbose, page: u8) -> ByteArray;
+    /// @notice Renders animated multi-page SVG with transitions
+    /// @param token_id The NFT token ID to render metadata for
+    /// @param adventurer_verbose Pre-fetched adventurer data with resolved item names
+    /// @return Base64-encoded JSON metadata string containing animated SVG
+    fn render_animated_pages(token_id: u64, adventurer_verbose: AdventurerVerbose) -> ByteArray;
+    /// @notice Gets the current battle state of the adventurer
+    /// @param adventurer_verbose Pre-fetched adventurer data with resolved item names
+    /// @return BattleState indicating current combat status
+    fn get_battle_state(adventurer_verbose: AdventurerVerbose) -> BattleState;
+    /// @notice Checks if adventurer is currently in battle mode
+    /// @param adventurer_verbose Pre-fetched adventurer data with resolved item names
+    /// @return True if in battle mode, false otherwise
+    fn is_battle_mode(adventurer_verbose: AdventurerVerbose) -> bool;
+    /// @notice Gets the appropriate page mode based on battle state
+    /// @param adventurer_verbose Pre-fetched adventurer data with resolved item names
+    /// @return PageMode indicating how pages should be displayed
+    fn get_page_mode(adventurer_verbose: AdventurerVerbose) -> PageMode;
 }
 
 /// @notice Implementation of the PageRenderer trait for multipage NFT support
@@ -71,5 +89,32 @@ pub impl PageRendererImpl of PageRenderer {
 
         let image = "data:image/svg+xml;base64," + svg_base64;
         image
+    }
+
+    fn render_animated_pages(token_id: u64, adventurer_verbose: AdventurerVerbose) -> ByteArray {
+        // For Phase 1, return the first page - will be enhanced in Phase 3
+        Self::render_page(token_id, adventurer_verbose, 0)
+    }
+
+    fn get_battle_state(adventurer_verbose: AdventurerVerbose) -> BattleState {
+        if adventurer_verbose.health == 0 {
+            BattleState::Dead
+        } else if adventurer_verbose.beast_health > 0 {
+            BattleState::InCombat
+        } else {
+            BattleState::Normal
+        }
+    }
+
+    fn is_battle_mode(adventurer_verbose: AdventurerVerbose) -> bool {
+        adventurer_verbose.beast_health > 0 || adventurer_verbose.health == 0
+    }
+
+    fn get_page_mode(adventurer_verbose: AdventurerVerbose) -> PageMode {
+        match Self::get_battle_state(adventurer_verbose) {
+            BattleState::Dead => PageMode::Normal(3), // Return to 3-page cycle
+            BattleState::InCombat => PageMode::BattleOnly, // Only battle page
+            BattleState::Normal => PageMode::Normal(3), // 3-page cycle
+        }
     }
 }
