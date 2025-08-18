@@ -37,6 +37,4 @@ pub mod models {
 #[cfg(test)]
 pub mod tests {
     pub mod test_lib;
-    pub mod test_pagination;
-    pub mod test_svg_output;
 }

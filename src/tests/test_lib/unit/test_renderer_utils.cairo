@@ -9,10 +9,10 @@ use death_mountain_renderer::mocks::mock_adventurer::{
     get_simple_adventurer,
 };
 use death_mountain_renderer::models::models::StatsTrait;
-use death_mountain_renderer::utils::renderer_utils::{
+use death_mountain_renderer::utils::renderer::renderer_utils::{
     chest, foot, generate_svg, hand, head, neck, ring, u256_to_string, waist, weapon,
 };
-use death_mountain_renderer::utils::string_utils::{
+use death_mountain_renderer::utils::string::string_utils::{
     contains_pattern, ends_with_pattern, starts_with_pattern,
 };
 

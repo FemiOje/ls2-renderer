@@ -11,8 +11,8 @@ use death_mountain_renderer::contracts::death_mountain_renderer::{
 use death_mountain_renderer::mocks::mock_adventurer::{
     get_adventurer_with_max_stats, get_simple_adventurer,
 };
-use death_mountain_renderer::utils::renderer::Renderer;
-use death_mountain_renderer::utils::string_utils::{contains_pattern, starts_with_pattern};
+use death_mountain_renderer::utils::renderer::renderer::Renderer;
+use death_mountain_renderer::utils::string::string_utils::{contains_pattern, starts_with_pattern};
 use snforge_std::{ContractClassTrait, DeclareResultTrait, declare, get_class_hash, load, store};
 use starknet::ContractAddress;
 

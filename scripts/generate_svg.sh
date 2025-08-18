@@ -118,14 +118,14 @@ echo -e "${BLUE}📄 Page 0: Battle Interface${NC}"
 echo "================================"
 
 # Generate Page 0 (Battle Interface)
-if extract_svg_from_test "test_output_page_0_svg" "0" "$TEMP_DIR/page_0.svg"; then
+if extract_svg_from_test "test_simple_output_page_0_svg" "0" "$TEMP_DIR/page_0.svg"; then
     cp "$TEMP_DIR/page_0.svg" "$OUTPUT_DIR/page_0_battle_interface.svg"
     
     # Convert to PNG
     convert_svg_to_png "$OUTPUT_DIR/page_0_battle_interface.svg" "$OUTPUT_DIR/page_0_battle_interface.png"
     
     # Extract Base64 data URI
-    extract_base64_from_test "test_output_page_0_svg" "0" "$OUTPUT_DIR/page_0_battle_interface_datauri.txt"
+    extract_base64_from_test "test_simple_output_page_0_svg" "0" "$OUTPUT_DIR/page_0_battle_interface_datauri.txt"
     
     echo -e "${GREEN}✓ Page 0 outputs generated${NC}"
 else
@@ -137,14 +137,14 @@ echo -e "${BLUE}📄 Page 1: Empty Background with Border${NC}"
 echo "========================================="
 
 # Generate Page 1 (Empty Background)
-if extract_svg_from_test "test_output_page_1_svg" "1" "$TEMP_DIR/page_1.svg"; then
+if extract_svg_from_test "test_simple_output_page_1_svg" "1" "$TEMP_DIR/page_1.svg"; then
     cp "$TEMP_DIR/page_1.svg" "$OUTPUT_DIR/page_1_empty_background.svg"
     
     # Convert to PNG
     convert_svg_to_png "$OUTPUT_DIR/page_1_empty_background.svg" "$OUTPUT_DIR/page_1_empty_background.png"
     
     # Extract Base64 data URI
-    extract_base64_from_test "test_output_page_1_svg" "1" "$OUTPUT_DIR/page_1_empty_background_datauri.txt"
+    extract_base64_from_test "test_simple_output_page_1_svg" "1" "$OUTPUT_DIR/page_1_empty_background_datauri.txt"
     
     echo -e "${GREEN}✓ Page 1 outputs generated${NC}"
 else
@@ -156,7 +156,7 @@ echo -e "${BLUE}📊 Generating size comparison...${NC}"
 
 # Run size comparison test
 echo -e "${YELLOW}Running size comparison test...${NC}"
-scarb test test_output_svg_comparison 2>&1 | \
+scarb test test_simple_svg_comparison 2>&1 | \
     sed -n "/=== SVG SIZE COMPARISON ===/,/=== END COMPARISON ===/p" | \
     sed '1d;$d' > "$OUTPUT_DIR/size_comparison.txt"
 

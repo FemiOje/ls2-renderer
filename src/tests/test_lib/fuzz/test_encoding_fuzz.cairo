@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-use death_mountain_renderer::utils::encoding::{BytesUsedTrait, bytes_base64_encode};
-use death_mountain_renderer::utils::string_utils::{contains_byte, count_byte_occurrences};
+use death_mountain_renderer::utils::encoding::encoding::{BytesUsedTrait, bytes_base64_encode};
+use death_mountain_renderer::utils::string::string_utils::{contains_byte, count_byte_occurrences};
 
 const MAX_SIZE: u32 = 100;
 
