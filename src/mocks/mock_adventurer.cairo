@@ -5,7 +5,7 @@
 pub mod mock_adventurer {
     use death_mountain_renderer::interfaces::adventurer_interface::IDeathMountainSystems;
     use death_mountain_renderer::models::models::{
-        Adventurer, AdventurerVerbose, BagVerbose, Equipment, EquipmentVerbose, Item, ItemVerbose,
+        Adventurer, AdventurerVerbose, AdventurerEntropy, BagVerbose, Equipment, EquipmentVerbose, Item, ItemVerbose,
         Slot, Stats, Tier, Type,
     };
 
@@ -100,6 +100,29 @@ pub mod mock_adventurer {
                 action_count: adventurer.action_count,
                 bag: bag_verbose,
             }
+        }
+
+        fn get_adventurer_entropy(self: @ContractState, adventurer_id: u64) -> AdventurerEntropy {
+            let safe_id = adventurer_id % 1000000_u64;
+            AdventurerEntropy {
+                entropy: (safe_id * 17_u64) % 0xffffffffffffffff,
+                block_number: (safe_id * 13_u64) % 1000000_u64,
+                market_seed: (safe_id * 7919_u64) % 0xffffffffffffffff,
+            }
+        }
+
+        fn get_market(self: @ContractState, adventurer_id: u64, seed: u64) -> Array<u8> {
+            // Simple mock market implementation - return 21 items (same as death-mountain)
+            let mut market_items = ArrayTrait::new();
+            let mut i = 0_u8;
+            
+            while i < 21_u8 {
+                let item_id = ((seed + adventurer_id + i.into()) % 101_u64).try_into().unwrap() + 1_u8;
+                market_items.append(item_id);
+                i += 1;
+            };
+            
+            market_items
         }
     }
 

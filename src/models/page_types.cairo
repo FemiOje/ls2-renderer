@@ -6,10 +6,10 @@
 
 #[derive(Copy, Drop, PartialEq, Serde, Debug)]
 pub enum PageType {
-    Stats,      // Page 0: Character stats and equipment (current battle page)
-    Inventory,  // Page 1: Bag contents and detailed inventory
-    Journey,    // Page 2: Adventure history and achievements
-    Battle,     // Page 3: Battle-specific interface (when in combat)
+    Inventory,    // Page 1: Current inventory page (green theme) - current implementation
+    ItemBag,      // Page 2: Item Bag contents (orange theme) - displays adventurer's bag items
+    Marketplace,  // Page 3: Marketplace items (blue theme) - displays available market items
+    Battle,       // Page 4: Battle-specific interface (gradient border) - only shown during combat
 }
 
 #[derive(Copy, Drop, PartialEq, Serde, Debug)]
@@ -35,7 +35,7 @@ pub struct PageConfig {
 pub impl PageConfigDefault of Default<PageConfig> {
     fn default() -> PageConfig {
         PageConfig {
-            page_type: PageType::Stats,
+            page_type: PageType::Inventory,
             transition_duration: 500, // 0.5 seconds in milliseconds
             auto_advance: true,
         }

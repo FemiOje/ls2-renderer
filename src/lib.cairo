@@ -33,6 +33,7 @@ pub mod mocks {
 pub mod models {
     pub mod models;
     pub mod page_types;
+    pub mod market;
 }
 
 #[cfg(test)]

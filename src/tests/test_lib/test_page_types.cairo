@@ -71,14 +71,14 @@ fn create_test_adventurer(health: u16, beast_health: u16) -> AdventurerVerbose {
 
 #[test]
 fn test_page_types_enum() {
-    let stats_page = PageType::Stats;
     let inventory_page = PageType::Inventory;
-    let journey_page = PageType::Journey;
+    let item_bag_page = PageType::ItemBag;
+    let marketplace_page = PageType::Marketplace;
     let battle_page = PageType::Battle;
 
-    assert!(stats_page == PageType::Stats);
     assert!(inventory_page == PageType::Inventory);
-    assert!(journey_page == PageType::Journey);
+    assert!(item_bag_page == PageType::ItemBag);
+    assert!(marketplace_page == PageType::Marketplace);
     assert!(battle_page == PageType::Battle);
 }
 
@@ -129,7 +129,7 @@ fn test_page_mode_battle_only() {
 #[test]
 fn test_page_config_default() {
     let config: PageConfig = Default::default();
-    assert_eq!(config.page_type, PageType::Stats, "Default page type should be Stats");
+    assert_eq!(config.page_type, PageType::Inventory, "Default page type should be Inventory");
     assert_eq!(config.transition_duration, 500, "Default transition duration should be 500ms");
     assert!(config.auto_advance, "Default auto_advance should be true");
 }

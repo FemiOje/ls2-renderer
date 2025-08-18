@@ -9,8 +9,8 @@ This document outlines the comprehensive implementation strategy for transformin
 The proposed multi-page NFT architecture transforms your single-page SVG generator into a dynamic, animated system with the following key innovations:
 
 **🎯 Core Features:**
-- **3-Page Normal Mode**: Stats → Inventory → Journey → (cycle repeats)
-- **Battle Mode**: Single dedicated battle page when `beast_health > 0`
+- **4-Page Normal Mode**: Inventory (green) → Item Bag (orange) → Marketplace (blue) → (cycle repeats)
+- **Battle Mode**: Single dedicated battle page (gradient border) when `beast_health > 0`
 - **Smooth Transitions**: SMIL-based slide animations with 3s display + 0.5s transitions
 - **Gas Efficient**: Modular page generation with optimized string handling
 
@@ -31,10 +31,10 @@ The proposed multi-page NFT architecture transforms your single-page SVG generat
 ### Page Management System
 ```cairo
 pub enum PageType {
-    Stats,      // Page 0: Character stats and equipment (current battle page)
-    Inventory,  // Page 1: Bag contents and detailed inventory
-    Journey,    // Page 2: Adventure history and achievements
-    Battle,     // Page 3: Battle-specific interface (when in combat)
+    Inventory,    // Page 1: Current inventory page (green theme) - current implementation
+    ItemBag,      // Page 2: Item Bag contents (orange theme) - displays adventurer's bag items  
+    Marketplace,  // Page 3: Marketplace items (blue theme) - displays available market items
+    Battle,       // Page 4: Battle-specific interface (gradient border) - only shown during combat
 }
 
 pub enum BattleState {
@@ -111,9 +111,9 @@ fn get_battle_state(adventurer: AdventurerVerbose) -> BattleState {
 
 fn determine_page_mode(adventurer: AdventurerVerbose) -> PageMode {
     match get_battle_state(adventurer) {
-        BattleState::Dead => PageMode::Normal(3), // Return to 3-page cycle
+        BattleState::Dead => PageMode::Normal(3), // Return to 3-page cycle (Inventory, ItemBag, Marketplace)
         BattleState::InCombat => PageMode::BattleOnly, // Only battle page
-        BattleState::Normal => PageMode::Normal(3), // 3-page cycle
+        BattleState::Normal => PageMode::Normal(3), // 3-page cycle (Inventory, ItemBag, Marketplace)
     }
 }
 ```
@@ -134,23 +134,27 @@ fn determine_page_mode(adventurer: AdventurerVerbose) -> PageMode {
   - [ ] Add `is_battle_mode()` helper function
 
 ### Phase 2: Page Content Generation
+
+**Important:** Before implementing marketplace page content, we need to extend the adventurer interface to include marketplace data retrieval, matching the implementation in the ../death-mountain project.
 - [ ] **2.1** Create individual page generators
-  - [ ] `generate_stats_page()` - Enhanced current battle interface
-  - [ ] `generate_inventory_page()` - Detailed bag contents with item details
-  - [ ] `generate_journey_page()` - Adventure stats, level progression, achievements
-  - [ ] `generate_battle_page()` - Combat-specific interface with beast details
+  - [ ] `generate_inventory_page()` - Current inventory interface (green theme) - reference: assets/page_1/Frame 4192@2x.png
+  - [ ] `generate_item_bag_page()` - Item Bag contents (orange theme) - reference: assets/page_2/Frame 4189.png
+  - [ ] `generate_marketplace_page()` - Marketplace items (blue theme) - reference: assets/page_3/Frame 4190.png
+  - [ ] `generate_battle_page()` - Combat interface (gradient border) - reference: assets/page_4/Frame 4191.png
 
-- [ ] **2.2** Implement bag content rendering
-  - [ ] Parse `BagVerbose` items for inventory page
-  - [ ] Create item grid layout for inventory display
-  - [ ] Add item tooltips/descriptions
-  - [ ] Show item quantities and stats
+- [ ] **2.2** Implement Item Bag content rendering (Page 2 - Orange theme)
+  - [ ] Parse `BagVerbose` items for Item Bag page display
+  - [ ] Create 3x5 item grid layout matching orange theme design
+  - [ ] Display item names, quantities, and stats
+  - [ ] Implement orange-themed styling and borders
 
-- [ ] **2.3** Create journey/achievement content
-  - [ ] XP progression visualization
-  - [ ] Level milestones display
-  - [ ] Adventure statistics (gold earned, monsters defeated)
-  - [ ] Equipment upgrade history
+- [ ] **2.3** Create marketplace content rendering (Page 3 - Blue theme)
+  - [ ] Add `get_market()` method to `IDeathMountainSystems` interface (matching ../death-mountain implementation)
+  - [ ] Define marketplace data structures for market items
+  - [ ] Parse marketplace items for Marketplace page display
+  - [ ] Create 4x5 item grid layout matching blue theme design
+  - [ ] Display available items with costs and availability
+  - [ ] Implement blue-themed styling and borders
 
 ### Phase 3: Animation System
 - [ ] **3.1** Create transition framework
