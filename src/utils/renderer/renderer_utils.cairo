@@ -6,7 +6,7 @@
 // @author Built for the Loot Survivor ecosystem
 
 use death_mountain_renderer::models::models::{
-    AdventurerVerbose, EquipmentVerbose, GameDetail, Stats, StatsTrait,
+    AdventurerVerbose, BagVerbose, EquipmentVerbose, GameDetail, Slot, Stats, StatsTrait,
 };
 use death_mountain_renderer::utils::encoding::encoding::U256BytesUsedTraitImpl;
 
@@ -224,6 +224,7 @@ pub fn get_theme_color(page: u8) -> ByteArray {
         _ => "#78E846", // Default to green
     }
 }
+
 
 /// @notice Converts felt252 value to ByteArray string representation
 /// @dev Extracts bytes from felt252 and builds string, skipping null bytes
@@ -799,6 +800,133 @@ pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteAr
 }
 
 // Generate page-specific content based on page number
+// Generate bag item slots for ItemBag page (5x3 grid layout)
+fn generate_bag_item_slots() -> ByteArray {
+    let mut slots = "";
+    
+    // Grid: 5 columns, 3 rows of bag item slots (to match reference design)
+    let start_x = 240_u16;  // Adjusted for better centering with 5 columns
+    let start_y = 350_u16;  // Moved down to give more space for title
+    let slot_size = 71_u16; // Slightly larger to match reference
+    let spacing_x = 85_u16; // Horizontal spacing between slots
+    let spacing_y = 90_u16; // Vertical spacing between rows
+    
+    let mut row = 0_u8;
+    while row < 3 {  // 3 rows
+        let mut col = 0_u8;
+        while col < 5 { // 5 columns
+            let x = start_x + (col.into() * spacing_x);
+            let y = start_y + (row.into() * spacing_y);
+            slots += "<rect width=\"" + u256_to_string(slot_size.into()) + "\" height=\"" + u256_to_string(slot_size.into()) + "\" x=\"" + u256_to_string(x.into()) + "\" y=\"" + u256_to_string(y.into()) + "\" stroke=\"#B5561F\" rx=\"5.5\" fill=\"none\"/>";
+            col += 1;
+        };
+        row += 1;
+    };
+    
+    slots
+}
+
+// Get item icon SVG based on slot type
+fn get_item_icon_svg(slot: Slot) -> ByteArray {
+    match slot {
+        Slot::Weapon => weapon(),
+        Slot::Chest => chest(), 
+        Slot::Head => head(),
+        Slot::Waist => waist(),
+        Slot::Foot => foot(),
+        Slot::Hand => hand(),
+        Slot::Neck => neck(),
+        Slot::Ring => ring(),
+        _ => weapon(), // Default fallback
+    }
+}
+
+// Generate bag item icons for ItemBag page 
+fn generate_bag_item_icons(bag: BagVerbose) -> ByteArray {
+    let mut icons = "";
+    let theme_color = get_theme_color(1); // Orange theme
+    
+    // Array of bag items for easier iteration
+    let bag_items = array![
+        bag.item_1, bag.item_2, bag.item_3, bag.item_4, bag.item_5,
+        bag.item_6, bag.item_7, bag.item_8, bag.item_9, bag.item_10,
+        bag.item_11, bag.item_12, bag.item_13, bag.item_14, bag.item_15
+    ];
+    
+    // Match the slot positioning (centered in each slot)
+    let start_x = 262_u16; // Centered in slots with offset for icon size
+    let start_y = 372_u16; 
+    let spacing_x = 85_u16; // Match slot spacing
+    let spacing_y = 90_u16;
+    
+    let mut item_index = 0_u8;
+    while item_index < 15 {
+        let item = *bag_items.at(item_index.into());
+        if item.id != 0 { // Only render if item exists
+            let row = item_index / 5; // 5 items per row now
+            let col = item_index % 5; // Column within the row
+            let x = start_x + (col.into() * spacing_x);
+            let y = start_y + (row.into() * spacing_y);
+            
+            // Get appropriate icon based on item slot type
+            let icon_svg = get_item_icon_svg(item.slot);
+            icons += "<g transform=\"translate(" + u256_to_string(x.into()) + ", " + u256_to_string(y.into()) + ") scale(3)\" fill=\"" + theme_color.clone() + "\">" + icon_svg + "</g>";
+        }
+        item_index += 1;
+    };
+    
+    icons
+}
+
+// Generate level badges for bag items - mirrors equipment badge positioning
+fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
+    let mut badges = "";
+    let theme_color = get_theme_color(1); // Orange theme
+    
+    // Array of bag items for easier iteration
+    let bag_items = array![
+        bag.item_1, bag.item_2, bag.item_3, bag.item_4, bag.item_5,
+        bag.item_6, bag.item_7, bag.item_8, bag.item_9, bag.item_10,
+        bag.item_11, bag.item_12, bag.item_13, bag.item_14, bag.item_15
+    ];
+    
+    // Badge positioning: top-right corner of each slot (like equipment badges)
+    let slot_start_x = 240_u16; // Match slot positioning
+    let slot_start_y = 350_u16;
+    let spacing_x = 85_u16; // Match slot spacing
+    let spacing_y = 90_u16;
+    let badge_width = 38_u16;
+    let badge_height = 16_u16;
+    let badge_offset_x = 49_u16; // Position in top-right corner of slot
+    let badge_offset_y = 5_u16; // Small offset from top
+    
+    let mut item_index = 0_u8;
+    while item_index < 15 {
+        let item = *bag_items.at(item_index.into());
+        if item.id != 0 { // Only render badges for items that exist
+            let row = item_index / 5; // 5 items per row
+            let col = item_index % 5; // Column within the row
+            let slot_x = slot_start_x + (col.into() * spacing_x);
+            let slot_y = slot_start_y + (row.into() * spacing_y);
+            let badge_x = slot_x + badge_offset_x; // Top-right corner
+            let badge_y = slot_y + badge_offset_y;
+            
+            // Generate level badge background
+            badges += "<rect width=\"" + u256_to_string(badge_width.into()) + "\" height=\"" + u256_to_string(badge_height.into()) + "\" x=\"" + u256_to_string(badge_x.into()) + "\" y=\"" + u256_to_string(badge_y.into()) + "\" fill=\"" + theme_color.clone() + "\" rx=\"2\"/>";
+            
+            // Generate level text (centered in badge)
+            let text_x = badge_x + (badge_width / 2);
+            let text_y = badge_y + 11; // Vertical center
+            badges += "<text x=\"" + u256_to_string(text_x.into()) + "\" y=\"" + u256_to_string(text_y.into()) + "\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+            badges += u8_to_string(get_greatness(item.xp));
+            badges += "</text>";
+        }
+        item_index += 1;
+    };
+    
+    badges
+}
+
 fn generate_page_content(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
     match page {
         0 => generate_inventory_page_content(adventurer),
@@ -836,12 +964,15 @@ fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     content += generate_adventurer_name_text_with_page(adventurer.name, 1);
     content += generate_logo_with_page(1);
     
-    // Add page title
+    // Add page title and subtitle
     content += "<text x=\"339\" y=\"200\" fill=\"#E8A746\" class=\"s24\" text-anchor=\"left\">Item Bag</text>";
+    content += "<text x=\"540\" y=\"180\" fill=\"#E8A746\" class=\"s16\" text-anchor=\"left\">SCROLL</text>";
+    content += "<text x=\"540\" y=\"195\" fill=\"#E8A746\" class=\"s16\" text-anchor=\"left\">OF ITEMS</text>";
     
-    // Placeholder text for development
-    content += "<text x=\"400\" y=\"400\" fill=\"#E8A746\" class=\"s16\" text-anchor=\"middle\">INFORMATION ABOUT BAG GOES</text>";
-    content += "<text x=\"400\" y=\"430\" fill=\"#E8A746\" class=\"s16\" text-anchor=\"middle\">HERE AND HERE.</text>";
+    // Add bag item layout with slots, icons, and level badges
+    content += generate_bag_item_slots();
+    content += generate_bag_item_icons(adventurer.bag);
+    content += generate_bag_item_level_badges(adventurer.bag);
     
     content
 }
