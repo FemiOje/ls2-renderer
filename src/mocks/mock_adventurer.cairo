@@ -5,8 +5,8 @@
 pub mod mock_adventurer {
     use death_mountain_renderer::interfaces::adventurer_interface::IDeathMountainSystems;
     use death_mountain_renderer::models::models::{
-        Adventurer, AdventurerVerbose, AdventurerEntropy, BagVerbose, Equipment, EquipmentVerbose, Item, ItemVerbose,
-        Slot, Stats, Tier, Type,
+        Adventurer, AdventurerEntropy, AdventurerVerbose, BagVerbose, Equipment, EquipmentVerbose,
+        Item, ItemVerbose, Slot, Stats, Tier, Type,
     };
 
     #[storage]
@@ -115,13 +115,14 @@ pub mod mock_adventurer {
             // Simple mock market implementation - return 21 items (same as death-mountain)
             let mut market_items = ArrayTrait::new();
             let mut i = 0_u8;
-            
+
             while i < 21_u8 {
-                let item_id = ((seed + adventurer_id + i.into()) % 101_u64).try_into().unwrap() + 1_u8;
+                let item_id = ((seed + adventurer_id + i.into()) % 101_u64).try_into().unwrap()
+                    + 1_u8;
                 market_items.append(item_id);
                 i += 1;
-            };
-            
+            }
+
             market_items
         }
     }
@@ -423,19 +424,110 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
         bag: BagVerbose {
             item_1: weapon_item,
             item_2: chest_item,
-            item_3: ItemVerbose { id: 10, name: 'Iron Sword', tier: Tier::T2, item_type: Type::Blade_or_Hide, slot: Slot::Weapon, xp: 75 },
-            item_4: ItemVerbose { id: 11, name: 'Magic Staff', tier: Tier::T3, item_type: Type::Magic_or_Cloth, slot: Slot::Weapon, xp: 120 },
-            item_5: ItemVerbose { id: 12, name: 'Chain Mail', tier: Tier::T2, item_type: Type::Bludgeon_or_Metal, slot: Slot::Chest, xp: 90 },
-            item_6: ItemVerbose { id: 13, name: 'Wizard Hat', tier: Tier::T2, item_type: Type::Magic_or_Cloth, slot: Slot::Head, xp: 65 },
-            item_7: ItemVerbose { id: 14, name: 'Steel Gauntlets', tier: Tier::T3, item_type: Type::Bludgeon_or_Metal, slot: Slot::Hand, xp: 110 },
-            item_8: ItemVerbose { id: 15, name: 'Leather Boots', tier: Tier::T1, item_type: Type::Blade_or_Hide, slot: Slot::Foot, xp: 45 },
-            item_9: ItemVerbose { id: 16, name: 'Gold Ring', tier: Tier::T4, item_type: Type::Ring, slot: Slot::Ring, xp: 150 },
-            item_10: ItemVerbose { id: 17, name: 'Silver Necklace', tier: Tier::T2, item_type: Type::Necklace, slot: Slot::Neck, xp: 80 },
-            item_11: ItemVerbose { id: 18, name: 'War Hammer', tier: Tier::T3, item_type: Type::Bludgeon_or_Metal, slot: Slot::Weapon, xp: 130 },
-            item_12: ItemVerbose { id: 19, name: 'Plate Armor', tier: Tier::T4, item_type: Type::Bludgeon_or_Metal, slot: Slot::Chest, xp: 180 },
-            item_13: ItemVerbose { id: 20, name: 'Knight Helm', tier: Tier::T3, item_type: Type::Bludgeon_or_Metal, slot: Slot::Head, xp: 125 },
-            item_14: ItemVerbose { id: 21, name: 'Silk Belt', tier: Tier::T2, item_type: Type::Magic_or_Cloth, slot: Slot::Waist, xp: 70 },
-            item_15: ItemVerbose { id: 22, name: 'Diamond Ring', tier: Tier::T5, item_type: Type::Ring, slot: Slot::Ring, xp: 200 },
+            item_3: ItemVerbose {
+                id: 10,
+                name: 'Iron Sword',
+                tier: Tier::T2,
+                item_type: Type::Blade_or_Hide,
+                slot: Slot::Weapon,
+                xp: 75,
+            },
+            item_4: ItemVerbose {
+                id: 11,
+                name: 'Magic Staff',
+                tier: Tier::T3,
+                item_type: Type::Magic_or_Cloth,
+                slot: Slot::Weapon,
+                xp: 120,
+            },
+            item_5: ItemVerbose {
+                id: 12,
+                name: 'Chain Mail',
+                tier: Tier::T2,
+                item_type: Type::Bludgeon_or_Metal,
+                slot: Slot::Chest,
+                xp: 90,
+            },
+            item_6: ItemVerbose {
+                id: 13,
+                name: 'Wizard Hat',
+                tier: Tier::T2,
+                item_type: Type::Magic_or_Cloth,
+                slot: Slot::Head,
+                xp: 65,
+            },
+            item_7: ItemVerbose {
+                id: 14,
+                name: 'Steel Gauntlets',
+                tier: Tier::T3,
+                item_type: Type::Bludgeon_or_Metal,
+                slot: Slot::Hand,
+                xp: 110,
+            },
+            item_8: ItemVerbose {
+                id: 15,
+                name: 'Leather Boots',
+                tier: Tier::T1,
+                item_type: Type::Blade_or_Hide,
+                slot: Slot::Foot,
+                xp: 45,
+            },
+            item_9: ItemVerbose {
+                id: 16,
+                name: 'Gold Ring',
+                tier: Tier::T4,
+                item_type: Type::Ring,
+                slot: Slot::Ring,
+                xp: 150,
+            },
+            item_10: ItemVerbose {
+                id: 17,
+                name: 'Silver Necklace',
+                tier: Tier::T2,
+                item_type: Type::Necklace,
+                slot: Slot::Neck,
+                xp: 80,
+            },
+            item_11: ItemVerbose {
+                id: 18,
+                name: 'War Hammer',
+                tier: Tier::T3,
+                item_type: Type::Bludgeon_or_Metal,
+                slot: Slot::Weapon,
+                xp: 130,
+            },
+            item_12: ItemVerbose {
+                id: 19,
+                name: 'Plate Armor',
+                tier: Tier::T4,
+                item_type: Type::Bludgeon_or_Metal,
+                slot: Slot::Chest,
+                xp: 180,
+            },
+            item_13: ItemVerbose {
+                id: 20,
+                name: 'Knight Helm',
+                tier: Tier::T3,
+                item_type: Type::Bludgeon_or_Metal,
+                slot: Slot::Head,
+                xp: 125,
+            },
+            item_14: ItemVerbose {
+                id: 21,
+                name: 'Silk Belt',
+                tier: Tier::T2,
+                item_type: Type::Magic_or_Cloth,
+                slot: Slot::Waist,
+                xp: 70,
+            },
+            item_15: ItemVerbose {
+                id: 22,
+                name: 'Diamond Ring',
+                tier: Tier::T5,
+                item_type: Type::Ring,
+                slot: Slot::Ring,
+                xp: 200,
+            },
         },
         name: "TestHero",
         xp: 1000,

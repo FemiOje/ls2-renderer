@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-use death_mountain_renderer::models::models::{AdventurerVerbose, AdventurerEntropy};
+use death_mountain_renderer::models::models::{AdventurerEntropy, AdventurerVerbose};
 
 #[starknet::interface]
 pub trait IDeathMountainSystems<T> {

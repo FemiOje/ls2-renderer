@@ -1,5 +1,7 @@
-use death_mountain_renderer::models::models::{AdventurerVerbose, Stats, EquipmentVerbose, BagVerbose, ItemVerbose, Tier, Type, Slot};
-use death_mountain_renderer::models::page_types::{BattleState, PageMode, PageType, PageConfig};
+use death_mountain_renderer::models::models::{
+    AdventurerVerbose, BagVerbose, EquipmentVerbose, ItemVerbose, Slot, Stats, Tier, Type,
+};
+use death_mountain_renderer::models::page_types::{BattleState, PageConfig, PageMode, PageType};
 use death_mountain_renderer::utils::renderer::page::page_renderer::PageRendererImpl;
 use death_mountain_renderer::utils::string::string_utils::starts_with_pattern;
 
@@ -16,12 +18,7 @@ fn create_test_adventurer(health: u16, beast_health: u16) -> AdventurerVerbose {
     };
 
     let empty_item = ItemVerbose {
-        name: 0,
-        id: 0,
-        xp: 0,
-        tier: Tier::None,
-        item_type: Type::None,
-        slot: Slot::None,
+        name: 0, id: 0, xp: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None,
     };
 
     let equipment = EquipmentVerbose {
@@ -138,11 +135,13 @@ fn test_page_config_default() {
 fn test_render_animated_pages() {
     let adventurer = create_test_adventurer(100, 0);
     let result = PageRendererImpl::render_animated_pages(1, adventurer);
-    
+
     // Should return a non-empty ByteArray (Base64 encoded JSON)
     assert!(result.len() > 0, "Should return non-empty result");
-    
+
     // Should contain "data:application/json;base64," prefix using string utils
     let expected_prefix = "data:application/json;base64,";
-    assert!(starts_with_pattern(@result, @expected_prefix), "Should have correct JSON data URI prefix");
+    assert!(
+        starts_with_pattern(@result, @expected_prefix), "Should have correct JSON data URI prefix",
+    );
 }

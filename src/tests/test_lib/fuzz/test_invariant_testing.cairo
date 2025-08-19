@@ -7,7 +7,8 @@
 use death_mountain_renderer::models::models::StatsTrait;
 use death_mountain_renderer::utils::encoding::encoding::{BytesUsedTrait, bytes_base64_encode};
 use death_mountain_renderer::utils::renderer::renderer::RendererImpl;
-use death_mountain_renderer::utils::renderer::renderer_utils::{generate_svg, u256_to_string};
+use death_mountain_renderer::utils::renderer::renderer_utils::generate_svg;
+use death_mountain_renderer::utils::string::string_utils::u256_to_string;
 use death_mountain_renderer::utils::test::test_utils::{
     MAX_U128_BYTES, MAX_U256_BYTES, MIN_CONTENT_LENGTH, MIN_IMAGE_LENGTH, create_test_adventurer,
     create_u256_from_bytes, validate_base64_properties, validate_data_uri_format,

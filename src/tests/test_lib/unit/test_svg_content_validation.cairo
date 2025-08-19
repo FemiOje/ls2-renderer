@@ -7,9 +7,9 @@
 
 use death_mountain_renderer::mocks::mock_adventurer::get_simple_adventurer;
 use death_mountain_renderer::models::models::{AdventurerVerbose, StatsTrait};
-use death_mountain_renderer::utils::renderer::renderer_utils::{generate_svg, u256_to_string};
+use death_mountain_renderer::utils::renderer::renderer_utils::generate_svg;
 use death_mountain_renderer::utils::string::string_utils::{
-    contains_pattern, ends_with_pattern, starts_with_pattern,
+    contains_pattern, ends_with_pattern, starts_with_pattern, u256_to_string,
 };
 
 // ============================================================================

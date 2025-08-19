@@ -5,6 +5,152 @@
 // @dev Optimized algorithms for efficient pattern matching in ByteArray data
 // @author Built for the Loot Survivor ecosystem
 
+/// @notice Converts u8 value to string representation for display in SVG
+/// @dev Handles edge case of zero and builds string digit by digit
+/// @param value The u8 value to convert to string
+/// @return ByteArray containing the string representation
+pub fn u8_to_string(value: u8) -> ByteArray {
+    if value == 0 {
+        return "0";
+    }
+
+    let mut result = "";
+    let mut val: u256 = value.into();
+    let mut digits: Array<u8> = array![];
+
+    while val > 0 {
+        let digit = (val % 10).try_into().unwrap();
+        digits.append(digit + 48); // Convert to ASCII
+        val = val / 10;
+    }
+
+    let mut i = digits.len();
+    while i > 0 {
+        i -= 1;
+        result.append_byte(*digits.at(i));
+    }
+
+    result
+}
+
+/// @notice Converts u64 value to string representation for display in SVG
+/// @dev Handles edge case of zero and builds string digit by digit
+/// @param value The u64 value to convert to string
+/// @return ByteArray containing the string representation
+pub fn u64_to_string(value: u64) -> ByteArray {
+    if value == 0 {
+        return "0";
+    }
+
+    let mut result = "";
+    let mut val: u256 = value.into();
+    let mut digits: Array<u8> = array![];
+
+    while val > 0 {
+        let digit = (val % 10).try_into().unwrap();
+        digits.append(digit + 48); // Convert ASCII
+        val = val / 10;
+    }
+
+    let mut i = digits.len();
+    while i > 0 {
+        i -= 1;
+        result.append_byte(*digits.at(i));
+    }
+
+    result
+}
+
+/// @notice Converts u256 value to string representation for display
+/// @dev Handles large numbers efficiently, builds string digit by digit
+/// @param value The u256 value to convert to string
+/// @return ByteArray containing the string representation
+pub fn u256_to_string(value: u256) -> ByteArray {
+    if value == 0 {
+        return "0";
+    }
+
+    let mut result = "";
+    let mut val = value;
+    let mut digits: Array<u8> = array![];
+
+    while val > 0 {
+        let digit = (val % 10).try_into().unwrap();
+        digits.append(digit + 48); // Convert to ASCII
+        val = val / 10;
+    }
+
+    let mut i = digits.len();
+    while i > 0 {
+        i -= 1;
+        result.append_byte(*digits.at(i));
+    }
+
+    result
+}
+
+/// @notice Converts felt252 value to ByteArray string representation
+/// @dev Extracts bytes from felt252 and builds string, skipping null bytes
+/// @param value The felt252 value to convert (typically item names from database)
+/// @return ByteArray containing the string representation
+pub fn felt252_to_string(value: felt252) -> ByteArray {
+    // Cairo felt252 values that represent strings are directly convertible to ByteArray
+    // Most felt252 string constants in the item database are stored as string literals
+    let mut result = "";
+
+    // Handle the zero case
+    if value == 0 {
+        return "";
+    }
+
+    // Convert felt252 to u256 first for bit manipulation
+    let val_u256: u256 = value.into();
+    let mut temp_val = val_u256;
+    let mut bytes: Array<u8> = array![];
+
+    // Extract bytes from the u256 value
+    while temp_val > 0 {
+        let byte = (temp_val % 256).try_into().unwrap();
+        if byte != 0 { // Skip null bytes
+            bytes.append(byte);
+        }
+        temp_val = temp_val / 256;
+    }
+
+    // Reverse the bytes since we extracted them in reverse order
+    let mut i = bytes.len();
+    while i > 0 {
+        i -= 1;
+        result.append_byte(*bytes.at(i));
+    }
+
+    result
+}
+
+// Get the character length of a felt252 string
+pub fn felt252_length(value: felt252) -> u32 {
+    // Handle the zero case
+    if value == 0 {
+        return 0;
+    }
+
+    // Convert felt252 to u256 first for bit manipulation
+    let val_u256: u256 = value.into();
+    let mut temp_val = val_u256;
+    let mut length: u32 = 0;
+
+    // Count non-zero bytes
+    while temp_val > 0 {
+        let byte = (temp_val % 256).try_into().unwrap();
+        if byte != 0 { // Skip null bytes
+            length += 1;
+        }
+        temp_val = temp_val / 256;
+    }
+
+    length
+}
+
 /// @notice Optimized pattern matching function with dual-strategy approach
 /// @dev Uses naive search for short patterns (≤4 chars) and optimized search for longer patterns
 /// @param haystack The ByteArray to search within

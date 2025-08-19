@@ -3,8 +3,9 @@ use death_mountain_renderer::models::page_types::{BattleState, PageMode};
 use death_mountain_renderer::utils::encoding::encoding::bytes_base64_encode;
 use death_mountain_renderer::utils::renderer::renderer::Renderer;
 use death_mountain_renderer::utils::renderer::renderer_utils::{
-    generate_svg_with_page, u64_to_string, u8_to_string,
+    generate_svg, generate_svg_with_page,
 };
+use death_mountain_renderer::utils::string::string_utils::{u64_to_string, u8_to_string};
 
 /// @title PageRenderer Trait - Paginated rendering interface for multipage NFTs
 /// @notice Extends rendering capabilities to support multiple pages with transitions
@@ -79,7 +80,10 @@ pub impl PageRendererImpl of PageRenderer {
     }
 
     fn get_page_count(adventurer_verbose: AdventurerVerbose) -> u8 {
-        4 // Support 4 pages: Inventory (0), ItemBag (1), Marketplace (2), Battle (3)
+        match Self::get_page_mode(adventurer_verbose) {
+            PageMode::BattleOnly => 1, // Only battle page when in combat
+            PageMode::Normal(count) => count // Normal 3-page cycle (Inventory, ItemBag, Marketplace)
+        }
     }
 
     fn get_page_image(adventurer_verbose: AdventurerVerbose, page: u8) -> ByteArray {
@@ -92,8 +96,37 @@ pub impl PageRendererImpl of PageRenderer {
     }
 
     fn render_animated_pages(token_id: u64, adventurer_verbose: AdventurerVerbose) -> ByteArray {
-        // For Phase 1, return the first page - will be enhanced in Phase 3
-        Self::render_page(token_id, adventurer_verbose, 0)
+        // Generate dynamic animated SVG based on battle state
+        let animated_svg = generate_svg(adventurer_verbose.clone());
+        let svg_base64 = bytes_base64_encode(animated_svg);
+        let page_count = Self::get_page_count(adventurer_verbose.clone());
+
+        // Create JSON metadata for animated pages
+        let mut json = "{\"name\":\"Adventurer #";
+        json += u64_to_string(token_id);
+        json += " - Animated\",\"description\":\"";
+        json += Renderer::get_description();
+        json += "\",\"image\":\"data:image/svg+xml;base64,";
+        json += svg_base64;
+        json += "\",\"animation\":true,\"pages\":{\"total\":";
+        json += u8_to_string(page_count);
+        json += ",\"mode\":\"";
+
+        // Add battle state info to metadata
+        let battle_state = Self::get_battle_state(adventurer_verbose.clone());
+        match battle_state {
+            BattleState::Dead => json += "dead",
+            BattleState::InCombat => json += "battle",
+            BattleState::Normal => json += "normal",
+        }
+        json += "\"}}";
+
+        // Encode JSON to base64 and return as data URI
+        let json_base64 = bytes_base64_encode(json);
+        let mut result: ByteArray = "data:application/json;base64,";
+        result += json_base64;
+
+        result
     }
 
     fn get_battle_state(adventurer_verbose: AdventurerVerbose) -> BattleState {
@@ -114,7 +147,7 @@ pub impl PageRendererImpl of PageRenderer {
         match Self::get_battle_state(adventurer_verbose) {
             BattleState::Dead => PageMode::Normal(3), // Return to 3-page cycle
             BattleState::InCombat => PageMode::BattleOnly, // Only battle page
-            BattleState::Normal => PageMode::Normal(3), // 3-page cycle
+            BattleState::Normal => PageMode::Normal(3) // 3-page cycle
         }
     }
 }

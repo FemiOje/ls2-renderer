@@ -10,11 +10,11 @@ use death_mountain_renderer::mocks::mock_adventurer::{
     get_adventurer_with_min_stats, get_simple_adventurer,
 };
 use death_mountain_renderer::models::models::StatsTrait;
+use death_mountain_renderer::utils::encoding::encoding::bytes_base64_encode;
+use death_mountain_renderer::utils::renderer::page::page_renderer::PageRendererImpl;
 use death_mountain_renderer::utils::renderer::renderer::RendererImpl;
 use death_mountain_renderer::utils::renderer::renderer_utils::generate_svg_with_page;
-use death_mountain_renderer::utils::encoding::encoding::bytes_base64_encode;
 use death_mountain_renderer::utils::string::string_utils::{contains_pattern, starts_with_pattern};
-use death_mountain_renderer::utils::renderer::page::page_renderer::PageRendererImpl;
 
 // BASIC FUNCTIONALITY TESTS
 
@@ -464,7 +464,7 @@ fn test_boundary_level_adventurer() {
 fn test_page_count() {
     let adventurer = get_simple_adventurer();
     let page_count = PageRendererImpl::get_page_count(adventurer);
-    assert_eq!(page_count, 4, "Should have 4 pages");
+    assert_eq!(page_count, 3, "Should have 3 pages");
 }
 
 #[test]
@@ -598,7 +598,7 @@ fn test_simple_svg_comparison() {
 #[test]
 fn test_output_all_pages_svg() {
     let adventurer = get_simple_adventurer();
-    
+
     // Generate SVG for all 4 pages
     let svg_page_0 = generate_svg_with_page(adventurer.clone(), 0);
     let svg_page_1 = generate_svg_with_page(adventurer.clone(), 1);

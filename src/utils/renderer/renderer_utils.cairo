@@ -8,7 +8,11 @@
 use death_mountain_renderer::models::models::{
     AdventurerVerbose, BagVerbose, EquipmentVerbose, GameDetail, Slot, Stats, StatsTrait,
 };
+use death_mountain_renderer::models::page_types::{BattleState, PageMode};
 use death_mountain_renderer::utils::encoding::encoding::U256BytesUsedTraitImpl;
+use death_mountain_renderer::utils::string::string_utils::{
+    felt252_to_string, u256_to_string, u8_to_string,
+};
 
 
 // ============================================================================
@@ -79,90 +83,6 @@ pub fn ring() -> ByteArray {
 // ============================================================================
 // Core utility functions for data conversion and SVG generation
 
-/// @notice Converts u8 value to string representation for display in SVG
-/// @dev Handles edge case of zero and builds string digit by digit
-/// @param value The u8 value to convert to string
-/// @return ByteArray containing the string representation
-pub fn u8_to_string(value: u8) -> ByteArray {
-    if value == 0 {
-        return "0";
-    }
-
-    let mut result = "";
-    let mut val: u256 = value.into();
-    let mut digits: Array<u8> = array![];
-
-    while val > 0 {
-        let digit = (val % 10).try_into().unwrap();
-        digits.append(digit + 48); // Convert to ASCII
-        val = val / 10;
-    }
-
-    let mut i = digits.len();
-    while i > 0 {
-        i -= 1;
-        result.append_byte(*digits.at(i));
-    }
-
-    result
-}
-
-/// @notice Converts u64 value to string representation for display in SVG
-/// @dev Handles edge case of zero and builds string digit by digit
-/// @param value The u64 value to convert to string
-/// @return ByteArray containing the string representation
-pub fn u64_to_string(value: u64) -> ByteArray {
-    if value == 0 {
-        return "0";
-    }
-
-    let mut result = "";
-    let mut val: u256 = value.into();
-    let mut digits: Array<u8> = array![];
-
-    while val > 0 {
-        let digit = (val % 10).try_into().unwrap();
-        digits.append(digit + 48); // Convert ASCII
-        val = val / 10;
-    }
-
-    let mut i = digits.len();
-    while i > 0 {
-        i -= 1;
-        result.append_byte(*digits.at(i));
-    }
-
-    result
-}
-
-/// @notice Converts u256 value to string representation for display
-/// @dev Handles large numbers efficiently, builds string digit by digit
-/// @param value The u256 value to convert to string
-/// @return ByteArray containing the string representation
-pub fn u256_to_string(value: u256) -> ByteArray {
-    if value == 0 {
-        return "0";
-    }
-
-    let mut result = "";
-    let mut val = value;
-    let mut digits: Array<u8> = array![];
-
-    while val > 0 {
-        let digit = (val % 10).try_into().unwrap();
-        digits.append(digit + 48); // Convert to ASCII
-        val = val / 10;
-    }
-
-    let mut i = digits.len();
-    while i > 0 {
-        i -= 1;
-        result.append_byte(*digits.at(i));
-    }
-
-    result
-}
-
 /// @notice Calculates equipment greatness/level from experience points
 /// @dev Mimics death-mountain's get_greatness function using square root calculation
 /// @param xp The experience points of the equipment item
@@ -221,72 +141,10 @@ pub fn get_theme_color(page: u8) -> ByteArray {
         1 => "#E89446", // Page 1 (ItemBag) - Orange theme  
         2 => "#68CFDF", // Page 2 (Marketplace) - Blue theme
         3 => "#FF6B6B", // Page 3 (Battle) - Red theme
-        _ => "#78E846", // Default to green
+        _ => "#78E846" // Default to green
     }
 }
 
-
-/// @notice Converts felt252 value to ByteArray string representation
-/// @dev Extracts bytes from felt252 and builds string, skipping null bytes
-/// @param value The felt252 value to convert (typically item names from database)
-/// @return ByteArray containing the string representation
-pub fn felt252_to_string(value: felt252) -> ByteArray {
-    // Cairo felt252 values that represent strings are directly convertible to ByteArray
-    // Most felt252 string constants in the item database are stored as string literals
-    let mut result = "";
-
-    // Handle the zero case
-    if value == 0 {
-        return "";
-    }
-
-    // Convert felt252 to u256 first for bit manipulation
-    let val_u256: u256 = value.into();
-    let mut temp_val = val_u256;
-    let mut bytes: Array<u8> = array![];
-
-    // Extract bytes from the u256 value
-    while temp_val > 0 {
-        let byte = (temp_val % 256).try_into().unwrap();
-        if byte != 0 { // Skip null bytes
-            bytes.append(byte);
-        }
-        temp_val = temp_val / 256;
-    }
-
-    // Reverse the bytes since we extracted them in reverse order
-    let mut i = bytes.len();
-    while i > 0 {
-        i -= 1;
-        result.append_byte(*bytes.at(i));
-    }
-
-    result
-}
-
-// Get the character length of a felt252 string
-pub fn felt252_length(value: felt252) -> u32 {
-    // Handle the zero case
-    if value == 0 {
-        return 0;
-    }
-
-    // Convert felt252 to u256 first for bit manipulation
-    let val_u256: u256 = value.into();
-    let mut temp_val = val_u256;
-    let mut length: u32 = 0;
-
-    // Count non-zero bytes
-    while temp_val > 0 {
-        let byte = (temp_val % 256).try_into().unwrap();
-        if byte != 0 { // Skip null bytes
-            length += 1;
-        }
-        temp_val = temp_val / 256;
-    }
-
-    length
-}
 
 // Generate dynamic adventurer stats text elements for the 7 core stats
 fn generate_stats_text(stats: Stats) -> ByteArray {
@@ -394,7 +252,8 @@ pub fn generate_logo_with_page(page: u8) -> ByteArray {
 
     logo += "<path fill=\"";
     logo += theme_color;
-    logo += "\" fill-rule=\"evenodd\" d=\"M288.5 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM286 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
+    logo +=
+        "\" fill-rule=\"evenodd\" d=\"M288.5 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM286 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
 
     logo
 }
@@ -418,7 +277,8 @@ fn generate_svg_header() -> ByteArray {
 // Generate animated SVG header with CSS transitions for multi-page animations
 fn generate_animated_svg_header() -> ByteArray {
     let mut header = "";
-    header += "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"862\" height=\"1270\" fill=\"none\">";
+    header +=
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"862\" height=\"1270\" fill=\"none\">";
     header += "<style>";
     header += ".page{opacity:0;animation:pageTransition 20s infinite;}";
     header += ".page:nth-child(1){animation-delay:0s;}";
@@ -426,7 +286,62 @@ fn generate_animated_svg_header() -> ByteArray {
     header += ".page:nth-child(3){animation-delay:10s;}";
     header += ".page:nth-child(4){animation-delay:15s;}";
     header += "@keyframes pageTransition{0%,20%{opacity:1;}25%,95%{opacity:0;}100%{opacity:0;}}";
-    header += "text{font-family:VT323,IBM Plex Mono,Roboto Mono,Source Code Pro,monospace;font-weight:bold}";
+    header +=
+        "text{font-family:VT323,IBM Plex Mono,Roboto Mono,Source Code Pro,monospace;font-weight:bold}";
+    header += ".s8{font-size:8px}.s10{font-size:10px}.s12{font-size:12px}";
+    header += ".s16{font-size:16px}.s24{font-size:24px}.s32{font-size:32px}";
+    header += "</style>";
+    header += "<g filter=\"url(#a)\">";
+    header
+}
+
+// Generate dynamic animated SVG header based on page count
+fn generate_dynamic_animated_svg_header(page_count: u8) -> ByteArray {
+    let mut header = "";
+    header +=
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"862\" height=\"1270\" fill=\"none\">";
+    header += "<style>";
+
+    // Only add animation CSS if more than 1 page
+    if page_count > 1 {
+        // Calculate animation duration and timing based on page count
+        let total_duration = page_count * 5; // 5 seconds per page
+        let display_percentage: u16 = 100_u16
+            / page_count.into(); // Percentage of time each page is visible
+
+        header += ".page{opacity:0;animation:pageTransition ";
+        header += u256_to_string(total_duration.into());
+        header += "s infinite;}";
+
+        // Generate animation delays for each page
+        let mut page_index = 0_u8;
+        while page_index < page_count {
+            let delay = page_index * 5; // 5 seconds delay between pages
+            header += ".page:nth-child(";
+            header += u256_to_string((page_index + 1).into());
+            header += "){animation-delay:";
+            header += u256_to_string(delay.into());
+            header += "s;}";
+            page_index += 1;
+        }
+
+        // Generate proper keyframes with smooth transitions
+        // Each page should be visible for display_percentage, then fade out
+        let fade_start = display_percentage - 2; // Start fade 2% before end
+        let fade_end = display_percentage + 2; // Complete fade 2% after
+
+        header += "@keyframes pageTransition{0%,";
+        header += u256_to_string(fade_start.into());
+        header += "%{opacity:1;}";
+        header += u256_to_string(fade_end.into());
+        header += "%,100%{opacity:0;}}";
+    } else {
+        // No animation for single page - just static display
+        header += ".page{opacity:1;}";
+    }
+
+    header +=
+        "text{font-family:VT323,IBM Plex Mono,Roboto Mono,Source Code Pro,monospace;font-weight:bold}";
     header += ".s8{font-size:8px}.s10{font-size:10px}.s12{font-size:12px}";
     header += ".s16{font-size:16px}.s24{font-size:24px}.s32{font-size:32px}";
     header += "</style>";
@@ -756,33 +671,40 @@ fn generate_border_for_page(page: u8) -> ByteArray {
     border += border_color.clone();
     border += "\" d=\"M686 863h-6v-7h6v7Z\"/><path fill=\"";
     border += border_color.clone();
-    border += "\" fill-rule=\"evenodd\" d=\"M153 428h8V104h6v342h-14c1 3-1 22 1 23h13v342h-6V488h-8v348h-6V482h14v-6h-14v-35h13v-7h-13V80h6v348Zm0 17v1l1-1h-1Zm561-11h-14v7h14v35h-14v6h14v354h-6V488h-8v323l-6-1V470l1-1h13v-23h-13l-1-341 6-1v324c2 2 6 0 8 0V80h6v354Zm-4 48-2 1 2-1Zm-5-12a35 35 0 0 1 1 0h-1Zm3 0h-1 1Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border +=
+        "\" fill-rule=\"evenodd\" d=\"M153 428h8V104h6v342h-14c1 3-1 22 1 23h13v342h-6V488h-8v348h-6V482h14v-6h-14v-35h13v-7h-13V80h6v348Zm0 17v1l1-1h-1Zm561-11h-14v7h14v35h-14v6h14v354h-6V488h-8v323l-6-1V470l1-1h13v-23h-13l-1-341 6-1v324c2 2 6 0 8 0V80h6v354Zm-4 48-2 1 2-1Zm-5-12a35 35 0 0 1 1 0h-1Zm3 0h-1 1Z\" clip-rule=\"evenodd\"/><path fill=\"";
     border += border_color.clone();
     border += "\" d=\"M694 819Z\"/><path fill=\"";
     border += border_color.clone();
-    border += "\" fill-rule=\"evenodd\" d=\"M700 462h-6v-8h6v8Zm-5-8h4-4Zm-528 8h-6v-8h6v8Zm-1-1h-4 4v-7 7Zm-4-7h2-2ZM658 53h14v13h-1 15c0 1 0 0 0 0l1 1h-1v13-1l1 1h13v17h-6V85h-12V75h-1l-1-2h-14V60l-1-1h-12V45h-3 3-8v-5h13v13Zm30 28h11-11Zm-8-9h-13 13Zm-27-15v1h12l2 2-2-2h-12v-1Zm5-4 4 1-4-1Zm11 1h2-2Zm-23-9Zm-430 0h-7 6-6l-1 1v13h-12c-2 1 0 11-1 14h-15v12c-2 2-10 0-13 1v11h-5V81h11l1-1V66h16V54v12h-1V54l1-1h13V40h13v5Zm-16 13h6-6Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border +=
+        "\" fill-rule=\"evenodd\" d=\"M700 462h-6v-8h6v8Zm-5-8h4-4Zm-528 8h-6v-8h6v8Zm-1-1h-4 4v-7 7Zm-4-7h2-2ZM658 53h14v13h-1 15c0 1 0 0 0 0l1 1h-1v13-1l1 1h13v17h-6V85h-12V75h-1l-1-2h-14V60l-1-1h-12V45h-3 3-8v-5h13v13Zm30 28h11-11Zm-8-9h-13 13Zm-27-15v1h12l2 2-2-2h-12v-1Zm5-4 4 1-4-1Zm11 1h2-2Zm-23-9Zm-430 0h-7 6-6l-1 1v13h-12c-2 1 0 11-1 14h-15v12c-2 2-10 0-13 1v11h-5V81h11l1-1V66h16V54v12h-1V54l1-1h13V40h13v5Zm-16 13h6-6Z\" clip-rule=\"evenodd\"/><path fill=\"";
     border += border_color.clone();
     border += "\" d=\"m174 80-1 1h-11v16h-1V80h13Zm507-5h1v10h12v1h-12l-1-1V75Z\"/><path fill=\"";
     border += border_color.clone();
     border += "\" d=\"M682 86h-1v-1l1 1Zm-1-11Z\"/><path fill=\"";
     border += border_color.clone();
-    border += "\" fill-rule=\"evenodd\" d=\"M666 28c4-2 9-1 13-1v6h-7v-2 9h14l1-1V28h26-26v11l-1 1V27h28v26h-14v13h9-1v-5c1-2 3-1 5-1-2 0-4-1-5 1v-2h6v14h-20V45h-28V28h13v3-3h-13Zm26 12h8v7c2 2 6 0 8 0V33h-16v7Zm7 4v1-1ZM181 28c5-2 9-1 14-1l-4 1 4-1v18h-28l-1 7 1-7v28h-20V59h6v8l8-1 1-1-1 1V53h-14V27h28v13h-1 15v-7h-8v-5Zm-15 40v4h-18 18v-4Zm-14-8v5-5Zm18-27h-17v15l8-1c-1-9 1-7 9-7v-7Zm-22-5h25l1 4-1-4h-25Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border +=
+        "\" fill-rule=\"evenodd\" d=\"M666 28c4-2 9-1 13-1v6h-7v-2 9h14l1-1V28h26-26v11l-1 1V27h28v26h-14v13h9-1v-5c1-2 3-1 5-1-2 0-4-1-5 1v-2h6v14h-20V45h-28V28h13v3-3h-13Zm26 12h8v7c2 2 6 0 8 0V33h-16v7Zm7 4v1-1ZM181 28c5-2 9-1 14-1l-4 1 4-1v18h-28l-1 7 1-7v28h-20V59h6v8l8-1 1-1-1 1V53h-14V27h28v13h-1 15v-7h-8v-5Zm-15 40v4h-18 18v-4Zm-14-8v5-5Zm18-27h-17v15l8-1c-1-9 1-7 9-7v-7Zm-22-5h25l1 4-1-4h-25Z\" clip-rule=\"evenodd\"/><path fill=\"";
     border += border_color.clone();
     border += "\" d=\"M679 53c9-1 8 0 8 8h-8v-8Z\"/>";
     border += "<path fill=\"";
     border += border_color.clone();
-    border += "\" fill-rule=\"evenodd\" d=\"M714 857h-6v-8h-8v14l-1-1 1 1h14v26h-28v-13h-15l1-1-1 1v7-1c2 2 7 0 9 1v6h-14v-2l13 1-13-1v-11 1-8h28v-27c7 2 14 0 20 0v15Zm-9 27h-8 8Zm-5-15v7h-8v7h16v1-2c2 1 1-1 1-2v-10 10c0 1 1 3-1 2v-13h-8Zm-1 6h-7 7Zm-33-5 1 3-1-3Zm42-2v1-1Zm-270-5v6l-1-1v-1l1 2h16v14c-2-4-1-9-1-13 0 4-1 9 1 13v1-1h13v-14h166v7H515l118-1v-5 5l-118 1h-25l5-1h1l-6 1h-3v7h171v6H480v-13h-7c-2 2 0 9-1 12 1-3-1-10 1-12v13c-4-1-23 1-25-1-2-1 0-10-1-12l-13-1v-6h-7v6h-14v13h-24 24v-13h14v-6 7h-13v13h-25c-2 0-1-12-1-13h1-8v13H203v-6h171l-171 1v4-4l171-1v-7H228v-7h166v14-1l3 1 11-1v-13h14c1 0 0 0 0 0v-6h16Zm-59 13v12-12Zm76 8Zm-10-9h-8 8Zm-8-12 1 1-1-1Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border +=
+        "\" fill-rule=\"evenodd\" d=\"M714 857h-6v-8h-8v14l-1-1 1 1h14v26h-28v-13h-15l1-1-1 1v7-1c2 2 7 0 9 1v6h-14v-2l13 1-13-1v-11 1-8h28v-27c7 2 14 0 20 0v15Zm-9 27h-8 8Zm-5-15v7h-8v7h16v1-2c2 1 1-1 1-2v-10 10c0 1 1 3-1 2v-13h-8Zm-1 6h-7 7Zm-33-5 1 3-1-3Zm42-2v1-1Zm-270-5v6l-1-1v-1l1 2h16v14c-2-4-1-9-1-13 0 4-1 9 1 13v1-1h13v-14h166v7H515l118-1v-5 5l-118 1h-25l5-1h1l-6 1h-3v7h171v6H480v-13h-7c-2 2 0 9-1 12 1-3-1-10 1-12v13c-4-1-23 1-25-1-2-1 0-10-1-12l-13-1v-6h-7v6h-14v13h-24 24v-13h14v-6 7h-13v13h-25c-2 0-1-12-1-13h1-8v13H203v-6h171l-171 1v4-4l171-1v-7H228v-7h166v14-1l3 1 11-1v-13h14c1 0 0 0 0 0v-6h16Zm-59 13v12-12Zm76 8Zm-10-9h-8 8Zm-8-12 1 1-1-1Z\" clip-rule=\"evenodd\"/><path fill=\"";
     border += border_color.clone();
     border += "\" d=\"M154 868h6-6Z\"/><path fill=\"";
     border += border_color.clone();
-    border += "\" fill-rule=\"evenodd\" d=\"M167 869h28v19h-13v-5h7v-7h-14v1l-1-1 1 1v12h-28v-26h13l1-1v-13h-7c-2 1-1 6-1 8h-5l-1-1h1-1v-13h20v26Zm-7-1h-7v5l-1 1 1-1v10h17v-7c-1-2-8-1-8-1s7-1 8 1h-9v-7l-1-1Zm-8 13v1-1Zm0-6Zm24 0h-1 1Zm-15-10Zm-9-2h2-3 1Zm-4-7Zm291 32h-17v-5h17v5Zm-2-1v-3 3Zm257-68c2-2 4-1 6-1v18h-14v13h-15v14h-12c2-2 9 0 12-1-3 1-10-1-12 1l-1 1v12h-12l-1-1h13-13c-2-7 1-6 7-6v-12h14v-14h14v-12l1-1h13v-11h5-5Zm-28 24v14-14Zm-499-13h13v13h15v14h13v12c1 2 4 1 6 1h1c-2 0-6 1-7-1h8v7h-13v-13h-14v-14h-14l-1-1v-12h-13v-18h6v12Zm41 36h-1 1Zm0 0Zm-5-4Zm-24-29v10-10Zm-16 2h-1 1Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border +=
+        "\" fill-rule=\"evenodd\" d=\"M167 869h28v19h-13v-5h7v-7h-14v1l-1-1 1 1v12h-28v-26h13l1-1v-13h-7c-2 1-1 6-1 8h-5l-1-1h1-1v-13h20v26Zm-7-1h-7v5l-1 1 1-1v10h17v-7c-1-2-8-1-8-1s7-1 8 1h-9v-7l-1-1Zm-8 13v1-1Zm0-6Zm24 0h-1 1Zm-15-10Zm-9-2h2-3 1Zm-4-7Zm291 32h-17v-5h17v5Zm-2-1v-3 3Zm257-68c2-2 4-1 6-1v18h-14v13h-15v14h-12c2-2 9 0 12-1-3 1-10-1-12 1l-1 1v12h-12l-1-1h13-13c-2-7 1-6 7-6v-12h14v-14h14v-12l1-1h13v-11h5-5Zm-28 24v14-14Zm-499-13h13v13h15v14h13v12c1 2 4 1 6 1h1c-2 0-6 1-7-1h8v7h-13v-13h-14v-14h-14l-1-1v-12h-13v-18h6v12Zm41 36h-1 1Zm0 0Zm-5-4Zm-24-29v10-10Zm-16 2h-1 1Z\" clip-rule=\"evenodd\"/><path fill=\"";
     border += border_color.clone();
     border += "\" d=\"M408 869v1h-1l1-1Z\"/><path fill=\"";
     border += border_color.clone();
-    border += "\" fill-rule=\"evenodd\" d=\"M181 863h-7v-7h7v7Zm-1-1h-5 5v-6 6Z\" clip-rule=\"evenodd\"/>";
+    border +=
+        "\" fill-rule=\"evenodd\" d=\"M181 863h-7v-7h7v7Zm-1-1h-5 5v-6 6Z\" clip-rule=\"evenodd\"/>";
     border += "<path fill=\"";
     border += border_color.clone();
-    border += "\" fill-rule=\"evenodd\" d=\"M181 60h-7v-7h7v7Zm-1-1v-5 5Zm199-19h9l1-1V28v11l-1 1V27h26v12l-1 1 1-1 2 1h11v6c9 0 5-1 7-5 1-3 11 0 13-2 2-1 1-9 1-11 0 2 1 10-1 11V27h26l-1 13h8V27h178v6H487l-1 7h147v5H467V33h-13v8h-1 1v4h-15v6l-2 1h-14l-1-1v-6h-14V33h-14v12H227v-5h147v-7H203v-6h176v13Zm14-7v12-12Zm74 0v12-12Zm14 7V28v12Z\" clip-rule=\"evenodd\"/><path fill=\"";
+    border +=
+        "\" fill-rule=\"evenodd\" d=\"M181 60h-7v-7h7v7Zm-1-1v-5 5Zm199-19h9l1-1V28v11l-1 1V27h26v12l-1 1 1-1 2 1h11v6c9 0 5-1 7-5 1-3 11 0 13-2 2-1 1-9 1-11 0 2 1 10-1 11V27h26l-1 13h8V27h178v6H487l-1 7h147v5H467V33h-13v8h-1 1v4h-15v6l-2 1h-14l-1-1v-6h-14V33h-14v12H227v-5h147v-7H203v-6h176v13Zm14-7v12-12Zm74 0v12-12Zm14 7V28v12Z\" clip-rule=\"evenodd\"/><path fill=\"";
     border += border_color.clone();
     border += "\" d=\"M439 33h-17v-6h17v6Zm227-5Z\"/>";
     border
@@ -804,35 +726,36 @@ fn generate_svg_footer() -> ByteArray {
 // Generate animated SVG footer with definitions and closing tags
 fn generate_animated_svg_footer() -> ByteArray {
     let mut footer = "";
-    footer += "</g><defs><clipPath id=\"b\"><rect width=\"567\" height=\"862\" x=\"147.2\" y=\"27\" fill=\"#fff\" rx=\"10\"/></clipPath>";
+    footer +=
+        "</g><defs><clipPath id=\"b\"><rect width=\"567\" height=\"862\" x=\"147.2\" y=\"27\" fill=\"#fff\" rx=\"10\"/></clipPath>";
     footer += "<clipPath id=\"c\"><path fill=\"#fff\" d=\"M302 373h37v37h-37z\"/></clipPath>";
     footer += "<clipPath id=\"d\"><path fill=\"#fff\" d=\"M298 504h47v47h-47z\"/></clipPath>";
-    footer += "<filter id=\"a\" width=\"861\" height=\"1402\" x=\".2\" y=\"0\" color-interpolation-filters=\"sRGB\" filterUnits=\"userSpaceOnUse\">";
+    footer +=
+        "<filter id=\"a\" width=\"861\" height=\"1402\" x=\".2\" y=\"0\" color-interpolation-filters=\"sRGB\" filterUnits=\"userSpaceOnUse\">";
     footer += "<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>";
-    footer += "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
+    footer +=
+        "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
     footer += "<feOffset dy=\"23\"/><feGaussianBlur stdDeviation=\"25\"/>";
     footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.26 0\"/>";
     footer += "<feBlend in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_19_3058\"/>";
-    footer += "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
+    footer +=
+        "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
     footer += "<feOffset dy=\"92\"/><feGaussianBlur stdDeviation=\"46\"/>";
     footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.22 0\"/>";
     footer += "<feBlend in2=\"effect1_dropShadow_19_3058\" result=\"effect2_dropShadow_19_3058\"/>";
-    footer += "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
+    footer +=
+        "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
     footer += "<feOffset dy=\"206\"/><feGaussianBlur stdDeviation=\"62\"/>";
     footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0\"/>";
     footer += "<feBlend in2=\"effect2_dropShadow_19_3058\" result=\"effect3_dropShadow_19_3058\"/>";
-    footer += "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
+    footer +=
+        "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
     footer += "<feOffset dy=\"366\"/><feGaussianBlur stdDeviation=\"73.5\"/>";
     footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0\"/>";
     footer += "<feBlend in2=\"effect3_dropShadow_19_3058\" result=\"effect4_dropShadow_19_3058\"/>";
     footer += "<feBlend in=\"SourceGraphic\" in2=\"effect4_dropShadow_19_3058\" result=\"shape\"/>";
     footer += "</filter></defs></svg>";
     footer
-}
-
-// Generate dynamic SVG with adventurer stats and equipment - now using modular functions
-pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
-    generate_svg_with_page(adventurer, 0)
 }
 
 // Generate dynamic SVG with adventurer data for specific page
@@ -851,7 +774,7 @@ pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteAr
 // Generate bag item slots for ItemBag page (3x5 grid layout) - using equipment spacing pattern
 fn generate_bag_item_slots() -> ByteArray {
     let mut slots = "";
-    
+
     // Use same spacing pattern as equipment slots but for 3 rows x 5 columns
     // Equipment uses x="285.7" with 92px spacing (377.7-285.7=92)
     let start_x = 240_u16; // Start closer to left to fit 5 columns
@@ -859,19 +782,27 @@ fn generate_bag_item_slots() -> ByteArray {
     let slot_size = 71_u16; // Same as equipment
     let spacing_x = 85_u16; // Slightly less than equipment 92px to fit 5 columns  
     let spacing_y = 90_u16; // Same as equipment vertical spacing
-    
+
     let mut row = 0_u8;
-    while row < 3 {  // 3 rows
+    while row < 3 { // 3 rows
         let mut col = 0_u8;
         while col < 5 { // 5 columns
             let x = start_x + (col.into() * spacing_x);
             let y = start_y + (row.into() * spacing_y);
-            slots += "<rect width=\"" + u256_to_string(slot_size.into()) + "\" height=\"" + u256_to_string(slot_size.into()) + "\" x=\"" + u256_to_string(x.into()) + "\" y=\"" + u256_to_string(y.into()) + "\" stroke=\"#B5561F\" rx=\"5.5\" fill=\"none\"/>";
+            slots += "<rect width=\""
+                + u256_to_string(slot_size.into())
+                + "\" height=\""
+                + u256_to_string(slot_size.into())
+                + "\" x=\""
+                + u256_to_string(x.into())
+                + "\" y=\""
+                + u256_to_string(y.into())
+                + "\" stroke=\"#B5561F\" rx=\"5.5\" fill=\"none\"/>";
             col += 1;
-        };
+        }
         row += 1;
-    };
-    
+    }
+
     slots
 }
 
@@ -879,41 +810,53 @@ fn generate_bag_item_slots() -> ByteArray {
 fn get_item_icon_svg(slot: Slot) -> ByteArray {
     match slot {
         Slot::Weapon => weapon(),
-        Slot::Chest => chest(), 
+        Slot::Chest => chest(),
         Slot::Head => head(),
         Slot::Waist => waist(),
         Slot::Foot => foot(),
         Slot::Hand => hand(),
         Slot::Neck => neck(),
         Slot::Ring => ring(),
-        _ => weapon(), // Default fallback
+        _ => weapon() // Default fallback
     }
 }
 
-// Generate bag item icons for ItemBag page 
+// Generate bag item icons for ItemBag page
 fn generate_bag_item_icons(bag: BagVerbose) -> ByteArray {
     let mut icons = "";
     let theme_color = get_theme_color(1); // Orange theme
-    
+
     // Array of bag items for easier iteration
     let bag_items = array![
-        bag.item_1, bag.item_2, bag.item_3, bag.item_4, bag.item_5,
-        bag.item_6, bag.item_7, bag.item_8, bag.item_9, bag.item_10,
-        bag.item_11, bag.item_12, bag.item_13, bag.item_14, bag.item_15
+        bag.item_1,
+        bag.item_2,
+        bag.item_3,
+        bag.item_4,
+        bag.item_5,
+        bag.item_6,
+        bag.item_7,
+        bag.item_8,
+        bag.item_9,
+        bag.item_10,
+        bag.item_11,
+        bag.item_12,
+        bag.item_13,
+        bag.item_14,
+        bag.item_15,
     ];
-    
+
     // Match the slot positioning (centered in each slot) - using equipment pattern
     let start_x = 240_u16; // Same as slots
     let start_y = 350_u16; // Same as slots  
     let spacing_x = 85_u16; // Same as slots
     let spacing_y = 90_u16; // Same as slots
-    
+
     // Center icon within each slot (icon is 3x scale, so adjust positioning like equipment)
     // Equipment uses offsets like 309-285.7=23.3, so use similar offset
     let icon_offset = 22_u16; // Center the 3x scaled icon in the 71px slot
     let icon_start_x = start_x + icon_offset;
     let icon_start_y = start_y + icon_offset;
-    
+
     let mut item_index = 0_u8;
     while item_index < 15 {
         let item = *bag_items.at(item_index.into());
@@ -922,14 +865,22 @@ fn generate_bag_item_icons(bag: BagVerbose) -> ByteArray {
             let col = item_index % 5; // Column within the row
             let x = icon_start_x + (col.into() * spacing_x);
             let y = icon_start_y + (row.into() * spacing_y);
-            
+
             // Get appropriate icon based on item slot type
             let icon_svg = get_item_icon_svg(item.slot);
-            icons += "<g transform=\"translate(" + u256_to_string(x.into()) + ", " + u256_to_string(y.into()) + ") scale(3)\" fill=\"" + theme_color.clone() + "\">" + icon_svg + "</g>";
+            icons += "<g transform=\"translate("
+                + u256_to_string(x.into())
+                + ", "
+                + u256_to_string(y.into())
+                + ") scale(3)\" fill=\""
+                + theme_color.clone()
+                + "\">"
+                + icon_svg
+                + "</g>";
         }
         item_index += 1;
-    };
-    
+    }
+
     icons
 }
 
@@ -937,15 +888,27 @@ fn generate_bag_item_icons(bag: BagVerbose) -> ByteArray {
 fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
     let mut badges = "";
     let theme_color = get_theme_color(1); // Orange theme
-    
+
     // Array of bag items for easier iteration
     let bag_items = array![
-        bag.item_1, bag.item_2, bag.item_3, bag.item_4, bag.item_5,
-        bag.item_6, bag.item_7, bag.item_8, bag.item_9, bag.item_10,
-        bag.item_11, bag.item_12, bag.item_13, bag.item_14, bag.item_15
+        bag.item_1,
+        bag.item_2,
+        bag.item_3,
+        bag.item_4,
+        bag.item_5,
+        bag.item_6,
+        bag.item_7,
+        bag.item_8,
+        bag.item_9,
+        bag.item_10,
+        bag.item_11,
+        bag.item_12,
+        bag.item_13,
+        bag.item_14,
+        bag.item_15,
     ];
-    
-    // Badge positioning: top-right corner of each slot (like equipment badges)  
+
+    // Badge positioning: top-right corner of each slot (like equipment badges)
     // Use same positioning as generate_bag_item_slots
     let start_x = 240_u16; // Same as slots
     let start_y = 350_u16; // Same as slots
@@ -955,7 +918,7 @@ fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
     let badge_height = 16_u16;
     let badge_offset_x = 49_u16; // Position in top-right corner of slot
     let badge_offset_y = 5_u16; // Small offset from top
-    
+
     let mut item_index = 0_u8;
     while item_index < 15 {
         let item = *bag_items.at(item_index.into());
@@ -966,20 +929,34 @@ fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
             let slot_y = start_y + (row.into() * spacing_y);
             let badge_x = slot_x + badge_offset_x; // Top-right corner
             let badge_y = slot_y + badge_offset_y;
-            
+
             // Generate level badge background
-            badges += "<rect width=\"" + u256_to_string(badge_width.into()) + "\" height=\"" + u256_to_string(badge_height.into()) + "\" x=\"" + u256_to_string(badge_x.into()) + "\" y=\"" + u256_to_string(badge_y.into()) + "\" fill=\"" + theme_color.clone() + "\" rx=\"2\"/>";
-            
+            badges += "<rect width=\""
+                + u256_to_string(badge_width.into())
+                + "\" height=\""
+                + u256_to_string(badge_height.into())
+                + "\" x=\""
+                + u256_to_string(badge_x.into())
+                + "\" y=\""
+                + u256_to_string(badge_y.into())
+                + "\" fill=\""
+                + theme_color.clone()
+                + "\" rx=\"2\"/>";
+
             // Generate level text (centered in badge)
             let text_x = badge_x + (badge_width / 2);
             let text_y = badge_y + 11; // Vertical center
-            badges += "<text x=\"" + u256_to_string(text_x.into()) + "\" y=\"" + u256_to_string(text_y.into()) + "\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+            badges += "<text x=\""
+                + u256_to_string(text_x.into())
+                + "\" y=\""
+                + u256_to_string(text_y.into())
+                + "\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
             badges += u8_to_string(get_greatness(item.xp));
             badges += "</text>";
         }
         item_index += 1;
-    };
-    
+    }
+
     badges
 }
 
@@ -993,7 +970,7 @@ fn generate_page_content(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
     }
 }
 
-// Generate inventory page content (Page 0 - Green theme) 
+// Generate inventory page content (Page 0 - Green theme)
 fn generate_inventory_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
 
@@ -1015,56 +992,64 @@ fn generate_inventory_page_content(adventurer: AdventurerVerbose) -> ByteArray {
 // Generate item bag page content (Page 1 - Orange theme)
 fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
-    
+
     // Add adventurer name with orange theme
     content += generate_adventurer_name_text_with_page(adventurer.name, 1);
     content += generate_logo_with_page(1);
-    
+
     // Add page title and subtitle
     let theme_color = get_theme_color(1);
-    content += "<text x=\"339\" y=\"200\" fill=\"" + theme_color + "\" class=\"s24\" text-anchor=\"left\">Item Bag</text>";
-    
+    content += "<text x=\"339\" y=\"200\" fill=\""
+        + theme_color
+        + "\" class=\"s24\" text-anchor=\"left\">Item Bag</text>";
+
     // Add bag item layout with slots, icons, and level badges
     content += generate_bag_item_slots();
     content += generate_bag_item_icons(adventurer.bag);
     content += generate_bag_item_level_badges(adventurer.bag);
-    
+
     content
 }
 
-// Generate marketplace page content (Page 2 - Blue theme)  
+// Generate marketplace page content (Page 2 - Blue theme)
 fn generate_marketplace_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
-    
-    // Add adventurer name with blue theme  
+
+    // Add adventurer name with blue theme
     content += generate_adventurer_name_text_with_page(adventurer.name, 2);
     content += generate_logo_with_page(2);
-    
+
     // Add page title
-    content += "<text x=\"339\" y=\"200\" fill=\"#4A9EFF\" class=\"s24\" text-anchor=\"left\">Marketplace</text>";
-    
+    content +=
+        "<text x=\"339\" y=\"200\" fill=\"#4A9EFF\" class=\"s24\" text-anchor=\"left\">Marketplace</text>";
+
     // Placeholder text for development
-    content += "<text x=\"400\" y=\"400\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"middle\">MARKETPLACE ITEMS WILL</text>";
-    content += "<text x=\"400\" y=\"430\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"middle\">BE DISPLAYED HERE.</text>";
-    
+    content +=
+        "<text x=\"400\" y=\"400\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"middle\">MARKETPLACE ITEMS WILL</text>";
+    content +=
+        "<text x=\"400\" y=\"430\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"middle\">BE DISPLAYED HERE.</text>";
+
     content
 }
 
 // Generate battle page content (Page 3 - Red theme for gradient border)
 fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
-    
-    // Add adventurer name  
+
+    // Add adventurer name
     content += generate_adventurer_name_text_with_page(adventurer.name, 3);
     content += generate_logo_with_page(3);
-    
-    // Add page title  
-    content += "<text x=\"339\" y=\"200\" fill=\"#FF6B6B\" class=\"s24\" text-anchor=\"left\">Current Battle</text>";
-    content += "<text x=\"540\" y=\"180\" fill=\"#FF6B6B\" class=\"s16\" text-anchor=\"left\">TROLL</text>";
-    
+
+    // Add page title
+    content +=
+        "<text x=\"339\" y=\"200\" fill=\"#FF6B6B\" class=\"s24\" text-anchor=\"left\">Current Battle</text>";
+    content +=
+        "<text x=\"540\" y=\"180\" fill=\"#FF6B6B\" class=\"s16\" text-anchor=\"left\">TROLL</text>";
+
     // Placeholder text for development
-    content += "<text x=\"400\" y=\"400\" fill=\"#FF6B6B\" class=\"s16\" text-anchor=\"middle\">TROLL AMBUSHED YOU FOR 10 DMG!</text>";
-    
+    content +=
+        "<text x=\"400\" y=\"400\" fill=\"#FF6B6B\" class=\"s16\" text-anchor=\"middle\">TROLL AMBUSHED YOU FOR 10 DMG!</text>";
+
     content
 }
 
@@ -1080,7 +1065,7 @@ fn generate_page_wrapper(page_content: ByteArray, border_content: ByteArray) -> 
 }
 
 // Generate animated SVG with all four pages and smooth transitions
-pub fn generate_animated_svg(adventurer: AdventurerVerbose) -> ByteArray {
+pub fn generate_full_animated_svg(adventurer: AdventurerVerbose) -> ByteArray {
     let mut svg = "";
 
     // Add animated SVG header with CSS animations
@@ -1102,6 +1087,63 @@ pub fn generate_animated_svg(adventurer: AdventurerVerbose) -> ByteArray {
     let battle_content = generate_battle_page_content(adventurer.clone());
     let battle_border = generate_border_for_page(3);
     svg += generate_page_wrapper(battle_content, battle_border);
+
+    // Add animated SVG footer
+    svg += generate_animated_svg_footer();
+
+    svg
+}
+
+// Generate dynamic SVG that automatically handles all cases including animations based on
+// adventurer's battle state
+pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
+    let mut svg = "";
+
+    // Determine battle state and page mode directly
+    let battle_state = if adventurer.health == 0 {
+        BattleState::Dead
+    } else if adventurer.beast_health > 0 {
+        BattleState::InCombat
+    } else {
+        BattleState::Normal
+    };
+
+    let page_mode = match battle_state {
+        BattleState::Dead => PageMode::Normal(3), // Return to 3-page cycle
+        BattleState::InCombat => PageMode::BattleOnly, // Only battle page
+        BattleState::Normal => PageMode::Normal(3) // 3-page cycle
+    };
+
+    let page_count = match page_mode {
+        PageMode::BattleOnly => 1_u8,
+        PageMode::Normal(count) => count,
+    };
+
+    // Add dynamic animated SVG header with appropriate timing
+    svg += generate_dynamic_animated_svg_header(page_count);
+
+    match page_mode {
+        PageMode::BattleOnly => {
+            // Only show battle page when in combat
+            let battle_content = generate_battle_page_content(adventurer.clone());
+            let battle_border = generate_border_for_page(3);
+            svg += generate_page_wrapper(battle_content, battle_border);
+        },
+        PageMode::Normal(_) => {
+            // Show normal 3-page cycle: Inventory -> ItemBag -> Marketplace
+            let inventory_content = generate_inventory_page_content(adventurer.clone());
+            let inventory_border = generate_border_for_page(0);
+            svg += generate_page_wrapper(inventory_content, inventory_border);
+
+            let item_bag_content = generate_item_bag_page_content(adventurer.clone());
+            let item_bag_border = generate_border_for_page(1);
+            svg += generate_page_wrapper(item_bag_content, item_bag_border);
+
+            let marketplace_content = generate_marketplace_page_content(adventurer.clone());
+            let marketplace_border = generate_border_for_page(2);
+            svg += generate_page_wrapper(marketplace_content, marketplace_border);
+        },
+    }
 
     // Add animated SVG footer
     svg += generate_animated_svg_footer();

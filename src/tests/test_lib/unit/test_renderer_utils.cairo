@@ -9,11 +9,12 @@ use death_mountain_renderer::mocks::mock_adventurer::{
     get_simple_adventurer,
 };
 use death_mountain_renderer::models::models::StatsTrait;
+use death_mountain_renderer::utils::renderer::page::page_renderer::PageRendererImpl;
 use death_mountain_renderer::utils::renderer::renderer_utils::{
-    chest, foot, generate_svg, generate_animated_svg, hand, head, neck, ring, u256_to_string, waist, weapon,
+    chest, foot, generate_full_animated_svg, generate_svg, hand, head, neck, ring, waist, weapon,
 };
 use death_mountain_renderer::utils::string::string_utils::{
-    contains_pattern, ends_with_pattern, starts_with_pattern,
+    contains_pattern, ends_with_pattern, starts_with_pattern, u256_to_string,
 };
 
 #[test]
@@ -444,54 +445,187 @@ fn test_generate_svg_name_boundary_conditions() {
 fn test_output_animated_svg() {
     // Create mock adventurer
     let adventurer = get_simple_adventurer();
-    
+
     // Generate the full animated SVG
-    let animated_svg = generate_animated_svg(adventurer);
-    
+    let animated_svg = generate_full_animated_svg(adventurer);
+
     // Output the animated SVG for manual inspection with proper markers
     println!("=== ANIMATED SVG ===");
     println!("{}", animated_svg);
     println!("=== END ANIMATED SVG ===");
-    
+
     let svg_length: usize = animated_svg.len().into();
     assert!(svg_length > 0, "Animated SVG should not be empty");
-    
+
     // Validate SVG structure
-    assert!(contains_pattern(@animated_svg, @"<svg xmlns=\"http://www.w3.org/2000/svg\""), "Should have SVG opening tag");
+    assert!(
+        contains_pattern(@animated_svg, @"<svg xmlns=\"http://www.w3.org/2000/svg\""),
+        "Should have SVG opening tag",
+    );
     assert!(contains_pattern(@animated_svg, @"</svg>"), "Should have SVG closing tag");
-    
+
     // Validate CSS animations are present
     assert!(contains_pattern(@animated_svg, @"<style>"), "Should contain CSS styles");
-    assert!(contains_pattern(@animated_svg, @".page{opacity:0;animation:pageTransition"), "Should have page animation CSS");
-    assert!(contains_pattern(@animated_svg, @"@keyframes pageTransition"), "Should have keyframes definition");
+    assert!(
+        contains_pattern(@animated_svg, @".page{opacity:0;animation:pageTransition"),
+        "Should have page animation CSS",
+    );
+    assert!(
+        contains_pattern(@animated_svg, @"@keyframes pageTransition"),
+        "Should have keyframes definition",
+    );
     assert!(contains_pattern(@animated_svg, @"animation-delay:0s"), "Should have Page 0 timing");
     assert!(contains_pattern(@animated_svg, @"animation-delay:5s"), "Should have Page 1 timing");
     assert!(contains_pattern(@animated_svg, @"animation-delay:10s"), "Should have Page 2 timing");
     assert!(contains_pattern(@animated_svg, @"animation-delay:15s"), "Should have Page 3 timing");
-    
+
     // Validate all 4 pages are present with correct structure
-    assert!(contains_pattern(@animated_svg, @"<g class=\"page\""), "Should have page group elements");
-    
+    assert!(
+        contains_pattern(@animated_svg, @"<g class=\"page\""), "Should have page group elements",
+    );
+
     // Validate theme colors for each page
     assert!(contains_pattern(@animated_svg, @"fill=\"#78E846\""), "Should have Page 0 green theme");
-    assert!(contains_pattern(@animated_svg, @"fill=\"#E89446\""), "Should have Page 1 orange theme");  
+    assert!(
+        contains_pattern(@animated_svg, @"fill=\"#E89446\""), "Should have Page 1 orange theme",
+    );
     assert!(contains_pattern(@animated_svg, @"fill=\"#68CFDF\""), "Should have Page 2 blue theme");
     assert!(contains_pattern(@animated_svg, @"fill=\"#FF6B6B\""), "Should have Page 3 red theme");
-    
+
     // Validate page titles are present
     assert!(contains_pattern(@animated_svg, @"TestHero"), "Should contain adventurer name");
     assert!(contains_pattern(@animated_svg, @"Item Bag"), "Should contain ItemBag page title");
-    assert!(contains_pattern(@animated_svg, @"Marketplace"), "Should contain Marketplace page title");
+    assert!(
+        contains_pattern(@animated_svg, @"Marketplace"), "Should contain Marketplace page title",
+    );
     assert!(contains_pattern(@animated_svg, @"Current Battle"), "Should contain Battle page title");
-    
+
     // Validate ItemBag grid structure (fixed spacing)
-    assert!(contains_pattern(@animated_svg, @"stroke=\"#B5561F\""), "Should have ItemBag orange grid borders");
-    
+    assert!(
+        contains_pattern(@animated_svg, @"stroke=\"#B5561F\""),
+        "Should have ItemBag orange grid borders",
+    );
+
     // Validate SVG definitions are present
     assert!(contains_pattern(@animated_svg, @"<defs>"), "Should have SVG definitions");
     assert!(contains_pattern(@animated_svg, @"<filter id=\"a\""), "Should have filter definitions");
-    assert!(contains_pattern(@animated_svg, @"<clipPath id=\"b\""), "Should have clipPath definitions");
-    
+    assert!(
+        contains_pattern(@animated_svg, @"<clipPath id=\"b\""), "Should have clipPath definitions",
+    );
+
     println!("SUCCESS: Animated SVG validation passed");
     println!("SVG size validation completed");
+}
+
+#[test]
+fn test_dynamic_animated_svg_battle_mode() {
+    // Create adventurer in battle mode (beast_health > 0)
+    let mut battle_adventurer = get_simple_adventurer();
+    battle_adventurer.beast_health = 50; // Set beast health to indicate combat
+
+    // Generate dynamic animated SVG - should only show battle page
+    let battle_svg = generate_svg(battle_adventurer.clone());
+
+    // Validate battle mode specific content
+    let battle_page_count = PageRendererImpl::get_page_count(battle_adventurer.clone());
+    assert!(battle_page_count == 1, "Battle mode should have 1 page");
+
+    // Should contain battle-specific content
+    assert!(contains_pattern(@battle_svg, @"Current Battle"), "Should contain battle title");
+    assert!(contains_pattern(@battle_svg, @"fill=\"#FF6B6B\""), "Should have red battle theme");
+
+    // Should be static (no animation) since only 1 page
+    assert!(
+        contains_pattern(@battle_svg, @".page{opacity:1;}"),
+        "Should be static display for single battle page",
+    );
+
+    println!("SUCCESS: Battle mode dynamic SVG validation passed");
+}
+
+#[test]
+fn test_dynamic_animated_svg_normal_mode() {
+    // Create adventurer in normal mode (no beast, alive)
+    let mut normal_adventurer = get_simple_adventurer();
+    normal_adventurer.beast_health = 0; // No beast
+    normal_adventurer.health = 100; // Alive
+
+    // Generate dynamic animated SVG - should show 3-page cycle
+    let normal_svg = generate_svg(normal_adventurer.clone());
+
+    // Validate normal mode specific content
+    let normal_page_count = PageRendererImpl::get_page_count(normal_adventurer.clone());
+    assert!(normal_page_count == 3, "Normal mode should have 3 pages");
+
+    // Should contain all 3 page types
+    assert!(contains_pattern(@normal_svg, @"TestHero"), "Should contain adventurer name");
+    assert!(contains_pattern(@normal_svg, @"Item Bag"), "Should contain ItemBag page");
+    assert!(contains_pattern(@normal_svg, @"Marketplace"), "Should contain Marketplace page");
+
+    // Should NOT contain battle page in normal mode
+    assert!(
+        !contains_pattern(@normal_svg, @"Current Battle"),
+        "Should NOT contain battle page in normal mode",
+    );
+
+    // Should contain proper animation timing for 3 pages (15s duration)
+    assert!(
+        contains_pattern(@normal_svg, @"pageTransition 15s infinite"),
+        "Should have 15s animation for normal mode",
+    );
+
+    // Should have theme colors for all 3 pages
+    assert!(
+        contains_pattern(@normal_svg, @"fill=\"#78E846\""), "Should have green inventory theme",
+    );
+    assert!(contains_pattern(@normal_svg, @"fill=\"#E89446\""), "Should have orange ItemBag theme");
+    assert!(
+        contains_pattern(@normal_svg, @"fill=\"#68CFDF\""), "Should have blue marketplace theme",
+    );
+
+    println!("SUCCESS: Normal mode dynamic SVG validation passed");
+}
+
+#[test]
+fn test_output_dynamic_animated_svg_comparison() {
+    // Test 1: Battle Mode (1 page - 5 second duration)
+    let mut battle_adventurer = get_simple_adventurer();
+    battle_adventurer.beast_health = 50;
+    battle_adventurer.health = 80;
+
+    let battle_svg = generate_svg(battle_adventurer.clone());
+    let battle_page_count = PageRendererImpl::get_page_count(battle_adventurer.clone());
+
+    println!("=== BATTLE MODE SVG ===");
+    println!("{}", battle_svg);
+    println!("=== END BATTLE MODE SVG ===");
+
+    // Test 2: Normal Mode (3 pages - 15 second duration)
+    let mut normal_adventurer = get_simple_adventurer();
+    normal_adventurer.beast_health = 0;
+    normal_adventurer.health = 100;
+
+    let normal_svg = generate_svg(normal_adventurer.clone());
+    let normal_page_count = PageRendererImpl::get_page_count(normal_adventurer.clone());
+
+    println!("=== NORMAL MODE SVG ===");
+    println!("{}", normal_svg);
+    println!("=== END NORMAL MODE SVG ===");
+
+    // Validate the key differences
+    assert!(battle_page_count == 1, "Battle mode should have 1 page");
+    assert!(normal_page_count == 3, "Normal mode should have 3 pages");
+
+    // Battle mode should be static (no animation), normal mode should have animation
+    assert!(
+        contains_pattern(@battle_svg, @".page{opacity:1;}"),
+        "Battle mode should be static (no animation)",
+    );
+    assert!(
+        contains_pattern(@normal_svg, @"pageTransition 15s infinite"),
+        "Normal mode should have 15s animation",
+    );
+
+    println!("SUCCESS: Dynamic page count comparison completed");
+    println!("Battle mode: 1 page, Normal mode: 3 pages");
 }

@@ -13,8 +13,10 @@ use death_mountain_renderer::mocks::mock_adventurer::{
 };
 use death_mountain_renderer::utils::encoding::encoding::{BytesUsedTrait, bytes_base64_encode};
 use death_mountain_renderer::utils::renderer::renderer::Renderer;
-use death_mountain_renderer::utils::renderer::renderer_utils::{generate_svg, u64_to_string};
-use death_mountain_renderer::utils::string::string_utils::{contains_pattern, starts_with_pattern};
+use death_mountain_renderer::utils::renderer::renderer_utils::generate_svg;
+use death_mountain_renderer::utils::string::string_utils::{
+    contains_pattern, starts_with_pattern, u64_to_string,
+};
 use snforge_std::{ContractClassTrait, DeclareResultTrait, declare};
 use starknet::ContractAddress;
 

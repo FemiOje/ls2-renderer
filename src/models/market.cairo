@@ -25,10 +25,6 @@ pub struct MarketData {
 
 pub impl MarketDataDefault of Default<MarketData> {
     fn default() -> MarketData {
-        MarketData {
-            items: ArrayTrait::new(),
-            adventurer_id: 0,
-            market_seed: 0,
-        }
+        MarketData { items: ArrayTrait::new(), adventurer_id: 0, market_seed: 0 }
     }
 }
