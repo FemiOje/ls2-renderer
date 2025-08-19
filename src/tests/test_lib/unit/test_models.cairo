@@ -10,6 +10,7 @@ use death_mountain_renderer::mocks::mock_adventurer::{
 use death_mountain_renderer::models::models::{
     BagVerbose, EquipmentVerbose, ItemVerbose, Slot, Stats, StatsTrait, Tier, Type,
 };
+use death_mountain_renderer::utils::renderer_utils::felt252_to_string;
 
 // Stats Tests
 
@@ -352,7 +353,7 @@ fn test_adventurer_verbose_complete_structure() {
     // Test core fields
     assert!(adventurer.health > 0, "Health should be positive");
     assert!(adventurer.level > 0, "Level should be positive");
-    assert!(adventurer.name.len() > 0, "Name should not be empty");
+    assert!(felt252_to_string(adventurer.name).len() > 0, "Name should not be empty");
 
     // Test stats structure
     assert!(adventurer.stats.strength >= 0, "Strength should be valid");
@@ -397,11 +398,11 @@ fn test_adventurer_verbose_name_variations() {
     let mut adventurer = get_simple_adventurer();
 
     // Test with different name lengths
-    adventurer.name = "A";
-    assert_eq!(adventurer.name.len(), 1, "Single char name should work");
+    adventurer.name = 'A';
+    assert_eq!(felt252_to_string(adventurer.name).len(), 1, "Single char name should work");
 
-    adventurer.name = "VeryLongAdventurerNameThatExceedsNormalLimits";
-    assert!(adventurer.name.len() > 30, "Long names should be preserved");
+    adventurer.name = 'VeryLongAdventurerNameLimits';
+    assert!(felt252_to_string(adventurer.name).len() > 20, "Long names should be preserved");
 }
 
 #[test]

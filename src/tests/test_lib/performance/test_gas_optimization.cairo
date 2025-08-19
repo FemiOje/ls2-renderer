@@ -82,7 +82,7 @@ fn test_svg_generation_performance_scaling() {
     let simple_svg = generate_svg(simple_adventurer);
 
     let mut complex_adventurer = get_adventurer_with_max_stats();
-    complex_adventurer.name = "VeryLongComplexAdventurerName";
+    complex_adventurer.name = 'VeryLongComplexAdvName';
     let complex_svg = generate_svg(complex_adventurer);
 
     assert!(starts_with_pattern(@simple_svg, @"<svg"), "Simple SVG should be valid SVG format");

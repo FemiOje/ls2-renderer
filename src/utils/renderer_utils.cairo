@@ -724,7 +724,7 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
 
     svg += generate_svg_header();
     svg += generate_stats_text(adventurer.stats);
-    svg += generate_adventurer_name_text(adventurer.name);
+    svg += generate_adventurer_name_text(felt252_to_string(adventurer.name));
     svg += generate_logo();
     svg += generate_gold_display(adventurer.gold);
     svg += generate_level_display(adventurer.level);

@@ -20,30 +20,7 @@ pub mod mock_adventurer {
             let name_felt = self.get_name_felt(adventurer_id);
             let level = self.calc_level(adventurer.xp);
 
-            // Convert felt252 name to ByteArray
-            let mut name = "";
-            if name_felt != 0 {
-                // Convert felt252 to ByteArray (simple implementation)
-                let name_u256: u256 = name_felt.into();
-                let mut temp_val = name_u256;
-                let mut bytes: Array<u8> = array![];
-
-                // Extract bytes from the u256 value
-                while temp_val != 0 {
-                    let byte = (temp_val % 256).try_into().unwrap();
-                    if byte != 0 { // Skip null bytes
-                        bytes.append(byte);
-                    }
-                    temp_val = temp_val / 256;
-                }
-
-                // Reverse the bytes since we extracted them in reverse order
-                let mut i = bytes.len();
-                while i != 0 {
-                    i -= 1;
-                    name.append_byte(*bytes.at(i));
-                }
-            }
+            let name = name_felt;
 
             // Convert Equipment to EquipmentVerbose
             let equipment_verbose = EquipmentVerbose {
@@ -384,7 +361,7 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
             item_14: empty_item,
             item_15: empty_item,
         },
-        name: "TestHero",
+        name: 'TestHero',
         xp: 1000,
         gold: 100,
         beast_health: 0,
@@ -410,7 +387,7 @@ pub fn get_adventurer_with_max_stats() -> AdventurerVerbose {
         },
         equipment: adventurer.equipment,
         bag: adventurer.bag,
-        name: "MaxHero",
+        name: 'MaxHero',
         xp: 65535,
         gold: adventurer.gold,
         beast_health: adventurer.beast_health,
@@ -436,7 +413,7 @@ pub fn get_adventurer_with_min_stats() -> AdventurerVerbose {
         },
         equipment: adventurer.equipment,
         bag: adventurer.bag,
-        name: "MinHero",
+        name: 'MinHero',
         xp: 0,
         gold: adventurer.gold,
         beast_health: adventurer.beast_health,
@@ -454,7 +431,7 @@ pub fn get_adventurer_with_long_name() -> AdventurerVerbose {
         stats: adventurer.stats,
         equipment: adventurer.equipment,
         bag: adventurer.bag,
-        name: "VeryLongAdventurerNameThatExceedsNormalLengthLimits",
+        name: 'VeryLongAdventurerName',
         xp: adventurer.xp,
         gold: adventurer.gold,
         beast_health: adventurer.beast_health,
@@ -490,7 +467,7 @@ pub fn create_custom_adventurer(health: u16, level: u8, vitality: u8) -> Adventu
     }
 }
 
-pub fn create_custom_adventurer_with_name(name: ByteArray) -> AdventurerVerbose {
+pub fn create_custom_adventurer_with_name(name: felt252) -> AdventurerVerbose {
     let base = get_simple_adventurer();
     AdventurerVerbose {
         health: base.health,

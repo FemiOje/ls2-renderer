@@ -72,7 +72,7 @@ fn test_malicious_adventurer_data_handling() {
     );
 
     let mut name_adventurer = get_simple_adventurer();
-    name_adventurer.name = "Test";
+    name_adventurer.name = 'Test';
     let name_result = Renderer::render(3_u64, name_adventurer);
     assert!(
         starts_with_pattern(@name_result, @"data:application/json;base64,"),
@@ -162,7 +162,7 @@ fn test_constructor_with_addresses() {
 #[test]
 fn test_injection_attack_resistance() {
     let mut script_adventurer = get_simple_adventurer();
-    script_adventurer.name = "TestScript";
+    script_adventurer.name = 'TestScript';
     let script_result = Renderer::render(1_u64, script_adventurer);
     assert!(
         starts_with_pattern(@script_result, @"data:application/json;base64,"),
@@ -170,7 +170,7 @@ fn test_injection_attack_resistance() {
     );
 
     let mut html_adventurer = get_simple_adventurer();
-    html_adventurer.name = "TestHTML";
+    html_adventurer.name = 'TestHTML';
     let html_result = Renderer::render(2_u64, html_adventurer);
     assert!(
         starts_with_pattern(@html_result, @"data:application/json;base64,"),
@@ -178,7 +178,7 @@ fn test_injection_attack_resistance() {
     );
 
     let mut special_adventurer = get_simple_adventurer();
-    special_adventurer.name = "Special";
+    special_adventurer.name = 'Special';
     let special_result = Renderer::render(3_u64, special_adventurer);
     assert!(
         starts_with_pattern(@special_result, @"data:application/json;base64,"),
@@ -186,7 +186,7 @@ fn test_injection_attack_resistance() {
     );
 
     let mut format_adventurer = get_simple_adventurer();
-    format_adventurer.name = "Format";
+    format_adventurer.name = 'Format';
     let format_result = Renderer::render(4_u64, format_adventurer);
     assert!(
         starts_with_pattern(@format_result, @"data:application/json;base64,"),
