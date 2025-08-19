@@ -800,16 +800,17 @@ pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteAr
 }
 
 // Generate page-specific content based on page number
-// Generate bag item slots for ItemBag page (5x3 grid layout)
+// Generate bag item slots for ItemBag page (3x5 grid layout) - using equipment spacing pattern
 fn generate_bag_item_slots() -> ByteArray {
     let mut slots = "";
     
-    // Grid: 5 columns, 3 rows of bag item slots (to match reference design)
-    let start_x = 240_u16;  // Adjusted for better centering with 5 columns
-    let start_y = 350_u16;  // Moved down to give more space for title
-    let slot_size = 71_u16; // Slightly larger to match reference
-    let spacing_x = 85_u16; // Horizontal spacing between slots
-    let spacing_y = 90_u16; // Vertical spacing between rows
+    // Use same spacing pattern as equipment slots but for 3 rows x 5 columns
+    // Equipment uses x="285.7" with 92px spacing (377.7-285.7=92)
+    let start_x = 240_u16; // Start closer to left to fit 5 columns
+    let start_y = 350_u16; // Same as original
+    let slot_size = 71_u16; // Same as equipment
+    let spacing_x = 85_u16; // Slightly less than equipment 92px to fit 5 columns  
+    let spacing_y = 90_u16; // Same as equipment vertical spacing
     
     let mut row = 0_u8;
     while row < 3 {  // 3 rows
@@ -853,11 +854,17 @@ fn generate_bag_item_icons(bag: BagVerbose) -> ByteArray {
         bag.item_11, bag.item_12, bag.item_13, bag.item_14, bag.item_15
     ];
     
-    // Match the slot positioning (centered in each slot)
-    let start_x = 262_u16; // Centered in slots with offset for icon size
-    let start_y = 372_u16; 
-    let spacing_x = 85_u16; // Match slot spacing
-    let spacing_y = 90_u16;
+    // Match the slot positioning (centered in each slot) - using equipment pattern
+    let start_x = 240_u16; // Same as slots
+    let start_y = 350_u16; // Same as slots  
+    let spacing_x = 85_u16; // Same as slots
+    let spacing_y = 90_u16; // Same as slots
+    
+    // Center icon within each slot (icon is 3x scale, so adjust positioning like equipment)
+    // Equipment uses offsets like 309-285.7=23.3, so use similar offset
+    let icon_offset = 22_u16; // Center the 3x scaled icon in the 71px slot
+    let icon_start_x = start_x + icon_offset;
+    let icon_start_y = start_y + icon_offset;
     
     let mut item_index = 0_u8;
     while item_index < 15 {
@@ -865,8 +872,8 @@ fn generate_bag_item_icons(bag: BagVerbose) -> ByteArray {
         if item.id != 0 { // Only render if item exists
             let row = item_index / 5; // 5 items per row now
             let col = item_index % 5; // Column within the row
-            let x = start_x + (col.into() * spacing_x);
-            let y = start_y + (row.into() * spacing_y);
+            let x = icon_start_x + (col.into() * spacing_x);
+            let y = icon_start_y + (row.into() * spacing_y);
             
             // Get appropriate icon based on item slot type
             let icon_svg = get_item_icon_svg(item.slot);
@@ -890,11 +897,12 @@ fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
         bag.item_11, bag.item_12, bag.item_13, bag.item_14, bag.item_15
     ];
     
-    // Badge positioning: top-right corner of each slot (like equipment badges)
-    let slot_start_x = 240_u16; // Match slot positioning
-    let slot_start_y = 350_u16;
-    let spacing_x = 85_u16; // Match slot spacing
-    let spacing_y = 90_u16;
+    // Badge positioning: top-right corner of each slot (like equipment badges)  
+    // Use same positioning as generate_bag_item_slots
+    let start_x = 240_u16; // Same as slots
+    let start_y = 350_u16; // Same as slots
+    let spacing_x = 85_u16; // Same as slots
+    let spacing_y = 90_u16; // Same as slots
     let badge_width = 38_u16;
     let badge_height = 16_u16;
     let badge_offset_x = 49_u16; // Position in top-right corner of slot
@@ -906,8 +914,8 @@ fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
         if item.id != 0 { // Only render badges for items that exist
             let row = item_index / 5; // 5 items per row
             let col = item_index % 5; // Column within the row
-            let slot_x = slot_start_x + (col.into() * spacing_x);
-            let slot_y = slot_start_y + (row.into() * spacing_y);
+            let slot_x = start_x + (col.into() * spacing_x);
+            let slot_y = start_y + (row.into() * spacing_y);
             let badge_x = slot_x + badge_offset_x; // Top-right corner
             let badge_y = slot_y + badge_offset_y;
             
@@ -965,9 +973,8 @@ fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     content += generate_logo_with_page(1);
     
     // Add page title and subtitle
-    content += "<text x=\"339\" y=\"200\" fill=\"#E8A746\" class=\"s24\" text-anchor=\"left\">Item Bag</text>";
-    content += "<text x=\"540\" y=\"180\" fill=\"#E8A746\" class=\"s16\" text-anchor=\"left\">SCROLL</text>";
-    content += "<text x=\"540\" y=\"195\" fill=\"#E8A746\" class=\"s16\" text-anchor=\"left\">OF ITEMS</text>";
+    let theme_color = get_theme_color(1);
+    content += "<text x=\"339\" y=\"200\" fill=\"" + theme_color + "\" class=\"s24\" text-anchor=\"left\">Item Bag</text>";
     
     // Add bag item layout with slots, icons, and level badges
     content += generate_bag_item_slots();
@@ -987,8 +994,6 @@ fn generate_marketplace_page_content(adventurer: AdventurerVerbose) -> ByteArray
     
     // Add page title
     content += "<text x=\"339\" y=\"200\" fill=\"#4A9EFF\" class=\"s24\" text-anchor=\"left\">Marketplace</text>";
-    content += "<text x=\"540\" y=\"180\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"left\">SCROLL</text>";
-    content += "<text x=\"540\" y=\"200\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"left\">OF ITEMS</text>";
     
     // Placeholder text for development
     content += "<text x=\"400\" y=\"400\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"middle\">MARKETPLACE ITEMS WILL</text>";

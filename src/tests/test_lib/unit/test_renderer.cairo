@@ -486,7 +486,7 @@ fn test_page_0_battle_interface() {
 }
 
 #[test]
-fn test_page_1_empty_background() {
+fn test_page_1() {
     let adventurer = get_simple_adventurer();
     let svg = generate_svg_with_page(adventurer, 1);
 
