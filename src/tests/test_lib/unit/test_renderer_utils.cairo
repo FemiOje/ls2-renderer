@@ -10,7 +10,7 @@ use death_mountain_renderer::mocks::mock_adventurer::{
 };
 use death_mountain_renderer::models::models::StatsTrait;
 use death_mountain_renderer::utils::renderer::renderer_utils::{
-    chest, foot, generate_svg, hand, head, neck, ring, u256_to_string, waist, weapon,
+    chest, foot, generate_svg, generate_animated_svg, hand, head, neck, ring, u256_to_string, waist, weapon,
 };
 use death_mountain_renderer::utils::string::string_utils::{
     contains_pattern, ends_with_pattern, starts_with_pattern,
@@ -438,4 +438,60 @@ fn test_generate_svg_name_boundary_conditions() {
     adventurer2.name = "0123456789012345678901234567890"; // 31 chars - triggers small font
     let svg_31 = generate_svg(adventurer2);
     assert!(contains_pattern(@svg_31, @"class=\"s12\""), "31-char name should use small font");
+}
+
+#[test]
+fn test_output_animated_svg() {
+    // Create mock adventurer
+    let adventurer = get_simple_adventurer();
+    
+    // Generate the full animated SVG
+    let animated_svg = generate_animated_svg(adventurer);
+    
+    // Output the animated SVG for manual inspection with proper markers
+    println!("=== ANIMATED SVG ===");
+    println!("{}", animated_svg);
+    println!("=== END ANIMATED SVG ===");
+    
+    let svg_length: usize = animated_svg.len().into();
+    assert!(svg_length > 0, "Animated SVG should not be empty");
+    
+    // Validate SVG structure
+    assert!(contains_pattern(@animated_svg, @"<svg xmlns=\"http://www.w3.org/2000/svg\""), "Should have SVG opening tag");
+    assert!(contains_pattern(@animated_svg, @"</svg>"), "Should have SVG closing tag");
+    
+    // Validate CSS animations are present
+    assert!(contains_pattern(@animated_svg, @"<style>"), "Should contain CSS styles");
+    assert!(contains_pattern(@animated_svg, @".page{opacity:0;animation:pageTransition"), "Should have page animation CSS");
+    assert!(contains_pattern(@animated_svg, @"@keyframes pageTransition"), "Should have keyframes definition");
+    assert!(contains_pattern(@animated_svg, @"animation-delay:0s"), "Should have Page 0 timing");
+    assert!(contains_pattern(@animated_svg, @"animation-delay:5s"), "Should have Page 1 timing");
+    assert!(contains_pattern(@animated_svg, @"animation-delay:10s"), "Should have Page 2 timing");
+    assert!(contains_pattern(@animated_svg, @"animation-delay:15s"), "Should have Page 3 timing");
+    
+    // Validate all 4 pages are present with correct structure
+    assert!(contains_pattern(@animated_svg, @"<g class=\"page\""), "Should have page group elements");
+    
+    // Validate theme colors for each page
+    assert!(contains_pattern(@animated_svg, @"fill=\"#78E846\""), "Should have Page 0 green theme");
+    assert!(contains_pattern(@animated_svg, @"fill=\"#E89446\""), "Should have Page 1 orange theme");  
+    assert!(contains_pattern(@animated_svg, @"fill=\"#68CFDF\""), "Should have Page 2 blue theme");
+    assert!(contains_pattern(@animated_svg, @"fill=\"#FF6B6B\""), "Should have Page 3 red theme");
+    
+    // Validate page titles are present
+    assert!(contains_pattern(@animated_svg, @"TestHero"), "Should contain adventurer name");
+    assert!(contains_pattern(@animated_svg, @"Item Bag"), "Should contain ItemBag page title");
+    assert!(contains_pattern(@animated_svg, @"Marketplace"), "Should contain Marketplace page title");
+    assert!(contains_pattern(@animated_svg, @"Current Battle"), "Should contain Battle page title");
+    
+    // Validate ItemBag grid structure (fixed spacing)
+    assert!(contains_pattern(@animated_svg, @"stroke=\"#B5561F\""), "Should have ItemBag orange grid borders");
+    
+    // Validate SVG definitions are present
+    assert!(contains_pattern(@animated_svg, @"<defs>"), "Should have SVG definitions");
+    assert!(contains_pattern(@animated_svg, @"<filter id=\"a\""), "Should have filter definitions");
+    assert!(contains_pattern(@animated_svg, @"<clipPath id=\"b\""), "Should have clipPath definitions");
+    
+    println!("SUCCESS: Animated SVG validation passed");
+    println!("SVG size validation completed");
 }

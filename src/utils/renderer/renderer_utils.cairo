@@ -415,6 +415,25 @@ fn generate_svg_header() -> ByteArray {
     header
 }
 
+// Generate animated SVG header with CSS transitions for multi-page animations
+fn generate_animated_svg_header() -> ByteArray {
+    let mut header = "";
+    header += "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"862\" height=\"1270\" fill=\"none\">";
+    header += "<style>";
+    header += ".page{opacity:0;animation:pageTransition 20s infinite;}";
+    header += ".page:nth-child(1){animation-delay:0s;}";
+    header += ".page:nth-child(2){animation-delay:5s;}";
+    header += ".page:nth-child(3){animation-delay:10s;}";
+    header += ".page:nth-child(4){animation-delay:15s;}";
+    header += "@keyframes pageTransition{0%,20%{opacity:1;}25%,95%{opacity:0;}100%{opacity:0;}}";
+    header += "text{font-family:VT323,IBM Plex Mono,Roboto Mono,Source Code Pro,monospace;font-weight:bold}";
+    header += ".s8{font-size:8px}.s10{font-size:10px}.s12{font-size:12px}";
+    header += ".s16{font-size:16px}.s24{font-size:24px}.s32{font-size:32px}";
+    header += "</style>";
+    header += "<g filter=\"url(#a)\">";
+    header
+}
+
 // Generate gold display UI components
 fn generate_gold_display(gold: u16) -> ByteArray {
     let mut gold_display = "";
@@ -782,6 +801,35 @@ fn generate_svg_footer() -> ByteArray {
     footer
 }
 
+// Generate animated SVG footer with definitions and closing tags
+fn generate_animated_svg_footer() -> ByteArray {
+    let mut footer = "";
+    footer += "</g><defs><clipPath id=\"b\"><rect width=\"567\" height=\"862\" x=\"147.2\" y=\"27\" fill=\"#fff\" rx=\"10\"/></clipPath>";
+    footer += "<clipPath id=\"c\"><path fill=\"#fff\" d=\"M302 373h37v37h-37z\"/></clipPath>";
+    footer += "<clipPath id=\"d\"><path fill=\"#fff\" d=\"M298 504h47v47h-47z\"/></clipPath>";
+    footer += "<filter id=\"a\" width=\"861\" height=\"1402\" x=\".2\" y=\"0\" color-interpolation-filters=\"sRGB\" filterUnits=\"userSpaceOnUse\">";
+    footer += "<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>";
+    footer += "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
+    footer += "<feOffset dy=\"23\"/><feGaussianBlur stdDeviation=\"25\"/>";
+    footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.26 0\"/>";
+    footer += "<feBlend in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_19_3058\"/>";
+    footer += "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
+    footer += "<feOffset dy=\"92\"/><feGaussianBlur stdDeviation=\"46\"/>";
+    footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.22 0\"/>";
+    footer += "<feBlend in2=\"effect1_dropShadow_19_3058\" result=\"effect2_dropShadow_19_3058\"/>";
+    footer += "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
+    footer += "<feOffset dy=\"206\"/><feGaussianBlur stdDeviation=\"62\"/>";
+    footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0\"/>";
+    footer += "<feBlend in2=\"effect2_dropShadow_19_3058\" result=\"effect3_dropShadow_19_3058\"/>";
+    footer += "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
+    footer += "<feOffset dy=\"366\"/><feGaussianBlur stdDeviation=\"73.5\"/>";
+    footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0\"/>";
+    footer += "<feBlend in2=\"effect3_dropShadow_19_3058\" result=\"effect4_dropShadow_19_3058\"/>";
+    footer += "<feBlend in=\"SourceGraphic\" in2=\"effect4_dropShadow_19_3058\" result=\"shape\"/>";
+    footer += "</filter></defs></svg>";
+    footer
+}
+
 // Generate dynamic SVG with adventurer stats and equipment - now using modular functions
 pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
     generate_svg_with_page(adventurer, 0)
@@ -1018,6 +1066,47 @@ fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     content += "<text x=\"400\" y=\"400\" fill=\"#FF6B6B\" class=\"s16\" text-anchor=\"middle\">TROLL AMBUSHED YOU FOR 10 DMG!</text>";
     
     content
+}
+
+// Generate page wrapper with animation class and background
+fn generate_page_wrapper(page_content: ByteArray, border_content: ByteArray) -> ByteArray {
+    let mut wrapper = "";
+    wrapper += "<g class=\"page\" clip-path=\"url(#b)\">";
+    wrapper += "<rect width=\"567\" height=\"862\" x=\"147.2\" y=\"27\" fill=\"#000\" rx=\"10\"/>";
+    wrapper += page_content;
+    wrapper += border_content;
+    wrapper += "</g>";
+    wrapper
+}
+
+// Generate animated SVG with all four pages and smooth transitions
+pub fn generate_animated_svg(adventurer: AdventurerVerbose) -> ByteArray {
+    let mut svg = "";
+
+    // Add animated SVG header with CSS animations
+    svg += generate_animated_svg_header();
+
+    // Generate all four pages with their content and borders
+    let inventory_content = generate_inventory_page_content(adventurer.clone());
+    let inventory_border = generate_border_for_page(0);
+    svg += generate_page_wrapper(inventory_content, inventory_border);
+
+    let item_bag_content = generate_item_bag_page_content(adventurer.clone());
+    let item_bag_border = generate_border_for_page(1);
+    svg += generate_page_wrapper(item_bag_content, item_bag_border);
+
+    let marketplace_content = generate_marketplace_page_content(adventurer.clone());
+    let marketplace_border = generate_border_for_page(2);
+    svg += generate_page_wrapper(marketplace_content, marketplace_border);
+
+    let battle_content = generate_battle_page_content(adventurer.clone());
+    let battle_border = generate_border_for_page(3);
+    svg += generate_page_wrapper(battle_content, battle_border);
+
+    // Add animated SVG footer
+    svg += generate_animated_svg_footer();
+
+    svg
 }
 
 // @notice Generates adventurer details for the adventurer token uri
