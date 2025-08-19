@@ -599,11 +599,10 @@ fn test_simple_svg_comparison() {
 fn test_output_all_pages_svg() {
     let adventurer = get_simple_adventurer();
 
-    // Generate SVG for all 4 pages
+    // Generate SVG for all 3 pages
     let svg_page_0 = generate_svg_with_page(adventurer.clone(), 0);
     let svg_page_1 = generate_svg_with_page(adventurer.clone(), 1);
-    let svg_page_2 = generate_svg_with_page(adventurer.clone(), 2);
-    let svg_page_3 = generate_svg_with_page(adventurer, 3);
+    let svg_page_2 = generate_svg_with_page(adventurer, 2);
 
     println!("=== PAGE 0 SVG (Inventory - Green Border) ===");
     println!("{}", svg_page_0);
@@ -613,11 +612,7 @@ fn test_output_all_pages_svg() {
     println!("{}", svg_page_1);
     println!("=== END PAGE 1 SVG ===");
 
-    println!("=== PAGE 2 SVG (Marketplace - Blue Border) ===");
+    println!("=== PAGE 2 SVG (Battle - Red Border) ===");
     println!("{}", svg_page_2);
     println!("=== END PAGE 2 SVG ===");
-
-    println!("=== PAGE 3 SVG (Battle - Red Border) ===");
-    println!("{}", svg_page_3);
-    println!("=== END PAGE 3 SVG ===");
 }

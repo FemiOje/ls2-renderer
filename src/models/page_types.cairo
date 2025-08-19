@@ -8,8 +8,7 @@
 pub enum PageType {
     Inventory, // Page 1: Current inventory page (green theme) - current implementation
     ItemBag, // Page 2: Item Bag contents (orange theme) - displays adventurer's bag items
-    Marketplace, // Page 3: Marketplace items (blue theme) - displays available market items
-    Battle // Page 4: Battle-specific interface (gradient border) - only shown during combat
+    Battle // Page 3: Battle-specific interface (gradient border) - only shown during combat
 }
 
 #[derive(Copy, Drop, PartialEq, Serde, Debug)]

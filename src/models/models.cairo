@@ -158,12 +158,6 @@ pub struct Stats {
     pub luck: u8,
 }
 
-#[derive(Copy, Drop, PartialEq, Serde, Debug)]
-pub struct AdventurerEntropy {
-    pub entropy: u64,
-    pub block_number: u64,
-    pub market_seed: u64,
-}
 
 #[derive(Copy, Drop, Serde, PartialEq)]
 pub enum DiscoveryType {

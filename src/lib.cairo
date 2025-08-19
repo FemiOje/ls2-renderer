@@ -31,7 +31,6 @@ pub mod mocks {
 }
 
 pub mod models {
-    pub mod market;
     pub mod models;
     pub mod page_types;
 }

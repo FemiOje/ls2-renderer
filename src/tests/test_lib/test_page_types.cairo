@@ -70,12 +70,10 @@ fn create_test_adventurer(health: u16, beast_health: u16) -> AdventurerVerbose {
 fn test_page_types_enum() {
     let inventory_page = PageType::Inventory;
     let item_bag_page = PageType::ItemBag;
-    let marketplace_page = PageType::Marketplace;
     let battle_page = PageType::Battle;
 
     assert!(inventory_page == PageType::Inventory);
     assert!(item_bag_page == PageType::ItemBag);
-    assert!(marketplace_page == PageType::Marketplace);
     assert!(battle_page == PageType::Battle);
 }
 
@@ -108,7 +106,7 @@ fn test_page_mode_normal() {
     let adventurer = create_test_adventurer(100, 0); // Normal state
     let page_mode = PageRendererImpl::get_page_mode(adventurer);
     match page_mode {
-        PageMode::Normal(count) => assert_eq!(count, 3, "Should have 3 pages in normal mode"),
+        PageMode::Normal(count) => assert_eq!(count, 2, "Should have 2 pages in normal mode"),
         PageMode::BattleOnly => panic(array!['Should not be BattleOnly']),
     }
 }

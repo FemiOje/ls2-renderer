@@ -139,8 +139,7 @@ pub fn get_theme_color(page: u8) -> ByteArray {
     match page {
         0 => "#78E846", // Page 0 (Inventory) - Green theme
         1 => "#E89446", // Page 1 (ItemBag) - Orange theme  
-        2 => "#68CFDF", // Page 2 (Marketplace) - Blue theme
-        3 => "#FF6B6B", // Page 3 (Battle) - Red theme
+        2 => "#FF6B6B", // Page 2 (Battle) - Red theme
         _ => "#78E846" // Default to green
     }
 }
@@ -964,8 +963,7 @@ fn generate_page_content(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
     match page {
         0 => generate_inventory_page_content(adventurer),
         1 => generate_item_bag_page_content(adventurer),
-        2 => generate_marketplace_page_content(adventurer),
-        3 => generate_battle_page_content(adventurer),
+        2 => generate_battle_page_content(adventurer),
         _ => generate_inventory_page_content(adventurer) // Default to inventory page
     }
 }
@@ -1011,26 +1009,6 @@ fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     content
 }
 
-// Generate marketplace page content (Page 2 - Blue theme)
-fn generate_marketplace_page_content(adventurer: AdventurerVerbose) -> ByteArray {
-    let mut content = "";
-
-    // Add adventurer name with blue theme
-    content += generate_adventurer_name_text_with_page(adventurer.name, 2);
-    content += generate_logo_with_page(2);
-
-    // Add page title
-    content +=
-        "<text x=\"339\" y=\"200\" fill=\"#4A9EFF\" class=\"s24\" text-anchor=\"left\">Marketplace</text>";
-
-    // Placeholder text for development
-    content +=
-        "<text x=\"400\" y=\"400\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"middle\">MARKETPLACE ITEMS WILL</text>";
-    content +=
-        "<text x=\"400\" y=\"430\" fill=\"#4A9EFF\" class=\"s16\" text-anchor=\"middle\">BE DISPLAYED HERE.</text>";
-
-    content
-}
 
 // Generate battle page content (Page 3 - Red theme for gradient border)
 fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
@@ -1080,12 +1058,8 @@ pub fn generate_full_animated_svg(adventurer: AdventurerVerbose) -> ByteArray {
     let item_bag_border = generate_border_for_page(1);
     svg += generate_page_wrapper(item_bag_content, item_bag_border);
 
-    let marketplace_content = generate_marketplace_page_content(adventurer.clone());
-    let marketplace_border = generate_border_for_page(2);
-    svg += generate_page_wrapper(marketplace_content, marketplace_border);
-
     let battle_content = generate_battle_page_content(adventurer.clone());
-    let battle_border = generate_border_for_page(3);
+    let battle_border = generate_border_for_page(2);
     svg += generate_page_wrapper(battle_content, battle_border);
 
     // Add animated SVG footer
@@ -1139,9 +1113,6 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
             let item_bag_border = generate_border_for_page(1);
             svg += generate_page_wrapper(item_bag_content, item_bag_border);
 
-            let marketplace_content = generate_marketplace_page_content(adventurer.clone());
-            let marketplace_border = generate_border_for_page(2);
-            svg += generate_page_wrapper(marketplace_content, marketplace_border);
         },
     }
 

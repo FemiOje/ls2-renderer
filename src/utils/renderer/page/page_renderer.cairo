@@ -82,7 +82,7 @@ pub impl PageRendererImpl of PageRenderer {
     fn get_page_count(adventurer_verbose: AdventurerVerbose) -> u8 {
         match Self::get_page_mode(adventurer_verbose) {
             PageMode::BattleOnly => 1, // Only battle page when in combat
-            PageMode::Normal(count) => count // Normal 3-page cycle (Inventory, ItemBag, Marketplace)
+            PageMode::Normal(count) => count // Normal 2-page cycle (Inventory, ItemBag)
         }
     }
 
@@ -145,9 +145,9 @@ pub impl PageRendererImpl of PageRenderer {
 
     fn get_page_mode(adventurer_verbose: AdventurerVerbose) -> PageMode {
         match Self::get_battle_state(adventurer_verbose) {
-            BattleState::Dead => PageMode::Normal(3), // Return to 3-page cycle
+            BattleState::Dead => PageMode::Normal(2), // Return to 2-page cycle
             BattleState::InCombat => PageMode::BattleOnly, // Only battle page
-            BattleState::Normal => PageMode::Normal(3) // 3-page cycle
+            BattleState::Normal => PageMode::Normal(2) // 2-page cycle
         }
     }
 }

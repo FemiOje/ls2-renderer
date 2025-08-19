@@ -495,9 +495,6 @@ fn test_output_animated_svg() {
     // Validate page titles are present
     assert!(contains_pattern(@animated_svg, @"TestHero"), "Should contain adventurer name");
     assert!(contains_pattern(@animated_svg, @"Item Bag"), "Should contain ItemBag page title");
-    assert!(
-        contains_pattern(@animated_svg, @"Marketplace"), "Should contain Marketplace page title",
-    );
     assert!(contains_pattern(@animated_svg, @"Current Battle"), "Should contain Battle page title");
 
     // Validate ItemBag grid structure (fixed spacing)
@@ -560,7 +557,6 @@ fn test_dynamic_animated_svg_normal_mode() {
     // Should contain all 3 page types
     assert!(contains_pattern(@normal_svg, @"TestHero"), "Should contain adventurer name");
     assert!(contains_pattern(@normal_svg, @"Item Bag"), "Should contain ItemBag page");
-    assert!(contains_pattern(@normal_svg, @"Marketplace"), "Should contain Marketplace page");
 
     // Should NOT contain battle page in normal mode
     assert!(
@@ -579,9 +575,6 @@ fn test_dynamic_animated_svg_normal_mode() {
         contains_pattern(@normal_svg, @"fill=\"#78E846\""), "Should have green inventory theme",
     );
     assert!(contains_pattern(@normal_svg, @"fill=\"#E89446\""), "Should have orange ItemBag theme");
-    assert!(
-        contains_pattern(@normal_svg, @"fill=\"#68CFDF\""), "Should have blue marketplace theme",
-    );
 
     println!("SUCCESS: Normal mode dynamic SVG validation passed");
 }
