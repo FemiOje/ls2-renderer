@@ -762,18 +762,8 @@ pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteAr
     let mut svg = "";
 
     svg += generate_svg_header();
-    svg += generate_stats_text(adventurer.stats);
-    svg += generate_adventurer_name_text(felt252_to_string(adventurer.name));
-    svg += generate_logo();
-    svg += generate_gold_display(adventurer.gold);
-    svg += generate_level_display(adventurer.level);
-    svg += generate_health_bar(adventurer.stats, adventurer.health);
-    svg += generate_inventory_header();
-    svg += generate_equipment_slots();
-    svg += generate_equipment_icons();
-    svg += generate_equipment_level_badges(adventurer.equipment);
-    svg += generate_equipment_names(adventurer.equipment);
-    svg += generate_border();
+    svg += generate_page_content(adventurer, page);
+    svg += generate_border_for_page(page);
     svg += generate_svg_footer();
 
     svg

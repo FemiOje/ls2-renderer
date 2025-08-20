@@ -12,12 +12,10 @@ use death_mountain_renderer::models::models::StatsTrait;
 use death_mountain_renderer::utils::renderer::page::page_renderer::PageRendererImpl;
 use death_mountain_renderer::utils::renderer::renderer_utils::{
     chest, foot, generate_full_animated_svg, generate_svg, hand, head, neck, ring, waist, weapon,
-use death_mountain_renderer::utils::renderer_utils::{
-    chest, foot, generate_svg, hand, head, neck, ring, u256_to_string, waist, weapon,
-    felt252_to_string, generate_adventurer_name_text,
+    generate_adventurer_name_text,
 };
 use death_mountain_renderer::utils::string::string_utils::{
-    contains_pattern, ends_with_pattern, starts_with_pattern, u256_to_string,
+    contains_pattern, ends_with_pattern, starts_with_pattern, u256_to_string, felt252_to_string,
 };
 
 #[test]
@@ -446,12 +444,12 @@ fn test_generate_svg_name_boundary_conditions() {
     assert!(contains_pattern(@svg_31, @"0123456789012345678901234567890"), "Should contain full 31-char name");
 
     // Test direct name text generation beyond felt252 limits
-    let name_32 = "01234567890123456789012345678901"; // 32 chars - triggers truncation
+    let name_32: ByteArray = "01234567890123456789012345678901"; // 32 chars - triggers truncation
     let name_svg_32 = generate_adventurer_name_text(name_32);
     assert!(contains_pattern(@name_svg_32, @"font-size:10px"), "32-char names should use 10px font");
     assert!(contains_pattern(@name_svg_32, @"0123456789012345678901234567..."), "Should truncate to 28 chars + ...");
 
-    let name_40 = "0123456789012345678901234567890123456789"; // 40 chars - well beyond limit
+    let name_40: ByteArray = "0123456789012345678901234567890123456789"; // 40 chars - well beyond limit
     let name_svg_40 = generate_adventurer_name_text(name_40);
     assert!(contains_pattern(@name_svg_40, @"font-size:10px"), "40-char names should use 10px font");
     assert!(contains_pattern(@name_svg_40, @"0123456789012345678901234567..."), "Should truncate consistently");

@@ -10,7 +10,7 @@ use death_mountain_renderer::mocks::mock_adventurer::{
 use death_mountain_renderer::models::models::{
     BagVerbose, EquipmentVerbose, ItemVerbose, Slot, Stats, StatsTrait, Tier, Type,
 };
-use death_mountain_renderer::utils::renderer_utils::felt252_to_string;
+use death_mountain_renderer::utils::string::string_utils::felt252_to_string;
 
 // Stats Tests
 

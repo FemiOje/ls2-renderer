@@ -51,7 +51,7 @@ fn create_test_adventurer(health: u16, beast_health: u16) -> AdventurerVerbose {
     };
 
     AdventurerVerbose {
-        name: "Test Adventurer",
+        name: 'Test Adventurer',
         health,
         xp: 100,
         level: 5,
