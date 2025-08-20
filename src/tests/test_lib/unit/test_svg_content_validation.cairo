@@ -16,7 +16,7 @@ use death_mountain_renderer::utils::string::string_utils::{
 // HELPER FUNCTIONS FOR TEST SETUP
 // ============================================================================
 
-fn create_adventurer_with_name(name: ByteArray) -> AdventurerVerbose {
+fn create_adventurer_with_name(name: felt252) -> AdventurerVerbose {
     let mut adventurer = get_simple_adventurer();
     adventurer.name = name;
     adventurer
@@ -110,7 +110,7 @@ fn test_svg_contains_fill_attribute() {
 
 #[test]
 fn test_svg_contains_adventurer_name() {
-    let adventurer = create_adventurer_with_name("TestHero");
+    let adventurer = create_adventurer_with_name('TestHero');
     let svg = generate_svg(adventurer);
 
     assert!(contains_pattern(@svg, @"TestHero"), "SVG should contain adventurer name");
@@ -118,7 +118,7 @@ fn test_svg_contains_adventurer_name() {
 
 #[test]
 fn test_svg_font_size_for_short_names() {
-    let adventurer = create_adventurer_with_name("Bob"); // 3 chars - should use 24px
+    let adventurer = create_adventurer_with_name('Bob'); // 3 chars - should use 24px
     let svg = generate_svg(adventurer);
 
     assert!(contains_pattern(@svg, @"class=\"s24\""), "Short names should use large font (24px)");
@@ -126,7 +126,7 @@ fn test_svg_font_size_for_short_names() {
 
 #[test]
 fn test_svg_font_size_for_medium_names() {
-    let adventurer = create_adventurer_with_name("MediumLengthName"); // ~16 chars - should use 17px
+    let adventurer = create_adventurer_with_name('MediumLengthName'); // ~16 chars - should use 17px
     let svg = generate_svg(adventurer);
 
     assert!(contains_pattern(@svg, @"class=\"s16\""), "Medium names should use medium font (16px)");
@@ -135,8 +135,8 @@ fn test_svg_font_size_for_medium_names() {
 #[test]
 fn test_svg_font_size_for_long_names() {
     let adventurer = create_adventurer_with_name(
-        "VeryVeryVeryVeryLongAdventurerName",
-    ); // > 30 chars - should use 12px
+        'VeryVeryVeryLongAdventurerName',
+    ); // 30 chars - should use 12px
     let svg = generate_svg(adventurer);
 
     assert!(contains_pattern(@svg, @"class=\"s12\""), "Long names should use small font (12px)");
@@ -144,7 +144,7 @@ fn test_svg_font_size_for_long_names() {
 
 #[test]
 fn test_svg_empty_name_handling() {
-    let adventurer = create_adventurer_with_name("");
+    let adventurer = create_adventurer_with_name('');
     let svg = generate_svg(adventurer);
 
     assert!(starts_with_pattern(@svg, @"<svg"), "Empty name should still produce valid SVG");
@@ -509,7 +509,7 @@ fn test_svg_health_bar_boundary_25_percent() {
 #[test]
 fn test_svg_name_boundary_30_chars() {
     let adventurer = create_adventurer_with_name(
-        "012345678901234567890123456789",
+        '012345678901234567890123456789',
     ); // Exactly 30 chars
     let svg = generate_svg(adventurer);
 
@@ -519,7 +519,7 @@ fn test_svg_name_boundary_30_chars() {
 #[test]
 fn test_svg_name_boundary_31_chars() {
     let adventurer = create_adventurer_with_name(
-        "0123456789012345678901234567890",
+        '0123456789012345678901234567890',
     ); // 31 chars - should trigger small font
     let svg = generate_svg(adventurer);
 

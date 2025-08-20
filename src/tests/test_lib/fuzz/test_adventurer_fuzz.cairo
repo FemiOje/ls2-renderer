@@ -120,7 +120,7 @@ fn fuzz_adventurer_extreme_values(health: u16, level: u8, all_stats_value: u8) {
 
 #[test]
 #[fuzzer(runs: 100, seed: 55555)]
-fn fuzz_adventurer_name_variations(name: ByteArray) {
+fn fuzz_adventurer_name_variations(name: felt252) {
     let adventurer = create_custom_adventurer_with_name(name);
 
     validate_rendering(adventurer, 1_u64);
