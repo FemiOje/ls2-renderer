@@ -145,9 +145,9 @@ pub impl PageRendererImpl of PageRenderer {
 
     fn get_page_mode(adventurer_verbose: AdventurerVerbose) -> PageMode {
         match Self::get_battle_state(adventurer_verbose) {
-            BattleState::Dead => PageMode::Normal(2), // Return to 2-page cycle (inventory, bag)
+            BattleState::Dead => PageMode::Normal(2), // Only inventory and bag pages when dead
             BattleState::InCombat => PageMode::BattleOnly, // Only battle page when in combat
-            BattleState::Normal => PageMode::Normal(2) // 2-page cycle (inventory, bag)
+            BattleState::Normal => PageMode::Normal(2) // Only inventory and bag pages when alive & not in battle
         }
     }
 }

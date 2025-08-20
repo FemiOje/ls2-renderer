@@ -147,47 +147,81 @@ pub fn get_theme_color(page: u8) -> ByteArray {
 
 // Generate dynamic adventurer stats text elements for the 7 core stats
 fn generate_stats_text(stats: Stats) -> ByteArray {
+    generate_stats_text_with_page(stats, 0) // Default to green theme
+}
+
+// Generate dynamic adventurer stats text elements with theme color based on page
+fn generate_stats_text_with_page(stats: Stats, page: u8) -> ByteArray {
     let mut stats_text = "";
+    let theme_color = get_theme_color(page);
 
     // STR (Strength) - stat name on top, value below - aligned with logo/level at y=124
-    stats_text += "<text x=\"195\" y=\"124\" fill=\"#78E846\" class=\"s16\">STR</text>";
-    stats_text += "<text x=\"195\" y=\"164\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += "<text x=\"195\" y=\"124\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s16\">STR</text>";
+    stats_text += "<text x=\"195\" y=\"164\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s32\">";
     stats_text += u8_to_string(stats.strength);
     stats_text += "</text>";
 
     // DEX (Dexterity) - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"224\" fill=\"#78E846\" class=\"s16\">DEX</text>";
-    stats_text += "<text x=\"195\" y=\"264\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += "<text x=\"195\" y=\"224\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s16\">DEX</text>";
+    stats_text += "<text x=\"195\" y=\"264\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s32\">";
     stats_text += u8_to_string(stats.dexterity);
     stats_text += "</text>";
 
     // VIT (Vitality) - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"324\" fill=\"#78E846\" class=\"s16\">VIT</text>";
-    stats_text += "<text x=\"195\" y=\"364\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += "<text x=\"195\" y=\"324\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s16\">VIT</text>";
+    stats_text += "<text x=\"195\" y=\"364\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s32\">";
     stats_text += u8_to_string(stats.vitality);
     stats_text += "</text>";
 
     // INT (Intelligence) - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"424\" fill=\"#78E846\" class=\"s16\">INT</text>";
-    stats_text += "<text x=\"195\" y=\"464\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += "<text x=\"195\" y=\"424\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s16\">INT</text>";
+    stats_text += "<text x=\"195\" y=\"464\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s32\">";
     stats_text += u8_to_string(stats.intelligence);
     stats_text += "</text>";
 
     // WIS (Wisdom) - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"524\" fill=\"#78E846\" class=\"s16\">WIS</text>";
-    stats_text += "<text x=\"195\" y=\"564\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += "<text x=\"195\" y=\"524\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s16\">WIS</text>";
+    stats_text += "<text x=\"195\" y=\"564\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s32\">";
     stats_text += u8_to_string(stats.wisdom);
     stats_text += "</text>";
 
     // CHA (Charisma) - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"624\" fill=\"#78E846\" class=\"s16\">CHA</text>";
-    stats_text += "<text x=\"195\" y=\"664\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += "<text x=\"195\" y=\"624\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s16\">CHA</text>";
+    stats_text += "<text x=\"195\" y=\"664\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s32\">";
     stats_text += u8_to_string(stats.charisma);
     stats_text += "</text>";
 
     // LUCK - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"724\" fill=\"#78E846\" class=\"s16\">LUCK</text>";
-    stats_text += "<text x=\"195\" y=\"764\" fill=\"#78E846\" class=\"s32\">";
+    stats_text += "<text x=\"195\" y=\"724\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s16\">LUCK</text>";
+    stats_text += "<text x=\"195\" y=\"764\" fill=\"";
+    stats_text += theme_color.clone();
+    stats_text += "\" class=\"s32\">";
     stats_text += u8_to_string(stats.luck);
     stats_text += "</text>";
 
@@ -303,8 +337,11 @@ fn generate_dynamic_animated_svg_header(page_count: u8) -> ByteArray {
 
     // Only add animation CSS if more than 1 page
     if page_count > 1 {
-        // Sliding animation: 5s stationary + 1s transition per cycle = 12s total for 2 pages
-        let total_duration = 12_u8; // Fixed 12 seconds for smooth back-and-forth sliding
+        let total_duration = if page_count == 2 {
+            12_u8 // 2-page cycle: 5s + 1s + 5s + 1s = 12s total
+        } else {
+            18_u8 // 3-page cycle: 5s + 1s + 5s + 1s + 5s + 1s = 18s total  
+        };
         
         // Container that slides between pages using transform
         header += ".page-container{animation:slidePages ";
@@ -313,17 +350,26 @@ fn generate_dynamic_animated_svg_header(page_count: u8) -> ByteArray {
         
         // Pages positioned side by side using transform
         header += ".page{transform-origin:0 0;}";
-        header += ".page:nth-child(2){transform:translateX(567px);}"; // Position second page to the right
+        header += ".page:nth-child(2){transform:translateX(567px);}"; // Position second page
+        if page_count >= 3 {
+            header += ".page:nth-child(3){transform:translateX(1134px);}"; // Position third page
+        }
         
-        // Sliding keyframes: translate the entire container to show different pages
-        // 0-41.67%: Show inventory page (container at position 0)
-        // 41.67-50%: Slide to item bag page (1s transition)
-        // 50-91.67%: Show item bag page (container shifted left by 567px)
-        // 91.67-100%: Slide back to inventory page (1s transition)
+        // Sliding keyframes based on page count
         header += "@keyframes slidePages{";
-        header += "0%,41.67%{transform:translateX(0px);}"; // Show inventory page
-        header += "50%,91.67%{transform:translateX(-567px);}"; // Show item bag page
-        header += "100%{transform:translateX(0px);}}"; // Back to inventory page
+        if page_count == 2 {
+            // 2-page animation: Inventory <-> ItemBag
+            header += "0%,41.67%{transform:translateX(0px);}"; // Show inventory page
+            header += "50%,91.67%{transform:translateX(-567px);}"; // Show item bag page
+            header += "100%{transform:translateX(0px);}"; // Back to inventory
+        } else {
+            // 3-page animation: Inventory <-> ItemBag <-> Battle
+            header += "0%,27.78%{transform:translateX(0px);}"; // Show inventory page (5s)
+            header += "33.33%,61.11%{transform:translateX(-567px);}"; // Show item bag page (5s)
+            header += "66.67%,94.44%{transform:translateX(-1134px);}"; // Show battle page (5s)
+            header += "100%{transform:translateX(0px);}"; // Back to inventory
+        }
+        header += "}";
     } else {
         // No animation for single page - just static display
         header += ".page{transform-origin:0 0;}";
@@ -340,19 +386,30 @@ fn generate_dynamic_animated_svg_header(page_count: u8) -> ByteArray {
 
 // Generate gold display UI components
 fn generate_gold_display(gold: u16) -> ByteArray {
+    generate_gold_display_with_page(gold, 0) // Default to green theme
+}
+
+// Generate gold display UI components with theme color
+fn generate_gold_display_with_page(gold: u16, page: u8) -> ByteArray {
     let mut gold_display = "";
+    let theme_color = get_theme_color(page);
+    
     // Add dark main rectangle for gold display
     gold_display +=
         "<rect width=\"91\" height=\"61.1\" x=\"541.7\" y=\"113\" fill=\"#2C1A0A\" rx=\"6\"/>";
-    // Add small lighter orange rectangle for "GOLD" label with subtle offset beyond main box
+    // Add small lighter rectangle for "GOLD" label with theme color
     gold_display +=
-        "<rect width=\"32\" height=\"16\" x=\"608\" y=\"106\" fill=\"#E8A746\" rx=\"2\"/>";
-    // Add "GOLD" text in black on the lighter orange rectangle
+        "<rect width=\"32\" height=\"16\" x=\"608\" y=\"106\" fill=\"";
+    gold_display += theme_color.clone();
+    gold_display += "\" rx=\"2\"/>";
+    // Add "GOLD" text in black on the themed rectangle
     gold_display +=
         "<text x=\"624\" y=\"117\" fill=\"#000\" class=\"s12\" text-anchor=\"middle\">GOLD</text>";
-    // Add gold value in orange on the darker background
+    // Add gold value in theme color on the darker background
     gold_display +=
-        "<text x=\"587\" y=\"150\" fill=\"#E8A746\" class=\"s24\" text-anchor=\"middle\">";
+        "<text x=\"587\" y=\"150\" fill=\"";
+    gold_display += theme_color;
+    gold_display += "\" class=\"s24\" text-anchor=\"middle\">";
     gold_display += u256_to_string(gold.into());
     gold_display += "</text>";
     gold_display
@@ -360,8 +417,17 @@ fn generate_gold_display(gold: u16) -> ByteArray {
 
 // Generate level display text
 fn generate_level_display(level: u8) -> ByteArray {
+    generate_level_display_with_page(level, 0) // Default to green theme
+}
+
+// Generate level display text with theme color
+fn generate_level_display_with_page(level: u8, page: u8) -> ByteArray {
     let mut level_display = "";
-    level_display += "<text x=\"339\" y=\"124\" fill=\"#78E846\" class=\"s16\">LEVEL ";
+    let theme_color = get_theme_color(page);
+    
+    level_display += "<text x=\"339\" y=\"124\" fill=\"";
+    level_display += theme_color;
+    level_display += "\" class=\"s16\">LEVEL ";
     level_display += u8_to_string(level);
     level_display += "</text>";
     level_display
@@ -369,10 +435,16 @@ fn generate_level_display(level: u8) -> ByteArray {
 
 // Generate dynamic health bar with color coding
 fn generate_health_bar(stats: Stats, health: u16) -> ByteArray {
+    generate_health_bar_with_page(stats, health, 0) // Default to green theme
+}
+
+// Generate dynamic health bar with color coding and theme color for text
+fn generate_health_bar_with_page(stats: Stats, health: u16, page: u8) -> ByteArray {
     let mut health_bar = "";
     let max_health = stats.get_max_health();
     let MAX_BAR_WIDTH: u256 = 300; // Maximum bar width in pixels
     let MIN_FILLED_WIDTH: u256 = 2; // Minimum visible width when HP > 0
+    let theme_color = get_theme_color(page);
 
     // Calculate dynamic filled width
     let filled_width = if max_health > 0 {
@@ -422,8 +494,10 @@ fn generate_health_bar(stats: Stats, health: u16) -> ByteArray {
     health_bar += u256_to_string(filled_width);
     health_bar += "\"/>";
 
-    // Add HP display (current HP / max HP)
-    health_bar += "<text x=\"286\" y=\"270\" fill=\"#78E846\" class=\"s16\">";
+    // Add HP display (current HP / max HP) with theme color
+    health_bar += "<text x=\"286\" y=\"270\" fill=\"";
+    health_bar += theme_color;
+    health_bar += "\" class=\"s16\">";
     health_bar += u256_to_string(health.into());
     health_bar += "/";
     health_bar += u256_to_string(max_health.into());
@@ -439,6 +513,18 @@ fn generate_inventory_header() -> ByteArray {
     inventory_header += "INVENTORY";
     inventory_header += "</text>";
     inventory_header
+}
+
+// Generate bag section header with theme color
+fn generate_bag_header() -> ByteArray {
+    let mut bag_header = "";
+    let theme_color = get_theme_color(1); // Orange theme for bag
+    bag_header += "<text x=\"286\" y=\"325\" fill=\"";
+    bag_header += theme_color;
+    bag_header += "\" class=\"s16\">";
+    bag_header += "ITEM BAG";
+    bag_header += "</text>";
+    bag_header
 }
 
 // Generate equipment slot containers
@@ -962,12 +1048,12 @@ fn generate_page_content(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
 fn generate_inventory_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
 
-    content += generate_stats_text(adventurer.stats);
+    content += generate_stats_text_with_page(adventurer.stats, 0);
     content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 0);
     content += generate_logo_with_page(0);
-    content += generate_gold_display(adventurer.gold);
-    content += generate_level_display(adventurer.level);
-    content += generate_health_bar(adventurer.stats, adventurer.health);
+    content += generate_gold_display_with_page(adventurer.gold, 0);
+    content += generate_level_display_with_page(adventurer.level, 0);
+    content += generate_health_bar_with_page(adventurer.stats, adventurer.health, 0);
     content += generate_inventory_header();
     content += generate_equipment_slots();
     content += generate_equipment_icons();
@@ -981,17 +1067,14 @@ fn generate_inventory_page_content(adventurer: AdventurerVerbose) -> ByteArray {
 fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
 
-    // Add adventurer name with orange theme
+    // Copy all elements from inventory page but with orange theme
+    content += generate_stats_text_with_page(adventurer.stats, 1);
     content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 1);
     content += generate_logo_with_page(1);
-
-    // Add page title and subtitle
-    let theme_color = get_theme_color(1);
-    content += "<text x=\"339\" y=\"200\" fill=\""
-        + theme_color
-        + "\" class=\"s24\" text-anchor=\"left\">Item Bag</text>";
-
-    // Add bag item layout with slots, icons, and level badges
+    content += generate_gold_display_with_page(adventurer.gold, 1);
+    content += generate_level_display_with_page(adventurer.level, 1);
+    content += generate_health_bar_with_page(adventurer.stats, adventurer.health, 1);
+    content += generate_bag_header();
     content += generate_bag_item_slots();
     content += generate_bag_item_icons(adventurer.bag);
     content += generate_bag_item_level_badges(adventurer.bag);
@@ -1082,9 +1165,9 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
     };
 
     let page_mode = match battle_state {
-        BattleState::Dead => PageMode::Normal(2), // Return to 2-page cycle (inventory + bag)
+        BattleState::Dead => PageMode::Normal(2), // Only inventory and bag pages when dead
         BattleState::InCombat => PageMode::BattleOnly, // Only battle page
-        BattleState::Normal => PageMode::Normal(2) // 2-page cycle (inventory + bag)
+        BattleState::Normal => PageMode::Normal(2) // Only inventory and bag pages when alive & not in battle
     };
 
     let page_count = match page_mode {
@@ -1103,7 +1186,7 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
             svg += generate_page_wrapper(battle_content, battle_border);
         },
         PageMode::Normal(_) => {
-            // Show normal 2-page sliding cycle: Inventory <-> ItemBag
+            // Show 2-page sliding cycle: Inventory <-> ItemBag
             if page_count > 1 {
                 svg += generate_sliding_container_start();
             }

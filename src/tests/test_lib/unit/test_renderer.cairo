@@ -464,7 +464,7 @@ fn test_boundary_level_adventurer() {
 fn test_page_count() {
     let adventurer = get_simple_adventurer();
     let page_count = PageRendererImpl::get_page_count(adventurer);
-    assert_eq!(page_count, 3, "Should have 3 pages");
+    assert_eq!(page_count, 2, "Should have 2 pages for alive adventurer not in combat");
 }
 
 #[test]
@@ -490,20 +490,21 @@ fn test_page_1() {
     let adventurer = get_simple_adventurer();
     let svg = generate_svg_with_page(adventurer, 1);
 
-    // Page 1 should have minimal content (just SVG structure and border)
+    // Page 1 should now contain full inventory layout with orange theme
     assert!(contains_pattern(@svg, @"<svg xmlns="), "Should contain SVG header");
     assert!(contains_pattern(@svg, @"</svg>"), "Should contain SVG closing tag");
     assert!(
         contains_pattern(@svg, @"<rect width=\"567\" height=\"862\""),
         "Should contain main container",
     );
-    assert!(contains_pattern(@svg, @"#E89446"), "Should contain orange border color");
+    assert!(contains_pattern(@svg, @"#E89446"), "Should contain orange theme color");
 
-    // Should NOT contain battle interface elements
-    assert!(!contains_pattern(@svg, @"LEVEL"), "Should not contain level display");
-    assert!(!contains_pattern(@svg, @"STR"), "Should not contain strength stat");
-    assert!(!contains_pattern(@svg, @"INVENTORY"), "Should not contain inventory header");
-    assert!(!contains_pattern(@svg, @"HP"), "Should not contain health display");
+    // Should contain inventory layout elements with orange theme
+    assert!(contains_pattern(@svg, @"LEVEL"), "Should contain level display");
+    assert!(contains_pattern(@svg, @"STR"), "Should contain strength stat");
+    assert!(contains_pattern(@svg, @"ITEM BAG"), "Should contain item bag header");
+    assert!(contains_pattern(@svg, @"HP"), "Should contain health display");
+    assert!(contains_pattern(@svg, @"GOLD"), "Should contain gold display");
 }
 
 #[test]
