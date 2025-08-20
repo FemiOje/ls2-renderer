@@ -561,14 +561,14 @@ fn test_dynamic_animated_svg_normal_mode() {
     normal_adventurer.beast_health = 0; // No beast
     normal_adventurer.health = 100; // Alive
 
-    // Generate dynamic animated SVG - should show 3-page cycle
+    // Generate dynamic animated SVG - should show 2-page cycle
     let normal_svg = generate_svg(normal_adventurer.clone());
 
     // Validate normal mode specific content
     let normal_page_count = PageRendererImpl::get_page_count(normal_adventurer.clone());
-    assert!(normal_page_count == 3, "Normal mode should have 3 pages");
+    assert!(normal_page_count == 2, "Normal mode should have 2 pages");
 
-    // Should contain all 3 page types
+    // Should contain normal mode page types only
     assert!(contains_pattern(@normal_svg, @"TestHero"), "Should contain adventurer name");
     assert!(contains_pattern(@normal_svg, @"Item Bag"), "Should contain ItemBag page");
 
@@ -578,13 +578,13 @@ fn test_dynamic_animated_svg_normal_mode() {
         "Should NOT contain battle page in normal mode",
     );
 
-    // Should contain proper animation timing for 3 pages (15s duration)
+    // Should contain proper animation timing for 2 pages (10s duration)
     assert!(
-        contains_pattern(@normal_svg, @"pageTransition 15s infinite"),
-        "Should have 15s animation for normal mode",
+        contains_pattern(@normal_svg, @"pageTransition 10s infinite"),
+        "Should have 10s animation for normal mode",
     );
 
-    // Should have theme colors for all 3 pages
+    // Should have theme colors for 2 pages only
     assert!(
         contains_pattern(@normal_svg, @"fill=\"#78E846\""), "Should have green inventory theme",
     );
@@ -607,7 +607,7 @@ fn test_output_dynamic_animated_svg_comparison() {
     println!("{}", battle_svg);
     println!("=== END BATTLE MODE SVG ===");
 
-    // Test 2: Normal Mode (3 pages - 15 second duration)
+    // Test 2: Normal Mode (2 pages - 10 second duration)
     let mut normal_adventurer = get_simple_adventurer();
     normal_adventurer.beast_health = 0;
     normal_adventurer.health = 100;
@@ -621,7 +621,7 @@ fn test_output_dynamic_animated_svg_comparison() {
 
     // Validate the key differences
     assert!(battle_page_count == 1, "Battle mode should have 1 page");
-    assert!(normal_page_count == 3, "Normal mode should have 3 pages");
+    assert!(normal_page_count == 2, "Normal mode should have 2 pages");
 
     // Battle mode should be static (no animation), normal mode should have animation
     assert!(
@@ -629,10 +629,10 @@ fn test_output_dynamic_animated_svg_comparison() {
         "Battle mode should be static (no animation)",
     );
     assert!(
-        contains_pattern(@normal_svg, @"pageTransition 15s infinite"),
-        "Normal mode should have 15s animation",
+        contains_pattern(@normal_svg, @"pageTransition 10s infinite"),
+        "Normal mode should have 10s animation",
     );
 
     println!("SUCCESS: Dynamic page count comparison completed");
-    println!("Battle mode: 1 page, Normal mode: 3 pages");
+    println!("Battle mode: 1 page, Normal mode: 2 pages");
 }

@@ -1010,13 +1010,13 @@ fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
 }
 
 
-// Generate battle page content (Page 3 - Red theme for gradient border)
+// Generate battle page content (Page 2 - Red theme)
 fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
 
-    // Add adventurer name
-    content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 3);
-    content += generate_logo_with_page(3);
+    // Add adventurer name with red theme (page 2 = battle)
+    content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 2);
+    content += generate_logo_with_page(2);
 
     // Add page title
     content +=
@@ -1100,11 +1100,11 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
         PageMode::BattleOnly => {
             // Only show battle page when in combat
             let battle_content = generate_battle_page_content(adventurer.clone());
-            let battle_border = generate_border_for_page(3);
+            let battle_border = generate_border_for_page(2);
             svg += generate_page_wrapper(battle_content, battle_border);
         },
         PageMode::Normal(_) => {
-            // Show normal 3-page cycle: Inventory -> ItemBag -> Marketplace
+            // Show normal 2-page cycle: Inventory -> ItemBag (battle page only when in combat)
             let inventory_content = generate_inventory_page_content(adventurer.clone());
             let inventory_border = generate_border_for_page(0);
             svg += generate_page_wrapper(inventory_content, inventory_border);
@@ -1112,7 +1112,6 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
             let item_bag_content = generate_item_bag_page_content(adventurer.clone());
             let item_bag_border = generate_border_for_page(1);
             svg += generate_page_wrapper(item_bag_content, item_bag_border);
-
         },
     }
 

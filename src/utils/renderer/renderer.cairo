@@ -62,7 +62,7 @@ pub impl RendererImpl of Renderer {
     /// @notice Renders dynamic battle interface metadata for a specific page
     /// @param token_id The NFT token ID (converted to adventurer_id for data lookup)
     /// @param adventurer_verbose Pre-fetched adventurer data with resolved item names
-    /// @param page The page number to render (0=Inventory, 1=ItemBag, 2=Marketplace, 3=Battle)
+    /// @param page The page number to render (0=Inventory, 1=ItemBag, 2=Battle)
     /// @return Complete Base64-encoded JSON metadata with embedded SVG for specified page
     fn render_page(token_id: u64, adventurer_verbose: AdventurerVerbose, page: u8) -> ByteArray {
         // Generate SVG with dynamic stats and equipment for specific page
@@ -109,7 +109,7 @@ pub impl RendererImpl of Renderer {
 
     /// @notice Generates SVG image data URI for a specific page
     /// @param adventurer_verbose Pre-fetched adventurer data with resolved item names
-    /// @param page The page number to render (0=Inventory, 1=ItemBag, 2=Marketplace, 3=Battle)
+    /// @param page The page number to render (0=Inventory, 1=ItemBag, 2=Battle)
     /// @return Base64-encoded data URI containing SVG for specified page
     fn get_image_page(adventurer_verbose: AdventurerVerbose, page: u8) -> ByteArray {
         // Generate SVG with dynamic stats and equipment for specific page

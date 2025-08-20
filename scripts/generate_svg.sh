@@ -3,11 +3,13 @@
 # ========================================================================
 # Death Mountain Renderer - Multipage SVG Generator Script
 # ========================================================================
-# This script generates SVG and PNG outputs for all 4 pages of the multipage NFT system
+# This script generates SVG and PNG outputs for all pages of the multipage NFT system
 # Page 0: Inventory (Green theme)
 # Page 1: Item Bag (Orange theme)  
-# Page 2: Marketplace (Blue theme)
-# Page 3: Battle (Red theme)
+# Page 2: Battle (Red theme)
+# 
+# Normal Mode: Pages 0-1 (2-page animated cycle)
+# Battle Mode: Page 2 only (static display)
 
 set -e
 
@@ -28,7 +30,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}📋 Generating SVG outputs for all 4 pages...${NC}"
+echo -e "${BLUE}📋 Generating SVG outputs for all 3 pages...${NC}"
 
 # Function to extract SVG from test output
 extract_svg_from_test() {
@@ -140,11 +142,10 @@ generate_page_outputs() {
     fi
 }
 
-# Generate all 4 pages
+# Generate all 3 pages
 generate_page_outputs "0" "Inventory" "Green"
 generate_page_outputs "1" "Item Bag" "Orange" 
-generate_page_outputs "2" "Marketplace" "Blue"
-generate_page_outputs "3" "Battle" "Red"
+generate_page_outputs "2" "Battle" "Red"
 
 echo ""
 echo -e "${BLUE}📊 Generating size comparison...${NC}"
@@ -180,10 +181,14 @@ echo "├── page_2_battle.svg               - Battle page SVG (Red theme)"
 echo "├── page_2_battle.png               - Battle page PNG (Red theme)"
 echo "└── size_comparison.txt             - Size comparison stats"
 echo ""
+echo -e "${BLUE}🎮 Page System:${NC}"
+echo "• Normal Mode: Pages 0-1 (Inventory + Item Bag) in animated cycle"
+echo "• Battle Mode: Page 2 only (Battle page) when in combat"
+echo ""
 echo -e "${BLUE}💡 Usage Tips:${NC}"
 echo "• View SVG files in a browser for best quality"
 echo "• PNG files are raster versions for external use"
-echo "• Data URI files contain base64-encoded images for web embedding"
 echo "• Use 'open output/' on macOS or 'xdg-open output/' on Linux to view outputs"
+echo "• Run './scripts/view_animated_svg.sh' to generate animated state SVGs"
 echo ""
 echo -e "${GREEN}✨ Happy NFT rendering!${NC}"
