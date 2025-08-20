@@ -6,7 +6,7 @@
 // @author Built for the Loot Survivor ecosystem
 
 use death_mountain_renderer::models::models::{
-    AdventurerVerbose, BagVerbose, EquipmentVerbose, GameDetail, Slot, Stats, StatsTrait,
+    AdventurerVerbose, BagVerbose, EquipmentVerbose, GameDetail, ItemVerbose, Slot, Stats, StatsTrait,
 };
 use death_mountain_renderer::models::page_types::{BattleState, PageMode};
 use death_mountain_renderer::utils::encoding::encoding::U256BytesUsedTraitImpl;
@@ -262,7 +262,14 @@ pub fn generate_adventurer_name_text_with_page(name: ByteArray, page: u8) -> Byt
     };
 
     // Use dynamic text rendering with calculated font size and theme color
-    name_text += "<text x=\"339\" y=\"160\" fill=\"";
+    // Adjust x position based on page: page 1 uses x="268" to align with updated layout
+    let x_position = if page == 1 { "268" } else { "339" };
+    let y_position = if page == 1 { "158" } else { "160" };
+    name_text += "<text x=\"";
+    name_text += x_position;
+    name_text += "\" y=\"";
+    name_text += y_position;
+    name_text += "\" fill=\"";
     name_text += theme_color;
     name_text += "\" style=\"font-size:";
     name_text += font_size;
@@ -285,8 +292,17 @@ pub fn generate_logo_with_page(page: u8) -> ByteArray {
 
     logo += "<path fill=\"";
     logo += theme_color;
-    logo +=
-        "\" fill-rule=\"evenodd\" d=\"M288.5 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM286 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
+    
+    // Adjust logo position based on page layout
+    if page == 1 {
+        // Page 1 (Item Bag) - position logo to align with new layout starting at x=213
+        logo +=
+            "\" fill-rule=\"evenodd\" d=\"M213 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM210.5 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
+    } else {
+        // Page 0 (Inventory) and other pages - use original position
+        logo +=
+            "\" fill-rule=\"evenodd\" d=\"M288.5 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM286 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
+    }
 
     logo
 }
@@ -425,7 +441,14 @@ fn generate_level_display_with_page(level: u8, page: u8) -> ByteArray {
     let mut level_display = "";
     let theme_color = get_theme_color(page);
     
-    level_display += "<text x=\"339\" y=\"124\" fill=\"";
+    // Adjust x position based on page: page 1 uses x="268" to align with updated layout  
+    let x_position = if page == 1 { "268" } else { "339" };
+    let y_position = if page == 1 { "135" } else { "124" };
+    level_display += "<text x=\"";
+    level_display += x_position;
+    level_display += "\" y=\"";
+    level_display += y_position;
+    level_display += "\" fill=\"";
     level_display += theme_color;
     level_display += "\" class=\"s16\">LEVEL ";
     level_display += u8_to_string(level);
@@ -480,22 +503,28 @@ fn generate_health_bar_with_page(stats: Stats, health: u16, page: u8) -> ByteArr
         "#FF4444" // Red for zero health
     };
 
-    // Generate background bar (full width, dark color)
-    health_bar +=
-        "<path stroke=\"#171D10\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M286 234h";
+    // Generate background bar (full width, dark color)  
+    // Adjust x position based on page: page 1 uses x="213" to align with updated layout
+    let bar_x_position = if page == 1 { "213" } else { "286" };
+    health_bar += "<path stroke=\"#171D10\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M";
+    health_bar += bar_x_position.clone();
+    health_bar += " 234h";
     health_bar += u256_to_string(MAX_BAR_WIDTH);
     health_bar += "\"/>";
 
     // Generate filled health bar (dynamic width, color-coded)
     health_bar += "<path stroke=\"";
     health_bar += bar_color;
-    health_bar +=
-        "\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M286 234h";
+    health_bar += "\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M";
+    health_bar += bar_x_position.clone();
+    health_bar += " 234h";
     health_bar += u256_to_string(filled_width);
     health_bar += "\"/>";
 
     // Add HP display (current HP / max HP) with theme color
-    health_bar += "<text x=\"286\" y=\"270\" fill=\"";
+    health_bar += "<text x=\"";
+    health_bar += bar_x_position;
+    health_bar += "\" y=\"270\" fill=\"";
     health_bar += theme_color;
     health_bar += "\" class=\"s16\">";
     health_bar += u256_to_string(health.into());
@@ -519,9 +548,9 @@ fn generate_inventory_header() -> ByteArray {
 fn generate_bag_header() -> ByteArray {
     let mut bag_header = "";
     let theme_color = get_theme_color(1); // Orange theme for bag
-    bag_header += "<text x=\"286\" y=\"325\" fill=\"";
+    bag_header += "<text x=\"213\" y=\"325\" fill=\"";
     bag_header += theme_color;
-    bag_header += "\" class=\"s16\">";
+    bag_header += "\" class=\"s16\" text-anchor=\"left\">";
     bag_header += "ITEM BAG";
     bag_header += "</text>";
     bag_header
@@ -604,14 +633,30 @@ fn extract_words(text: ByteArray) -> Array<ByteArray> {
 // Split equipment name into words for line-by-line rendering
 fn get_equipment_words(item_name: felt252) -> Array<ByteArray> {
     if item_name == 0 {
-        return array![];
+        return array!["EMPTY"];
     }
 
     let name_str = felt252_to_string(item_name);
 
-    // If name is empty, return empty array
+    // If name is empty, return EMPTY
     if name_str.len() == 0 {
-        return array![];
+        return array!["EMPTY"];
+    }
+
+    extract_words(name_str)
+}
+
+// Split bag item name into words for line-by-line rendering
+fn get_bag_item_words(item_name: felt252) -> Array<ByteArray> {
+    if item_name == 0 {
+        return array!["EMPTY"];
+    }
+
+    let name_str = felt252_to_string(item_name);
+
+    // If name is empty, return EMPTY
+    if name_str.len() == 0 {
+        return array!["EMPTY"];
     }
 
     extract_words(name_str)
@@ -850,13 +895,13 @@ pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteAr
 fn generate_bag_item_slots() -> ByteArray {
     let mut slots = "";
 
-    // Use same spacing pattern as equipment slots but for 3 rows x 5 columns
-    // Equipment uses x="285.7" with 92px spacing (377.7-285.7=92)
-    let start_x = 240_u16; // Start closer to left to fit 5 columns
+    // Use updated spacing pattern from manual adjustments: 20px spacing = 91px total spacing (71+20)
+    // Manual layout: x="213, 304, 395, 486, 577" = 91px spacing between centers
+    let start_x = 213_u16; // Match manual layout starting position
     let start_y = 350_u16; // Same as original
     let slot_size = 71_u16; // Same as equipment
-    let spacing_x = 85_u16; // Slightly less than equipment 92px to fit 5 columns  
-    let spacing_y = 90_u16; // Same as equipment vertical spacing
+    let spacing_x = 91_u16; // Match manual layout: 304-213=91px spacing between centers
+    let spacing_y = 134_u16; // Match manual layout: 484-350=134px vertical spacing
 
     let mut row = 0_u8;
     while row < 3 { // 3 rows
@@ -920,17 +965,18 @@ fn generate_bag_item_icons(bag: BagVerbose) -> ByteArray {
         bag.item_15,
     ];
 
-    // Match the slot positioning (centered in each slot) - using equipment pattern
-    let start_x = 240_u16; // Same as slots
+    // Match the updated slot positioning from manual adjustments
+    let start_x = 213_u16; // Same as updated slots
     let start_y = 350_u16; // Same as slots  
-    let spacing_x = 85_u16; // Same as slots
-    let spacing_y = 90_u16; // Same as slots
+    let spacing_x = 91_u16; // Same as updated slots
+    let spacing_y = 134_u16; // Same as updated slots
 
-    // Center icon within each slot (icon is 3x scale, so adjust positioning like equipment)
-    // Equipment uses offsets like 309-285.7=23.3, so use similar offset
-    let icon_offset = 22_u16; // Center the 3x scaled icon in the 71px slot
-    let icon_start_x = start_x + icon_offset;
-    let icon_start_y = start_y + icon_offset;
+    // Center icon within each slot - manual layout uses: translate(225, 362) for first icon
+    // 225 - 213 = 12px offset to center the 3x scaled icon in the 71px slot
+    let icon_offset_x = 12_u16; // Match manual layout centering
+    let icon_offset_y = 12_u16; // Match manual layout centering
+    let icon_start_x = start_x + icon_offset_x;
+    let icon_start_y = start_y + icon_offset_y;
 
     let mut item_index = 0_u8;
     while item_index < 15 {
@@ -983,16 +1029,16 @@ fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
         bag.item_15,
     ];
 
-    // Badge positioning: top-right corner of each slot (like equipment badges)
-    // Use same positioning as generate_bag_item_slots
-    let start_x = 240_u16; // Same as slots
+    // Badge positioning: positioned using cell x + 49px offset, y aligned with cell tops minus 8px
+    // Manual layout: badges at x="262, 353, 444, 535, 626" y="342, 476, 610"
+    let start_x = 213_u16; // Same as updated slots
     let start_y = 350_u16; // Same as slots
-    let spacing_x = 85_u16; // Same as slots
-    let spacing_y = 90_u16; // Same as slots
+    let spacing_x = 91_u16; // Same as updated slots
+    let spacing_y = 134_u16; // Same as updated slots
     let badge_width = 38_u16;
     let badge_height = 16_u16;
-    let badge_offset_x = 49_u16; // Position in top-right corner of slot
-    let badge_offset_y = 5_u16; // Small offset from top
+    let badge_offset_x = 49_u16; // Cell x + 49px to match manual positioning
+    let badge_offset_y = -8_i16; // Cell y - 8px to align badge middle with cell top line
 
     let mut item_index = 0_u8;
     while item_index < 15 {
@@ -1002,8 +1048,8 @@ fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
             let col = item_index % 5; // Column within the row
             let slot_x = start_x + (col.into() * spacing_x);
             let slot_y = start_y + (row.into() * spacing_y);
-            let badge_x = slot_x + badge_offset_x; // Top-right corner
-            let badge_y = slot_y + badge_offset_y;
+            let badge_x = slot_x + badge_offset_x; // Cell x + 49px
+            let badge_y = slot_y.into() + badge_offset_y.into(); // Cell y - 8px
 
             // Generate level badge background
             badges += "<rect width=\""
@@ -1033,6 +1079,100 @@ fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
     }
 
     badges
+}
+
+// Helper function to get bag item by index from BagVerbose
+fn get_bag_item_by_index(bag: BagVerbose, index: u8) -> ItemVerbose {
+    match index {
+        0 => bag.item_1,
+        1 => bag.item_2, 
+        2 => bag.item_3,
+        3 => bag.item_4,
+        4 => bag.item_5,
+        5 => bag.item_6,
+        6 => bag.item_7,
+        7 => bag.item_8,
+        8 => bag.item_9,
+        9 => bag.item_10,
+        10 => bag.item_11,
+        11 => bag.item_12,
+        12 => bag.item_13,
+        13 => bag.item_14,
+        14 => bag.item_15,
+        _ => bag.item_1 // Fallback, should never happen with 0-14 indices
+    }
+}
+
+// Generate dynamic bag item names positioned below each grid box (matching manual layout)
+fn generate_bag_item_names(bag: BagVerbose) -> ByteArray {
+    let mut names = "";
+    let theme_color = get_theme_color(1); // Orange theme for bag
+    
+    // Position names below each grid box using same grid positioning
+    let start_x = 213_u16 + 35_u16; // Cell center: start_x + (slot_size/2) = 213 + 35.5 ≈ 248
+    let start_y = 350_u16;
+    let spacing_x = 91_u16;
+    let spacing_y = 134_u16;
+    let slot_size = 71_u16;
+    
+    // Y positions for two-line names below each row of cells
+    let row_0_y1 = start_y + slot_size + 21; // 350 + 71 + 21 = 442
+    let row_0_y2 = row_0_y1 + 14; // 442 + 14 = 456
+    let row_1_y1 = start_y + spacing_y + slot_size + 21; // 350 + 134 + 71 + 21 = 576  
+    let row_1_y2 = row_1_y1 + 14; // 576 + 14 = 590
+    let row_2_y1 = start_y + (2 * spacing_y) + slot_size + 21; // 350 + 268 + 71 + 21 = 710
+    let row_2_y2 = row_2_y1 + 14; // 710 + 14 = 724
+    
+    let mut item_index = 0_u8;
+    while item_index < 15 {
+        let item = get_bag_item_by_index(bag.clone(), item_index);
+        let words = get_bag_item_words(item.name);
+        
+        let col = item_index % 5;
+        let row = item_index / 5;
+        let x = start_x + (col.into() * spacing_x);
+        
+        let (base_y1, base_y2) = if row == 0 {
+            (row_0_y1, row_0_y2)
+        } else if row == 1 {
+            (row_1_y1, row_1_y2)
+        } else {
+            (row_2_y1, row_2_y2)
+        };
+        
+        // Render the words (either EMPTY or actual item name words)
+        let mut word_index = 0_u32;
+        while word_index < words.len() {
+            let y = if word_index == 0 {
+                base_y1
+            } else if word_index == 1 {
+                base_y2
+            } else {
+                base_y2 + ((word_index - 1) * 14).try_into().unwrap() // Additional lines if more than 2 words
+            };
+            
+            names += "<text x=\"";
+            names += u256_to_string(x.into());
+            names += "\" y=\"";
+            names += u256_to_string(y.into());
+            names += "\" fill=\"";
+            names += theme_color.clone();
+            names += "\" class=\"s12\" text-anchor=\"middle\">";
+            names += words.at(word_index).clone();
+            names += "</text>";
+            
+            word_index += 1;
+            
+            // Limit to 2 lines for proper layout
+            if word_index >= 2 {
+                break;
+            }
+        }
+        
+        item_index += 1;
+    }
+    
+    names
 }
 
 fn generate_page_content(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
@@ -1067,8 +1207,7 @@ fn generate_inventory_page_content(adventurer: AdventurerVerbose) -> ByteArray {
 fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
 
-    // Copy all elements from inventory page but with orange theme
-    content += generate_stats_text_with_page(adventurer.stats, 1);
+    // Copy inventory layout elements but without stats section
     content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 1);
     content += generate_logo_with_page(1);
     content += generate_gold_display_with_page(adventurer.gold, 1);
@@ -1078,6 +1217,7 @@ fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     content += generate_bag_item_slots();
     content += generate_bag_item_icons(adventurer.bag);
     content += generate_bag_item_level_badges(adventurer.bag);
+    content += generate_bag_item_names(adventurer.bag);
 
     content
 }

@@ -490,7 +490,7 @@ fn test_page_1() {
     let adventurer = get_simple_adventurer();
     let svg = generate_svg_with_page(adventurer, 1);
 
-    // Page 1 should now contain full inventory layout with orange theme
+    // Page 1 should contain inventory layout with orange theme but without stats
     assert!(contains_pattern(@svg, @"<svg xmlns="), "Should contain SVG header");
     assert!(contains_pattern(@svg, @"</svg>"), "Should contain SVG closing tag");
     assert!(
@@ -501,10 +501,14 @@ fn test_page_1() {
 
     // Should contain inventory layout elements with orange theme
     assert!(contains_pattern(@svg, @"LEVEL"), "Should contain level display");
-    assert!(contains_pattern(@svg, @"STR"), "Should contain strength stat");
     assert!(contains_pattern(@svg, @"ITEM BAG"), "Should contain item bag header");
     assert!(contains_pattern(@svg, @"HP"), "Should contain health display");
     assert!(contains_pattern(@svg, @"GOLD"), "Should contain gold display");
+    
+    // Should NOT contain stats section
+    assert!(!contains_pattern(@svg, @"STR"), "Should not contain strength stat");
+    assert!(!contains_pattern(@svg, @"DEX"), "Should not contain dexterity stat");
+    assert!(!contains_pattern(@svg, @"VIT"), "Should not contain vitality stat");
 }
 
 #[test]
