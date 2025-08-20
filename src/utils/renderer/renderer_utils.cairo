@@ -303,40 +303,30 @@ fn generate_dynamic_animated_svg_header(page_count: u8) -> ByteArray {
 
     // Only add animation CSS if more than 1 page
     if page_count > 1 {
-        // Calculate animation duration and timing based on page count
-        let total_duration = page_count * 5; // 5 seconds per page
-        let display_percentage: u16 = 100_u16
-            / page_count.into(); // Percentage of time each page is visible
-
-        header += ".page{opacity:0;animation:pageTransition ";
+        // Sliding animation: 5s stationary + 1s transition per cycle = 12s total for 2 pages
+        let total_duration = 12_u8; // Fixed 12 seconds for smooth back-and-forth sliding
+        
+        // Container that slides between pages using transform
+        header += ".page-container{animation:slidePages ";
         header += u256_to_string(total_duration.into());
         header += "s infinite;}";
-
-        // Generate animation delays for each page
-        let mut page_index = 0_u8;
-        while page_index < page_count {
-            let delay = page_index * 5; // 5 seconds delay between pages
-            header += ".page:nth-child(";
-            header += u256_to_string((page_index + 1).into());
-            header += "){animation-delay:";
-            header += u256_to_string(delay.into());
-            header += "s;}";
-            page_index += 1;
-        }
-
-        // Generate proper keyframes with smooth transitions
-        // Each page should be visible for display_percentage, then fade out
-        let fade_start = display_percentage - 2; // Start fade 2% before end
-        let fade_end = display_percentage + 2; // Complete fade 2% after
-
-        header += "@keyframes pageTransition{0%,";
-        header += u256_to_string(fade_start.into());
-        header += "%{opacity:1;}";
-        header += u256_to_string(fade_end.into());
-        header += "%,100%{opacity:0;}}";
+        
+        // Pages positioned side by side using transform
+        header += ".page{transform-origin:0 0;}";
+        header += ".page:nth-child(2){transform:translateX(567px);}"; // Position second page to the right
+        
+        // Sliding keyframes: translate the entire container to show different pages
+        // 0-41.67%: Show inventory page (container at position 0)
+        // 41.67-50%: Slide to item bag page (1s transition)
+        // 50-91.67%: Show item bag page (container shifted left by 567px)
+        // 91.67-100%: Slide back to inventory page (1s transition)
+        header += "@keyframes slidePages{";
+        header += "0%,41.67%{transform:translateX(0px);}"; // Show inventory page
+        header += "50%,91.67%{transform:translateX(-567px);}"; // Show item bag page
+        header += "100%{transform:translateX(0px);}}"; // Back to inventory page
     } else {
         // No animation for single page - just static display
-        header += ".page{opacity:1;}";
+        header += ".page{transform-origin:0 0;}";
     }
 
     header +=
@@ -1042,6 +1032,15 @@ fn generate_page_wrapper(page_content: ByteArray, border_content: ByteArray) -> 
     wrapper
 }
 
+// Generate sliding page container wrapper for animation
+fn generate_sliding_container_start() -> ByteArray {
+    "<g class=\"page-container\">"
+}
+
+fn generate_sliding_container_end() -> ByteArray {
+    "</g>"
+}
+
 // Generate animated SVG with all four pages and smooth transitions
 pub fn generate_full_animated_svg(adventurer: AdventurerVerbose) -> ByteArray {
     let mut svg = "";
@@ -1083,9 +1082,9 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
     };
 
     let page_mode = match battle_state {
-        BattleState::Dead => PageMode::Normal(3), // Return to 3-page cycle
+        BattleState::Dead => PageMode::Normal(2), // Return to 2-page cycle (inventory + bag)
         BattleState::InCombat => PageMode::BattleOnly, // Only battle page
-        BattleState::Normal => PageMode::Normal(3) // 3-page cycle
+        BattleState::Normal => PageMode::Normal(2) // 2-page cycle (inventory + bag)
     };
 
     let page_count = match page_mode {
@@ -1098,13 +1097,17 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
 
     match page_mode {
         PageMode::BattleOnly => {
-            // Only show battle page when in combat
+            // Only show battle page when in combat (no sliding animation)
             let battle_content = generate_battle_page_content(adventurer.clone());
             let battle_border = generate_border_for_page(2);
             svg += generate_page_wrapper(battle_content, battle_border);
         },
         PageMode::Normal(_) => {
-            // Show normal 2-page cycle: Inventory -> ItemBag (battle page only when in combat)
+            // Show normal 2-page sliding cycle: Inventory <-> ItemBag
+            if page_count > 1 {
+                svg += generate_sliding_container_start();
+            }
+            
             let inventory_content = generate_inventory_page_content(adventurer.clone());
             let inventory_border = generate_border_for_page(0);
             svg += generate_page_wrapper(inventory_content, inventory_border);
@@ -1112,6 +1115,10 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
             let item_bag_content = generate_item_bag_page_content(adventurer.clone());
             let item_bag_border = generate_border_for_page(1);
             svg += generate_page_wrapper(item_bag_content, item_bag_border);
+            
+            if page_count > 1 {
+                svg += generate_sliding_container_end();
+            }
         },
     }
 
