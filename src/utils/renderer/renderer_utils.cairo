@@ -983,7 +983,7 @@ fn generate_inventory_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
 
     content += generate_stats_text(adventurer.stats);
-    content += generate_adventurer_name_text_with_page(adventurer.name, 0);
+    content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 0);
     content += generate_logo_with_page(0);
     content += generate_gold_display(adventurer.gold);
     content += generate_level_display(adventurer.level);
@@ -1002,7 +1002,7 @@ fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
 
     // Add adventurer name with orange theme
-    content += generate_adventurer_name_text_with_page(adventurer.name, 1);
+    content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 1);
     content += generate_logo_with_page(1);
 
     // Add page title and subtitle
@@ -1025,7 +1025,7 @@ fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
 
     // Add adventurer name
-    content += generate_adventurer_name_text_with_page(adventurer.name, 3);
+    content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 3);
     content += generate_logo_with_page(3);
 
     // Add page title
