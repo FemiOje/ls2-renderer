@@ -295,6 +295,10 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
         strength: 12, dexterity: 10, vitality: 14, intelligence: 8, wisdom: 9, charisma: 7, luck: 5,
     };
 
+    let empty_item = ItemVerbose {
+        id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+    };
+
     let weapon_item = ItemVerbose {
         id: 1,
         name: 'Dagger',
@@ -348,14 +352,7 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
             slot: Slot::Hand,
             xp: 20,
         },
-        neck: ItemVerbose {
-            id: 7,
-            name: 'Amulet',
-            tier: Tier::T1,
-            item_type: Type::Necklace,
-            slot: Slot::Neck,
-            xp: 15,
-        },
+        neck: empty_item,
         ring: ItemVerbose {
             id: 8,
             name: 'Silver Ring',
@@ -366,9 +363,6 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
         },
     };
 
-    let _empty_item = ItemVerbose {
-        id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
-    };
 
     AdventurerVerbose {
         health: 250,
@@ -442,14 +436,7 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
                 slot: Slot::Neck,
                 xp: 80,
             },
-            item_11: ItemVerbose {
-                id: 18,
-                name: 'War Hammer',
-                tier: Tier::T3,
-                item_type: Type::Bludgeon_or_Metal,
-                slot: Slot::Weapon,
-                xp: 130,
-            },
+            item_11: empty_item,
             item_12: ItemVerbose {
                 id: 19,
                 name: 'Plate Armor',
@@ -458,14 +445,7 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
                 slot: Slot::Chest,
                 xp: 180,
             },
-            item_13: ItemVerbose {
-                id: 20,
-                name: 'Knight Helm',
-                tier: Tier::T3,
-                item_type: Type::Bludgeon_or_Metal,
-                slot: Slot::Head,
-                xp: 125,
-            },
+            item_13: empty_item,
             item_14: ItemVerbose {
                 id: 21,
                 name: 'Silk Belt',
