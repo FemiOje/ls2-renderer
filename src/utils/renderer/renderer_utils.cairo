@@ -405,14 +405,26 @@ fn generate_gold_display(gold: u16) -> ByteArray {
     generate_gold_display_with_page(gold, 0) // Default to green theme
 }
 
+// Get dark background color for gold display based on page theme
+fn get_gold_background_color(page: u8) -> ByteArray {
+    match page {
+        0 => "#0F1F0A", // Page 0 (Inventory) - Dark green
+        1 => "#2C1A0A", // Page 1 (ItemBag) - Dark orange/brown
+        2 => "#2A0A0A", // Page 2 (Battle) - Dark red  
+        _ => "#0F1F0A" // Default to dark green
+    }
+}
+
 // Generate gold display UI components with theme color
 fn generate_gold_display_with_page(gold: u16, page: u8) -> ByteArray {
     let mut gold_display = "";
     let theme_color = get_theme_color(page);
+    let background_color = get_gold_background_color(page);
     
     // Add dark main rectangle for gold display
-    gold_display +=
-        "<rect width=\"91\" height=\"61.1\" x=\"541.7\" y=\"113\" fill=\"#0F1F0A\" rx=\"6\"/>";
+    gold_display += "<rect width=\"91\" height=\"61.1\" x=\"541.7\" y=\"113\" fill=\"";
+    gold_display += background_color;
+    gold_display += "\" rx=\"6\"/>";
     // Add small lighter rectangle for "GOLD" label with theme color
     gold_display +=
         "<rect width=\"32\" height=\"16\" x=\"608\" y=\"106\" fill=\"";
