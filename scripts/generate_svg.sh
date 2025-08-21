@@ -147,6 +147,78 @@ generate_page_outputs "0" "Inventory" "Green"
 generate_page_outputs "1" "Item Bag" "Orange" 
 generate_page_outputs "2" "Battle" "Red"
 
+# Function to generate animated SVGs
+generate_animated_svgs() {
+    echo ""
+    echo -e "${BLUE}🎬 Generating Animated SVGs for Different States...${NC}"
+    echo "=================================================="
+    
+    local normal_file="$OUTPUT_DIR/animated_normal_mode.svg"
+    local battle_file="$OUTPUT_DIR/animated_battle_mode.svg"
+    local normal_success=0
+    local battle_success=0
+    
+    # Generate normal mode SVG
+    echo -e "${BLUE}📋 Generating Normal Mode SVG...${NC}"
+    scarb test test_output_dynamic_animated_svg_comparison 2>&1 | sed -n "/=== NORMAL MODE SVG ===/,/=== END NORMAL MODE SVG ===/p" | sed '1d;$d' > "$normal_file"
+    
+    if [ -s "$normal_file" ]; then
+        echo -e "${GREEN}✅ Normal Mode SVG generated successfully!${NC}"
+        echo "📁 File: $normal_file"
+        echo "📊 Size: $(ls -lh $normal_file | awk '{print $5}')"
+        echo ""
+        echo -e "${GREEN}🎨 Normal Mode Features:${NC}"
+        echo "  • 10-second cycle (5 seconds per page)"
+        echo "  • Page 0: Inventory (Green theme - #78E846)"
+        echo "  • Page 1: Item Bag (Orange theme - #E89446)"
+        echo "  • Smooth opacity transitions between pages"
+        echo "  • Active when adventurer is NOT in battle"
+        normal_success=1
+    else
+        echo -e "${RED}❌ Failed to generate Normal Mode SVG${NC}"
+    fi
+    
+    # Generate battle mode SVG
+    echo ""
+    echo -e "${BLUE}📋 Generating Battle Mode SVG...${NC}"
+    scarb test test_output_dynamic_animated_svg_comparison 2>&1 | sed -n "/=== BATTLE MODE SVG ===/,/=== END BATTLE MODE SVG ===/p" | sed '1d;$d' > "$battle_file"
+    
+    if [ -s "$battle_file" ]; then
+        echo -e "${GREEN}✅ Battle Mode SVG generated successfully!${NC}"
+        echo "📁 File: $battle_file"
+        echo "📊 Size: $(ls -lh $battle_file | awk '{print $5}')"
+        echo ""
+        echo -e "${RED}⚔️  Battle Mode Features:${NC}"
+        echo "  • Static display (no animation)"
+        echo "  • Page 2: Battle page only (Red theme - #FF6B6B)"
+        echo "  • Shows current battle interface"
+        echo "  • Active when adventurer is IN battle (beast_health > 0)"
+        battle_success=1
+    else
+        echo -e "${RED}❌ Failed to generate Battle Mode SVG${NC}"
+    fi
+    
+    echo ""
+    echo "=================================================="
+    echo -e "${BLUE}📊 Animated SVG Summary:${NC}"
+    echo ""
+    
+    if [ $normal_success -eq 1 ]; then
+        echo -e "${GREEN}✓ Normal Mode SVG:${NC} $normal_file"
+    else
+        echo -e "${RED}✗ Normal Mode SVG: Failed${NC}"
+    fi
+    
+    if [ $battle_success -eq 1 ]; then
+        echo -e "${GREEN}✓ Battle Mode SVG:${NC} $battle_file"  
+    else
+        echo -e "${RED}✗ Battle Mode SVG: Failed${NC}"
+    fi
+}
+
+# Generate animated SVGs
+generate_animated_svgs
+
 echo ""
 echo -e "${BLUE}📊 Generating size comparison...${NC}"
 
@@ -179,16 +251,19 @@ echo "├── page_1_item_bag.svg             - Item Bag page SVG (Orange them
 echo "├── page_1_item_bag.png             - Item Bag page PNG (Orange theme)"
 echo "├── page_2_battle.svg               - Battle page SVG (Red theme)"
 echo "├── page_2_battle.png               - Battle page PNG (Red theme)"
+echo "├── animated_normal_mode.svg        - Animated SVG for normal mode (2-page cycle)"
+echo "├── animated_battle_mode.svg        - Animated SVG for battle mode (single page)"
 echo "└── size_comparison.txt             - Size comparison stats"
 echo ""
 echo -e "${BLUE}🎮 Page System:${NC}"
 echo "• Normal Mode: Pages 0-1 (Inventory + Item Bag) in animated cycle"
 echo "• Battle Mode: Page 2 only (Battle page) when in combat"
+echo "• Animated SVGs: Dynamic state-based rendering for NFT display"
 echo ""
 echo -e "${BLUE}💡 Usage Tips:${NC}"
 echo "• View SVG files in a browser for best quality"
 echo "• PNG files are raster versions for external use"
+echo "• Animated SVGs show dynamic behavior based on battle state"
 echo "• Use 'open output/' on macOS or 'xdg-open output/' on Linux to view outputs"
-echo "• Run './scripts/view_animated_svg.sh' to generate animated state SVGs"
 echo ""
 echo -e "${GREEN}✨ Happy NFT rendering!${NC}"

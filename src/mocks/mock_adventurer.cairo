@@ -310,7 +310,7 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
 
     let chest_item = ItemVerbose {
         id: 2,
-        name: 'Leather Armor',
+        name: 'Studded Leather Armor',
         tier: Tier::T1,
         item_type: Type::Blade_or_Hide,
         slot: Slot::Chest,
@@ -406,9 +406,9 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
             },
             item_7: ItemVerbose {
                 id: 14,
-                name: 'Steel Gauntlets',
+                name: 'Hard Leather Gloves',
                 tier: Tier::T3,
-                item_type: Type::Bludgeon_or_Metal,
+                item_type: Type::Blade_or_Hide,
                 slot: Slot::Hand,
                 xp: 110,
             },

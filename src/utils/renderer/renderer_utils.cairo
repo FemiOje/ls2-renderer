@@ -1127,13 +1127,13 @@ fn generate_bag_item_names(bag: BagVerbose) -> ByteArray {
     let spacing_y = 134_u16;
     let slot_size = 71_u16;
     
-    // Y positions for two-line names below each row of cells
-    let row_0_y1 = start_y + slot_size + 21; // 350 + 71 + 21 = 442
-    let row_0_y2 = row_0_y1 + 14; // 442 + 14 = 456
-    let row_1_y1 = start_y + spacing_y + slot_size + 21; // 350 + 134 + 71 + 21 = 576  
-    let row_1_y2 = row_1_y1 + 14; // 576 + 14 = 590
-    let row_2_y1 = start_y + (2 * spacing_y) + slot_size + 21; // 350 + 268 + 71 + 21 = 710
-    let row_2_y2 = row_2_y1 + 14; // 710 + 14 = 724
+    // Y positions for multi-line names below each row of cells (moved closer to boxes)
+    let row_0_y1 = start_y + slot_size + 14; // 350 + 71 + 14 = 435
+    let row_0_y2 = row_0_y1 + 14; // 435 + 14 = 449
+    let row_1_y1 = start_y + spacing_y + slot_size + 14; // 350 + 134 + 71 + 14 = 569  
+    let row_1_y2 = row_1_y1 + 14; // 569 + 14 = 583
+    let row_2_y1 = start_y + (2 * spacing_y) + slot_size + 14; // 350 + 268 + 71 + 14 = 703
+    let row_2_y2 = row_2_y1 + 14; // 703 + 14 = 717
     
     let mut item_index = 0_u8;
     while item_index < 15 {
@@ -1175,8 +1175,8 @@ fn generate_bag_item_names(bag: BagVerbose) -> ByteArray {
             
             word_index += 1;
             
-            // Limit to 2 lines for proper layout
-            if word_index >= 2 {
+            // Allow up to 3 lines for three-word items
+            if word_index >= 3 {
                 break;
             }
         }
