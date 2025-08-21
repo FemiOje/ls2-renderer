@@ -11,11 +11,11 @@ use death_mountain_renderer::mocks::mock_adventurer::{
 use death_mountain_renderer::models::models::StatsTrait;
 use death_mountain_renderer::utils::renderer::page::page_renderer::PageRendererImpl;
 use death_mountain_renderer::utils::renderer::renderer_utils::{
-    chest, foot, generate_full_animated_svg, generate_svg, hand, head, neck, ring, waist, weapon,
-    generate_adventurer_name_text,
+    chest, foot, generate_adventurer_name_text, generate_full_animated_svg, generate_svg, hand,
+    head, neck, ring, waist, weapon,
 };
 use death_mountain_renderer::utils::string::string_utils::{
-    contains_pattern, ends_with_pattern, starts_with_pattern, u256_to_string, felt252_to_string,
+    contains_pattern, ends_with_pattern, felt252_to_string, starts_with_pattern, u256_to_string,
 };
 
 #[test]
@@ -56,16 +56,23 @@ fn test_generate_svg_long_name_font_adjustment() {
     // Test direct name text generation with >31 char name to verify truncation
     let very_long_name = "VeryVeryVeryLongAdventurerNameThatExceedsThirtyOneCharacters";
     let name_svg = generate_adventurer_name_text(very_long_name);
-    
+
     // Should use smallest font (10px) for truncated long names
-    assert!(contains_pattern(@name_svg, @"font-size:10px"), "Truncated long names should use 10px font");
+    assert!(
+        contains_pattern(@name_svg, @"font-size:10px"), "Truncated long names should use 10px font",
+    );
     // Should contain truncated name with ellipsis (28 chars + "...")
-    assert!(contains_pattern(@name_svg, @"VeryVeryVeryLongAdventurerNa..."), "Should contain truncated name with ellipsis");
-    
+    assert!(
+        contains_pattern(@name_svg, @"VeryVeryVeryLongAdventurerNa..."),
+        "Should contain truncated name with ellipsis",
+    );
+
     // Test with felt252-compatible long name (21 chars) via regular SVG generation
     let long_name_adventurer = get_adventurer_with_long_name();
     let full_svg = generate_svg(long_name_adventurer);
-    assert!(contains_pattern(@full_svg, @"VeryLongAdventurerName"), "Should contain full felt252 name");
+    assert!(
+        contains_pattern(@full_svg, @"VeryLongAdventurerName"), "Should contain full felt252 name",
+    );
 }
 
 #[test]
@@ -436,23 +443,40 @@ fn test_generate_svg_name_boundary_conditions() {
     let mut adventurer_30 = get_simple_adventurer();
     adventurer_30.name = '012345678901234567890123456789'; // 30 chars - at boundary
     let svg_30 = generate_svg(adventurer_30);
-    assert!(contains_pattern(@svg_30, @"012345678901234567890123456789"), "Should contain full 30-char name");
+    assert!(
+        contains_pattern(@svg_30, @"012345678901234567890123456789"),
+        "Should contain full 30-char name",
+    );
 
     let mut adventurer_31 = get_simple_adventurer();
     adventurer_31.name = '0123456789012345678901234567890'; // 31 chars - max felt252
     let svg_31 = generate_svg(adventurer_31);
-    assert!(contains_pattern(@svg_31, @"0123456789012345678901234567890"), "Should contain full 31-char name");
+    assert!(
+        contains_pattern(@svg_31, @"0123456789012345678901234567890"),
+        "Should contain full 31-char name",
+    );
 
     // Test direct name text generation beyond felt252 limits
     let name_32: ByteArray = "01234567890123456789012345678901"; // 32 chars - triggers truncation
     let name_svg_32 = generate_adventurer_name_text(name_32);
-    assert!(contains_pattern(@name_svg_32, @"font-size:10px"), "32-char names should use 10px font");
-    assert!(contains_pattern(@name_svg_32, @"0123456789012345678901234567..."), "Should truncate to 28 chars + ...");
+    assert!(
+        contains_pattern(@name_svg_32, @"font-size:10px"), "32-char names should use 10px font",
+    );
+    assert!(
+        contains_pattern(@name_svg_32, @"0123456789012345678901234567..."),
+        "Should truncate to 28 chars + ...",
+    );
 
-    let name_40: ByteArray = "0123456789012345678901234567890123456789"; // 40 chars - well beyond limit
+    let name_40: ByteArray =
+        "0123456789012345678901234567890123456789"; // 40 chars - well beyond limit
     let name_svg_40 = generate_adventurer_name_text(name_40);
-    assert!(contains_pattern(@name_svg_40, @"font-size:10px"), "40-char names should use 10px font");
-    assert!(contains_pattern(@name_svg_40, @"0123456789012345678901234567..."), "Should truncate consistently");
+    assert!(
+        contains_pattern(@name_svg_40, @"font-size:10px"), "40-char names should use 10px font",
+    );
+    assert!(
+        contains_pattern(@name_svg_40, @"0123456789012345678901234567..."),
+        "Should truncate consistently",
+    );
 }
 
 #[test]

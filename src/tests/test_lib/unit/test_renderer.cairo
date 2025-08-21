@@ -504,7 +504,7 @@ fn test_page_1() {
     assert!(contains_pattern(@svg, @"ITEM BAG"), "Should contain item bag header");
     assert!(contains_pattern(@svg, @"HP"), "Should contain health display");
     assert!(contains_pattern(@svg, @"GOLD"), "Should contain gold display");
-    
+
     // Should NOT contain stats section
     assert!(!contains_pattern(@svg, @"STR"), "Should not contain strength stat");
     assert!(!contains_pattern(@svg, @"DEX"), "Should not contain dexterity stat");

@@ -5,8 +5,8 @@
 pub mod mock_adventurer {
     use death_mountain_renderer::interfaces::adventurer_interface::IDeathMountainSystems;
     use death_mountain_renderer::models::models::{
-        Adventurer, AdventurerVerbose, BagVerbose, Equipment, EquipmentVerbose,
-        Item, ItemVerbose, Slot, Stats, Tier, Type,
+        Adventurer, AdventurerVerbose, BagVerbose, Equipment, EquipmentVerbose, Item, ItemVerbose,
+        Slot, Stats, Tier, Type,
     };
 
     #[storage]
@@ -65,6 +65,8 @@ pub mod mock_adventurer {
 
             AdventurerVerbose {
                 name,
+                packed_adventurer: 0,
+                packed_bag: 0,
                 health: adventurer.health,
                 xp: adventurer.xp,
                 level,
@@ -78,7 +80,6 @@ pub mod mock_adventurer {
                 bag: bag_verbose,
             }
         }
-
     }
 
     // Helper methods for the IAdventurerSystems implementation
@@ -363,8 +364,10 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
         },
     };
 
-
     AdventurerVerbose {
+        name: 'TestHero',
+        packed_adventurer: 0,
+        packed_bag: 0,
         health: 250,
         level: 5,
         stats,
@@ -463,7 +466,6 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
                 xp: 200,
             },
         },
-        name: 'TestHero',
         xp: 1000,
         gold: 100,
         beast_health: 0,
@@ -476,8 +478,15 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
 pub fn get_adventurer_with_max_stats() -> AdventurerVerbose {
     let adventurer = get_simple_adventurer();
     AdventurerVerbose {
+        name: 'MaxHero',
+        packed_adventurer: 0,
+        packed_bag: 0,
         health: 65535,
         level: 255,
+        xp: 65535,
+        gold: adventurer.gold,
+        beast_health: adventurer.beast_health,
+        stat_upgrades_available: adventurer.stat_upgrades_available,
         stats: Stats {
             strength: 255,
             dexterity: 255,
@@ -488,22 +497,24 @@ pub fn get_adventurer_with_max_stats() -> AdventurerVerbose {
             luck: 255,
         },
         equipment: adventurer.equipment,
-        bag: adventurer.bag,
-        name: 'MaxHero',
-        xp: 65535,
-        gold: adventurer.gold,
-        beast_health: adventurer.beast_health,
-        stat_upgrades_available: adventurer.stat_upgrades_available,
         item_specials_seed: adventurer.item_specials_seed,
         action_count: adventurer.action_count,
+        bag: adventurer.bag,
     }
 }
 
 pub fn get_adventurer_with_min_stats() -> AdventurerVerbose {
     let adventurer = get_simple_adventurer();
     AdventurerVerbose {
+        name: 'MinHero',
+        packed_adventurer: 0,
+        packed_bag: 0,
         health: 1,
+        xp: 0,
         level: 1,
+        gold: adventurer.gold,
+        beast_health: adventurer.beast_health,
+        stat_upgrades_available: adventurer.stat_upgrades_available,
         stats: Stats {
             strength: 1,
             dexterity: 1,
@@ -514,40 +525,44 @@ pub fn get_adventurer_with_min_stats() -> AdventurerVerbose {
             luck: 1,
         },
         equipment: adventurer.equipment,
-        bag: adventurer.bag,
-        name: 'MinHero',
-        xp: 0,
-        gold: adventurer.gold,
-        beast_health: adventurer.beast_health,
-        stat_upgrades_available: adventurer.stat_upgrades_available,
         item_specials_seed: adventurer.item_specials_seed,
         action_count: adventurer.action_count,
+        bag: adventurer.bag,
     }
 }
 
 pub fn get_adventurer_with_long_name() -> AdventurerVerbose {
     let adventurer = get_simple_adventurer();
     AdventurerVerbose {
-        health: adventurer.health,
-        level: adventurer.level,
-        stats: adventurer.stats,
-        equipment: adventurer.equipment,
-        bag: adventurer.bag,
         name: 'VeryLongAdventurerName',
+        packed_adventurer: 0,
+        packed_bag: 0,
+        health: adventurer.health,
         xp: adventurer.xp,
+        level: adventurer.level,
         gold: adventurer.gold,
         beast_health: adventurer.beast_health,
         stat_upgrades_available: adventurer.stat_upgrades_available,
+        stats: adventurer.stats,
+        equipment: adventurer.equipment,
         item_specials_seed: adventurer.item_specials_seed,
         action_count: adventurer.action_count,
+        bag: adventurer.bag,
     }
 }
 
 pub fn create_custom_adventurer(health: u16, level: u8, vitality: u8) -> AdventurerVerbose {
     let base = get_simple_adventurer();
     AdventurerVerbose {
+        name: base.name,
+        packed_adventurer: 0,
+        packed_bag: 0,
         health,
+        xp: base.xp,
         level,
+        gold: base.gold,
+        beast_health: base.beast_health,
+        stat_upgrades_available: base.stat_upgrades_available,
         stats: Stats {
             strength: base.stats.strength,
             dexterity: base.stats.dexterity,
@@ -558,22 +573,24 @@ pub fn create_custom_adventurer(health: u16, level: u8, vitality: u8) -> Adventu
             luck: base.stats.luck,
         },
         equipment: base.equipment,
-        bag: base.bag,
-        name: base.name,
-        xp: base.xp,
-        gold: base.gold,
-        beast_health: base.beast_health,
-        stat_upgrades_available: base.stat_upgrades_available,
         item_specials_seed: base.item_specials_seed,
         action_count: base.action_count,
+        bag: base.bag,
     }
 }
 
 pub fn create_custom_adventurer_with_name(name: felt252) -> AdventurerVerbose {
     let base = get_simple_adventurer();
     AdventurerVerbose {
+        name: name,
+        packed_adventurer: 0,
+        packed_bag: 0,
         health: base.health,
+        xp: base.xp,
         level: base.level,
+        gold: base.gold,
+        beast_health: base.beast_health,
+        stat_upgrades_available: base.stat_upgrades_available,
         stats: Stats {
             strength: base.stats.strength,
             dexterity: base.stats.dexterity,
@@ -584,13 +601,8 @@ pub fn create_custom_adventurer_with_name(name: felt252) -> AdventurerVerbose {
             luck: base.stats.luck,
         },
         equipment: base.equipment,
-        bag: base.bag,
-        name: name,
-        xp: base.xp,
-        gold: base.gold,
-        beast_health: base.beast_health,
-        stat_upgrades_available: base.stat_upgrades_available,
         item_specials_seed: base.item_specials_seed,
         action_count: base.action_count,
+        bag: base.bag,
     }
 }

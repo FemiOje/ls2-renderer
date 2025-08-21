@@ -61,6 +61,8 @@ pub struct Adventurer {
 #[derive(Drop, Serde, Clone)]
 pub struct AdventurerVerbose {
     pub name: felt252,
+    pub packed_adventurer: felt252,
+    pub packed_bag: felt252,
     pub health: u16,
     pub xp: u16,
     pub level: u8,

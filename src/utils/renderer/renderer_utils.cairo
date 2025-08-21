@@ -6,7 +6,8 @@
 // @author Built for the Loot Survivor ecosystem
 
 use death_mountain_renderer::models::models::{
-    AdventurerVerbose, BagVerbose, EquipmentVerbose, GameDetail, ItemVerbose, Slot, Stats, StatsTrait,
+    AdventurerVerbose, BagVerbose, EquipmentVerbose, GameDetail, ItemVerbose, Slot, Stats,
+    StatsTrait,
 };
 use death_mountain_renderer::models::page_types::{BattleState, PageMode};
 use death_mountain_renderer::utils::encoding::encoding::U256BytesUsedTraitImpl;
@@ -263,8 +264,16 @@ pub fn generate_adventurer_name_text_with_page(name: ByteArray, page: u8) -> Byt
 
     // Use dynamic text rendering with calculated font size and theme color
     // Adjust x position based on page: page 1 uses x="268" to align with updated layout
-    let x_position = if page == 1 { "268" } else { "339" };
-    let y_position = if page == 1 { "171" } else { "160" };
+    let x_position = if page == 1 {
+        "268"
+    } else {
+        "339"
+    };
+    let y_position = if page == 1 {
+        "171"
+    } else {
+        "160"
+    };
     name_text += "<text x=\"";
     name_text += x_position;
     name_text += "\" y=\"";
@@ -292,7 +301,7 @@ pub fn generate_logo_with_page(page: u8) -> ByteArray {
 
     logo += "<path fill=\"";
     logo += theme_color;
-    
+
     // Adjust logo position based on page layout
     if page == 1 {
         // Page 1 (Item Bag) - position logo to align with new layout starting at x=213
@@ -358,19 +367,19 @@ fn generate_dynamic_animated_svg_header(page_count: u8) -> ByteArray {
         } else {
             18_u8 // 3-page cycle: 5s + 1s + 5s + 1s + 5s + 1s = 18s total  
         };
-        
+
         // Container that slides between pages using transform
         header += ".page-container{animation:slidePages ";
         header += u256_to_string(total_duration.into());
         header += "s infinite;}";
-        
+
         // Pages positioned side by side using transform
         header += ".page{transform-origin:0 0;}";
         header += ".page:nth-child(2){transform:translateX(567px);}"; // Position second page
         if page_count >= 3 {
             header += ".page:nth-child(3){transform:translateX(1134px);}"; // Position third page
         }
-        
+
         // Sliding keyframes based on page count
         header += "@keyframes slidePages{";
         if page_count == 2 {
@@ -420,22 +429,20 @@ fn generate_gold_display_with_page(gold: u16, page: u8) -> ByteArray {
     let mut gold_display = "";
     let theme_color = get_theme_color(page);
     let background_color = get_gold_background_color(page);
-    
+
     // Add dark main rectangle for gold display
     gold_display += "<rect width=\"91\" height=\"61.1\" x=\"541.7\" y=\"113\" fill=\"";
     gold_display += background_color;
     gold_display += "\" rx=\"6\"/>";
     // Add small lighter rectangle for "GOLD" label with theme color
-    gold_display +=
-        "<rect width=\"32\" height=\"16\" x=\"608\" y=\"106\" fill=\"";
+    gold_display += "<rect width=\"32\" height=\"16\" x=\"608\" y=\"106\" fill=\"";
     gold_display += theme_color.clone();
     gold_display += "\" rx=\"2\"/>";
     // Add "GOLD" text in black on the themed rectangle
     gold_display +=
         "<text x=\"624\" y=\"117\" fill=\"#000\" class=\"s12\" text-anchor=\"middle\">GOLD</text>";
     // Add gold value in theme color on the darker background
-    gold_display +=
-        "<text x=\"587\" y=\"150\" fill=\"";
+    gold_display += "<text x=\"587\" y=\"150\" fill=\"";
     gold_display += theme_color;
     gold_display += "\" class=\"s24\" text-anchor=\"middle\">";
     gold_display += u256_to_string(gold.into());
@@ -452,10 +459,18 @@ fn generate_level_display(level: u8) -> ByteArray {
 fn generate_level_display_with_page(level: u8, page: u8) -> ByteArray {
     let mut level_display = "";
     let theme_color = get_theme_color(page);
-    
-    // Adjust x position based on page: page 1 uses x="268" to align with updated layout  
-    let x_position = if page == 1 { "268" } else { "339" };
-    let y_position = if page == 1 { "135" } else { "124" };
+
+    // Adjust x position based on page: page 1 uses x="268" to align with updated layout
+    let x_position = if page == 1 {
+        "268"
+    } else {
+        "339"
+    };
+    let y_position = if page == 1 {
+        "135"
+    } else {
+        "124"
+    };
     level_display += "<text x=\"";
     level_display += x_position;
     level_display += "\" y=\"";
@@ -515,10 +530,15 @@ fn generate_health_bar_with_page(stats: Stats, health: u16, page: u8) -> ByteArr
         "#FF4444" // Red for zero health
     };
 
-    // Generate background bar (full width, dark color)  
+    // Generate background bar (full width, dark color)
     // Adjust x position based on page: page 1 uses x="213" to align with updated layout
-    let bar_x_position = if page == 1 { "213" } else { "286" };
-    health_bar += "<path stroke=\"#171D10\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M";
+    let bar_x_position = if page == 1 {
+        "213"
+    } else {
+        "286"
+    };
+    health_bar +=
+        "<path stroke=\"#171D10\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M";
     health_bar += bar_x_position.clone();
     health_bar += " 234h";
     health_bar += u256_to_string(MAX_BAR_WIDTH);
@@ -527,7 +547,8 @@ fn generate_health_bar_with_page(stats: Stats, health: u16, page: u8) -> ByteArr
     // Generate filled health bar (dynamic width, color-coded)
     health_bar += "<path stroke=\"";
     health_bar += bar_color;
-    health_bar += "\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M";
+    health_bar +=
+        "\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M";
     health_bar += bar_x_position.clone();
     health_bar += " 234h";
     health_bar += u256_to_string(filled_width);
@@ -907,7 +928,8 @@ pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteAr
 fn generate_bag_item_slots() -> ByteArray {
     let mut slots = "";
 
-    // Use updated spacing pattern from manual adjustments: 20px spacing = 91px total spacing (71+20)
+    // Use updated spacing pattern from manual adjustments: 20px spacing = 91px total spacing
+    // (71+20)
     // Manual layout: x="213, 304, 395, 486, 577" = 91px spacing between centers
     let start_x = 213_u16; // Match manual layout starting position
     let start_y = 350_u16; // Same as original
@@ -1119,7 +1141,7 @@ fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
 fn get_bag_item_by_index(bag: BagVerbose, index: u8) -> ItemVerbose {
     match index {
         0 => bag.item_1,
-        1 => bag.item_2, 
+        1 => bag.item_2,
         2 => bag.item_3,
         3 => bag.item_4,
         4 => bag.item_5,
@@ -1141,14 +1163,14 @@ fn get_bag_item_by_index(bag: BagVerbose, index: u8) -> ItemVerbose {
 fn generate_bag_item_names(bag: BagVerbose) -> ByteArray {
     let mut names = "";
     let theme_color = get_theme_color(1); // Orange theme for bag
-    
+
     // Position names below each grid box using same grid positioning
     let start_x = 213_u16 + 35_u16; // Cell center: start_x + (slot_size/2) = 213 + 35.5 ≈ 248
     let start_y = 350_u16;
     let spacing_x = 91_u16;
     let spacing_y = 134_u16;
     let slot_size = 71_u16;
-    
+
     // Y positions for multi-line names below each row of cells (moved closer to boxes)
     let row_0_y1 = start_y + slot_size + 14; // 350 + 71 + 14 = 435
     let row_0_y2 = row_0_y1 + 14; // 435 + 14 = 449
@@ -1156,16 +1178,16 @@ fn generate_bag_item_names(bag: BagVerbose) -> ByteArray {
     let row_1_y2 = row_1_y1 + 14; // 569 + 14 = 583
     let row_2_y1 = start_y + (2 * spacing_y) + slot_size + 14; // 350 + 268 + 71 + 14 = 703
     let row_2_y2 = row_2_y1 + 14; // 703 + 14 = 717
-    
+
     let mut item_index = 0_u8;
     while item_index < 15 {
         let item = get_bag_item_by_index(bag.clone(), item_index);
         let words = get_bag_item_words(item.name);
-        
+
         let col = item_index % 5;
         let row = item_index / 5;
         let x = start_x + (col.into() * spacing_x);
-        
+
         let (base_y1, base_y2) = if row == 0 {
             (row_0_y1, row_0_y2)
         } else if row == 1 {
@@ -1173,7 +1195,7 @@ fn generate_bag_item_names(bag: BagVerbose) -> ByteArray {
         } else {
             (row_2_y1, row_2_y2)
         };
-        
+
         // Render the words (either EMPTY or actual item name words)
         let mut word_index = 0_u32;
         while word_index < words.len() {
@@ -1182,9 +1204,12 @@ fn generate_bag_item_names(bag: BagVerbose) -> ByteArray {
             } else if word_index == 1 {
                 base_y2
             } else {
-                base_y2 + ((word_index - 1) * 14).try_into().unwrap() // Additional lines if more than 2 words
+                base_y2
+                    + ((word_index - 1) * 14)
+                        .try_into()
+                        .unwrap() // Additional lines if more than 2 words
             };
-            
+
             names += "<text x=\"";
             names += u256_to_string(x.into());
             names += "\" y=\"";
@@ -1194,18 +1219,18 @@ fn generate_bag_item_names(bag: BagVerbose) -> ByteArray {
             names += "\" class=\"s12\" text-anchor=\"middle\">";
             names += words.at(word_index).clone();
             names += "</text>";
-            
+
             word_index += 1;
-            
+
             // Allow up to 3 lines for three-word items
             if word_index >= 3 {
                 break;
             }
         }
-        
+
         item_index += 1;
     }
-    
+
     names
 }
 
@@ -1341,7 +1366,9 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
     let page_mode = match battle_state {
         BattleState::Dead => PageMode::Normal(2), // Only inventory and bag pages when dead
         BattleState::InCombat => PageMode::BattleOnly, // Only battle page
-        BattleState::Normal => PageMode::Normal(2) // Only inventory and bag pages when alive & not in battle
+        BattleState::Normal => PageMode::Normal(
+            2,
+        ) // Only inventory and bag pages when alive & not in battle
     };
 
     let page_count = match page_mode {
@@ -1364,7 +1391,7 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
             if page_count > 1 {
                 svg += generate_sliding_container_start();
             }
-            
+
             let inventory_content = generate_inventory_page_content(adventurer.clone());
             let inventory_border = generate_border_for_page(0);
             svg += generate_page_wrapper(inventory_content, inventory_border);
@@ -1372,7 +1399,7 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
             let item_bag_content = generate_item_bag_page_content(adventurer.clone());
             let item_bag_border = generate_border_for_page(1);
             svg += generate_page_wrapper(item_bag_content, item_bag_border);
-            
+
             if page_count > 1 {
                 svg += generate_sliding_container_end();
             }

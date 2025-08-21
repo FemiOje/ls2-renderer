@@ -147,7 +147,9 @@ pub impl PageRendererImpl of PageRenderer {
         match Self::get_battle_state(adventurer_verbose) {
             BattleState::Dead => PageMode::Normal(2), // Only inventory and bag pages when dead
             BattleState::InCombat => PageMode::BattleOnly, // Only battle page when in combat
-            BattleState::Normal => PageMode::Normal(2) // Only inventory and bag pages when alive & not in battle
+            BattleState::Normal => PageMode::Normal(
+                2,
+            ) // Only inventory and bag pages when alive & not in battle
         }
     }
 }
