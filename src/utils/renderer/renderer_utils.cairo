@@ -1456,6 +1456,8 @@ pub fn generate_details(adventurer: AdventurerVerbose) -> Span<GameDetail> {
         format!("{}", adventurer.stats.charisma)
     };
     let luck = format!("{}", adventurer.stats.luck);
+    let packed_adventurer = format!("{}", adventurer.packed_adventurer);
+    let packed_bag = format!("{}", adventurer.packed_bag);
 
     array![
         GameDetail { name: "XP", value: xp },
@@ -1469,6 +1471,8 @@ pub fn generate_details(adventurer: AdventurerVerbose) -> Span<GameDetail> {
         GameDetail { name: "Wisdom", value: wis },
         GameDetail { name: "Charisma", value: cha },
         GameDetail { name: "Luck", value: luck },
+        GameDetail { name: "Packed Adventurer", value: packed_adventurer },
+        GameDetail { name: "Packed Bag", value: packed_bag },
     ]
         .span()
 }
