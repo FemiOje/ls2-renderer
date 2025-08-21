@@ -953,6 +953,19 @@ fn get_item_icon_svg(slot: Slot) -> ByteArray {
     }
 }
 
+// Get icon-specific positioning adjustments for item bag page
+fn get_icon_position_adjustment(slot: Slot) -> (i16, i16) {
+    match slot {
+        Slot::Weapon => (4, -4), // +4px right, +4px up (in SVG coordinates: -4px Y)
+        Slot::Foot => (0, 8), // +8px down from original position  
+        Slot::Hand => (8, -3), // +8px right, +3px up (in SVG coordinates: -3px Y)
+        Slot::Head => (0, 8),
+        Slot::Waist => (2, 4),
+        Slot::Chest => (-2, 0),
+        _ => (0, 0) // No adjustment for other icon types
+    }
+}
+
 // Generate bag item icons for ItemBag page
 fn generate_bag_item_icons(bag: BagVerbose) -> ByteArray {
     let mut icons = "";
@@ -996,8 +1009,17 @@ fn generate_bag_item_icons(bag: BagVerbose) -> ByteArray {
         if item.id != 0 { // Only render if item exists
             let row = item_index / 5; // 5 items per row now
             let col = item_index % 5; // Column within the row
-            let x = icon_start_x + (col.into() * spacing_x);
-            let y = icon_start_y + (row.into() * spacing_y);
+            let base_x = icon_start_x + (col.into() * spacing_x);
+            let base_y = icon_start_y + (row.into() * spacing_y);
+
+            // Apply icon-specific positioning adjustments
+            let (adj_x, adj_y) = get_icon_position_adjustment(item.slot);
+            let base_x_i32: i32 = base_x.into();
+            let base_y_i32: i32 = base_y.into();
+            let adj_x_i32: i32 = adj_x.into();
+            let adj_y_i32: i32 = adj_y.into();
+            let x: u16 = (base_x_i32 + adj_x_i32).try_into().unwrap();
+            let y: u16 = (base_y_i32 + adj_y_i32).try_into().unwrap();
 
             // Get appropriate icon based on item slot type
             let icon_svg = get_item_icon_svg(item.slot);
