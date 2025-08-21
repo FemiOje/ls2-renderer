@@ -264,7 +264,7 @@ pub fn generate_adventurer_name_text_with_page(name: ByteArray, page: u8) -> Byt
     // Use dynamic text rendering with calculated font size and theme color
     // Adjust x position based on page: page 1 uses x="268" to align with updated layout
     let x_position = if page == 1 { "268" } else { "339" };
-    let y_position = if page == 1 { "158" } else { "160" };
+    let y_position = if page == 1 { "171" } else { "160" };
     name_text += "<text x=\"";
     name_text += x_position;
     name_text += "\" y=\"";

@@ -54,28 +54,6 @@ extract_svg_from_test() {
     fi
 }
 
-# Function to extract Base64 data URI from test output
-extract_base64_from_test() {
-    local test_name="$1"
-    local page_num="$2"
-    local output_file="$3"
-    
-    echo -e "${YELLOW}   Extracting Base64 data URI for page $page_num${NC}"
-    
-    # Run the test and capture Base64 output
-    scarb test "$test_name" 2>&1 | \
-        sed -n "/=== PAGE $page_num BASE64 ===/,/=== END PAGE $page_num BASE64 ===/p" | \
-        sed '1d;$d' > "$output_file"
-    
-    if [ -s "$output_file" ]; then
-        echo -e "${GREEN}   ✓ Base64 data URI extracted${NC}"
-        return 0
-    else
-        echo -e "${RED}   ✗ Failed to extract Base64 data URI${NC}"
-        return 1
-    fi
-}
-
 # Function to convert SVG to PNG using various methods
 convert_svg_to_png() {
     local svg_file="$1"
@@ -142,7 +120,7 @@ generate_page_outputs() {
     fi
 }
 
-# Generate all 3 pages
+# Generate all 3 pages (one test run each for now - can optimize later)
 generate_page_outputs "0" "Inventory" "Green"
 generate_page_outputs "1" "Item Bag" "Orange" 
 generate_page_outputs "2" "Battle" "Red"
