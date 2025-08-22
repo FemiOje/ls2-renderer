@@ -1458,6 +1458,16 @@ pub fn generate_details(adventurer: AdventurerVerbose) -> Span<GameDetail> {
     let luck = format!("{}", adventurer.stats.luck);
     let packed_adventurer = format!("{}", adventurer.packed_adventurer);
     let packed_bag = format!("{}", adventurer.packed_bag);
+    
+    // Equipment items
+    let weapon_name = format!("{}", adventurer.equipment.weapon.name);
+    let chest_name = format!("{}", adventurer.equipment.chest.name);
+    let head_name = format!("{}", adventurer.equipment.head.name);
+    let waist_name = format!("{}", adventurer.equipment.waist.name);
+    let foot_name = format!("{}", adventurer.equipment.foot.name);
+    let hand_name = format!("{}", adventurer.equipment.hand.name);
+    let neck_name = format!("{}", adventurer.equipment.neck.name);
+    let ring_name = format!("{}", adventurer.equipment.ring.name);
 
     array![
         GameDetail { name: "XP", value: xp },
@@ -1473,6 +1483,14 @@ pub fn generate_details(adventurer: AdventurerVerbose) -> Span<GameDetail> {
         GameDetail { name: "Luck", value: luck },
         GameDetail { name: "Packed Adventurer", value: packed_adventurer },
         GameDetail { name: "Packed Bag", value: packed_bag },
+        GameDetail { name: "Weapon", value: weapon_name },
+        GameDetail { name: "Chest", value: chest_name },
+        GameDetail { name: "Head", value: head_name },
+        GameDetail { name: "Waist", value: waist_name },
+        GameDetail { name: "Foot", value: foot_name },
+        GameDetail { name: "Hand", value: hand_name },
+        GameDetail { name: "Neck", value: neck_name },
+        GameDetail { name: "Ring", value: ring_name },
     ]
         .span()
 }
