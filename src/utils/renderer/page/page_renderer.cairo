@@ -140,7 +140,7 @@ pub impl PageRendererImpl of PageRenderer {
     }
 
     fn is_battle_mode(adventurer_verbose: AdventurerVerbose) -> bool {
-        adventurer_verbose.beast_health > 0 || adventurer_verbose.health == 0
+        adventurer_verbose.beast_health > 0 && adventurer_verbose.health > 0
     }
 
     fn get_page_mode(adventurer_verbose: AdventurerVerbose) -> PageMode {
