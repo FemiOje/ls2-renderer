@@ -375,9 +375,9 @@ fn generate_dynamic_animated_svg_header(page_count: u8) -> ByteArray {
 
         // Pages positioned side by side using transform
         header += ".page{transform-origin:0 0;}";
-        header += ".page:nth-child(2){transform:translateX(567px);}"; // Position second page
+        header += ".page:nth-child(2){transform:translateX(1200px);}"; // Position second page
         if page_count >= 3 {
-            header += ".page:nth-child(3){transform:translateX(1134px);}"; // Position third page
+            header += ".page:nth-child(3){transform:translateX(2400px);}"; // Position third page
         }
 
         // Sliding keyframes based on page count
@@ -385,13 +385,13 @@ fn generate_dynamic_animated_svg_header(page_count: u8) -> ByteArray {
         if page_count == 2 {
             // 2-page animation: Inventory <-> ItemBag
             header += "0%,41.67%{transform:translateX(0px);}"; // Show inventory page
-            header += "50%,91.67%{transform:translateX(-567px);}"; // Show item bag page
+            header += "50%,91.67%{transform:translateX(-1200px);}"; // Show item bag page
             header += "100%{transform:translateX(0px);}"; // Back to inventory
         } else {
             // 3-page animation: Inventory <-> ItemBag <-> Battle
             header += "0%,27.78%{transform:translateX(0px);}"; // Show inventory page (5s)
-            header += "33.33%,61.11%{transform:translateX(-567px);}"; // Show item bag page (5s)
-            header += "66.67%,94.44%{transform:translateX(-1134px);}"; // Show battle page (5s)
+            header += "33.33%,61.11%{transform:translateX(-1200px);}"; // Show item bag page (5s)
+            header += "66.67%,94.44%{transform:translateX(-2400px);}"; // Show battle page (5s)
             header += "100%{transform:translateX(0px);}"; // Back to inventory
         }
         header += "}";
