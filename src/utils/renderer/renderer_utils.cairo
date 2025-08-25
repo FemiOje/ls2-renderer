@@ -10,97 +10,29 @@ use death_mountain_renderer::models::models::{
 };
 use death_mountain_renderer::models::page_types::{BattleState, PageMode};
 use death_mountain_renderer::utils::encoding::encoding::U256BytesUsedTraitImpl;
-use death_mountain_renderer::utils::string::string_utils::{
-    felt252_to_string,
-};
 
 // Extracted modules are imported via re-exports at the bottom of this file
 // This maintains backward compatibility while using the new modular structure
 
-// Import extracted modules
-use death_mountain_renderer::utils::renderer::equipment::{
-    slots::generate_equipment_slots,
-    positioning::generate_equipment_icons,
-    badges::generate_equipment_level_badges,
-    names::generate_equipment_names,
+// Import extracted modules for functions still used in renderer_utils
+use death_mountain_renderer::utils::renderer::components::headers::{
+    generate_svg_header, generate_animated_svg_header, generate_dynamic_animated_svg_header,
+    generate_svg_footer, generate_animated_svg_footer,
 };
-use death_mountain_renderer::utils::renderer::components::{
-    ui_components::{
-        generate_stats_text_with_page,
-        generate_gold_display_with_page,
-        generate_health_bar_with_page,
-        generate_level_display_with_page,
-    },
-    headers::{
-        generate_svg_header, generate_animated_svg_header, generate_dynamic_animated_svg_header,
-        generate_svg_footer, generate_animated_svg_footer,
-    },
+use death_mountain_renderer::utils::renderer::pages::page_generators::{
+    generate_page_content, generate_inventory_page_content, generate_item_bag_page_content,
+    generate_battle_page_content, generate_page_wrapper,
 };
-use death_mountain_renderer::utils::renderer::core::text_utils::{
-    generate_adventurer_name_text_with_page,
-    generate_logo_with_page,
-};
-use death_mountain_renderer::utils::renderer::bag::{
-    bag_renderer::{
-        generate_bag_header, generate_bag_item_slots, generate_bag_item_icons,
-        generate_bag_item_level_badges, generate_bag_item_names,
-    },
-};
-
-
-// ============================================================================
-// SVG ICON COMPONENTS
-// ============================================================================
-// Icon functions have been extracted to components/icons.cairo
-// Import them using: use death_mountain_renderer::utils::renderer::components::icons::*;
-
-
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-// Core utility functions for data conversion and SVG generation
-// Math utilities have been extracted to core/math_utils.cairo
-// Import them using: use death_mountain_renderer::utils::renderer::core::math_utils::*;
-
-// Theme functions have been extracted to components/theme.cairo
-// Import them using: use death_mountain_renderer::utils::renderer::components::theme::*;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Generate level display text
-
-
 
 
 // Generate inventory section header
-fn generate_inventory_header() -> ByteArray {
+pub fn generate_inventory_header() -> ByteArray {
     let mut inventory_header = "";
     inventory_header += "<text x=\"286\" y=\"325\" fill=\"#78E846\" class=\"s16\">";
     inventory_header += "INVENTORY";
     inventory_header += "</text>";
     inventory_header
 }
-
-
-
-
-
-
-
-
-
-
 
 // Generate decorative border based on page type with themed colors
 fn generate_border_for_page(page: u8) -> ByteArray {
@@ -155,9 +87,6 @@ fn generate_border() -> ByteArray {
     generate_border_for_page(0) // Default to green border
 }
 
-// Generate SVG footer with definitions and closing tags
-
-
 // Generate dynamic SVG with adventurer data for specific page
 pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
     let mut svg = "";
@@ -170,92 +99,6 @@ pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteAr
     svg
 }
 
-
-
-
-
-
-
-
-fn generate_page_content(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
-    match page {
-        0 => generate_inventory_page_content(adventurer),
-        1 => generate_item_bag_page_content(adventurer),
-        2 => generate_battle_page_content(adventurer),
-        _ => generate_inventory_page_content(adventurer) // Default to inventory page
-    }
-}
-
-// Generate inventory page content (Page 0 - Green theme)
-fn generate_inventory_page_content(adventurer: AdventurerVerbose) -> ByteArray {
-    let mut content = "";
-
-    content += generate_stats_text_with_page(adventurer.stats, 0);
-    content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 0);
-    content += generate_logo_with_page(0);
-    content += generate_gold_display_with_page(adventurer.gold, 0);
-    content += generate_level_display_with_page(adventurer.level, 0);
-    content += generate_health_bar_with_page(adventurer.stats, adventurer.health, 0);
-    content += generate_inventory_header();
-    content += generate_equipment_slots();
-    content += generate_equipment_icons();
-    content += generate_equipment_level_badges(adventurer.equipment);
-    content += generate_equipment_names(adventurer.equipment);
-
-    content
-}
-
-// Generate item bag page content (Page 1 - Orange theme)
-fn generate_item_bag_page_content(adventurer: AdventurerVerbose) -> ByteArray {
-    let mut content = "";
-
-    // Copy inventory layout elements but without stats section
-    content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 1);
-    content += generate_logo_with_page(1);
-    content += generate_gold_display_with_page(adventurer.gold, 1);
-    content += generate_level_display_with_page(adventurer.level, 1);
-    content += generate_health_bar_with_page(adventurer.stats, adventurer.health, 1);
-    content += generate_bag_header();
-    content += generate_bag_item_slots();
-    content += generate_bag_item_icons(adventurer.bag);
-    content += generate_bag_item_level_badges(adventurer.bag);
-    content += generate_bag_item_names(adventurer.bag);
-
-    content
-}
-
-// Generate battle page content (Page 2 - Red theme)
-fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
-    let mut content = "";
-
-    // Add adventurer name with red theme (page 2 = battle)
-    content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 2);
-    content += generate_logo_with_page(2);
-
-    // Add page title
-    content +=
-        "<text x=\"339\" y=\"200\" fill=\"#FF6B6B\" class=\"s24\" text-anchor=\"left\">Current Battle</text>";
-    content +=
-        "<text x=\"540\" y=\"180\" fill=\"#FF6B6B\" class=\"s16\" text-anchor=\"left\">TROLL</text>";
-
-    // Placeholder text for development
-    content +=
-        "<text x=\"400\" y=\"400\" fill=\"#FF6B6B\" class=\"s16\" text-anchor=\"middle\">TROLL AMBUSHED YOU FOR 10 DMG!</text>";
-
-    content
-}
-
-// Generate page wrapper with animation class and background
-fn generate_page_wrapper(page_content: ByteArray, border_content: ByteArray) -> ByteArray {
-    let mut wrapper = "";
-    wrapper += "<g class=\"page\" clip-path=\"url(#b)\">";
-    wrapper += "<rect width=\"567\" height=\"862\" x=\"147.2\" y=\"27\" fill=\"#000\" rx=\"10\"/>";
-    wrapper += page_content;
-    wrapper += border_content;
-    wrapper += "</g>";
-    wrapper
-}
-
 // Generate sliding page container wrapper for animation
 fn generate_sliding_container_start() -> ByteArray {
     "<g class=\"page-container\">"
@@ -266,6 +109,7 @@ fn generate_sliding_container_end() -> ByteArray {
 }
 
 // Generate animated SVG with all four pages and smooth transitions
+// Deleting soon
 pub fn generate_full_animated_svg(adventurer: AdventurerVerbose) -> ByteArray {
     let mut svg = "";
 

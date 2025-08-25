@@ -1,1 +1,2 @@
-// Page content generators - to be populated in future phases
+// Page content generators
+pub mod page_generators;

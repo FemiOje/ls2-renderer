@@ -6,6 +6,9 @@ pub mod utils {
         pub mod page {
             pub mod page_renderer;
         }
+        pub mod pages {
+            pub mod page_generators;
+        }
         pub mod renderer;
         pub mod renderer_utils;
         pub mod components {
