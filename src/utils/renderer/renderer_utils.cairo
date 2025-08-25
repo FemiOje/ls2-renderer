@@ -362,38 +362,61 @@ fn generate_dynamic_animated_svg_header(page_count: u8) -> ByteArray {
 
     // Only add animation CSS if more than 1 page
     if page_count > 1 {
-        let total_duration = if page_count == 2 {
-            12_u8 // 2-page cycle: 5s + 1s + 5s + 1s = 12s total
-        } else {
-            18_u8 // 3-page cycle: 5s + 1s + 5s + 1s + 5s + 1s = 18s total  
-        };
+        // Animation constants
+        let display_duration = 5_u8; // 5 seconds per page display
+        let transition_duration = 1_u8; // 1 second transition between pages
+        let page_width = 1200_u16; // Width of each page in pixels
+        
+        // Calculate total cycle duration: each page gets display + transition time
+        let total_duration = page_count * (display_duration + transition_duration);
 
         // Container that slides between pages using transform
         header += ".page-container{animation:slidePages ";
         header += u256_to_string(total_duration.into());
         header += "s infinite;}";
 
-        // Pages positioned side by side using transform
+        // Generate positioning for all pages dynamically
         header += ".page{transform-origin:0 0;}";
-        header += ".page:nth-child(2){transform:translateX(1200px);}"; // Position second page
-        if page_count >= 3 {
-            header += ".page:nth-child(3){transform:translateX(2400px);}"; // Position third page
+        let mut page_index = 2_u8; // Start from second page (first page is at 0,0)
+        while page_index <= page_count {
+            let x_position = (page_index - 1).into() * page_width.into();
+            header += ".page:nth-child(";
+            header += u256_to_string(page_index.into());
+            header += "){transform:translateX(";
+            header += u256_to_string(x_position);
+            header += "px);}";
+            page_index += 1;
         }
 
-        // Sliding keyframes based on page count
+        // Generate dynamic keyframes for N pages
         header += "@keyframes slidePages{";
-        if page_count == 2 {
-            // 2-page animation: Inventory <-> ItemBag
-            header += "0%,41.67%{transform:translateX(0px);}"; // Show inventory page
-            header += "50%,91.67%{transform:translateX(-1200px);}"; // Show item bag page
-            header += "100%{transform:translateX(0px);}"; // Back to inventory
-        } else {
-            // 3-page animation: Inventory <-> ItemBag <-> Battle
-            header += "0%,27.78%{transform:translateX(0px);}"; // Show inventory page (5s)
-            header += "33.33%,61.11%{transform:translateX(-1200px);}"; // Show item bag page (5s)
-            header += "66.67%,94.44%{transform:translateX(-2400px);}"; // Show battle page (5s)
-            header += "100%{transform:translateX(0px);}"; // Back to inventory
+        
+        // Calculate percentage per page cycle
+        let page_cycle_percent = 100_u32 / page_count.into();
+        let display_percent = (display_duration.into() * 100_u32) / total_duration.into();
+        
+        let mut current_page = 0_u8;
+        while current_page < page_count {
+            // Calculate start and end percentages for this page
+            let cycle_start = current_page.into() * page_cycle_percent;
+            let display_end = cycle_start + display_percent;
+            
+            // Calculate the transform value (negative because container moves left)
+            let transform_x_abs = current_page.into() * page_width.into();
+            
+            // Add keyframe for this page's display period
+            header += u256_to_string(cycle_start.into());
+            header += "%,";
+            header += u256_to_string(display_end.into());
+            header += "%{transform:translateX(-";
+            header += u256_to_string(transform_x_abs);
+            header += "px);}";
+            
+            current_page += 1;
         }
+        
+        // Add final keyframe to loop back to first page
+        header += "100%{transform:translateX(0px);}";
         header += "}";
     } else {
         // No animation for single page - just static display
@@ -1087,10 +1110,10 @@ fn generate_bag_item_level_badges(bag: BagVerbose) -> ByteArray {
 
     // Badge positioning: positioned using cell x + 49px offset, y aligned with cell tops minus 8px
     // Manual layout: badges at x="262, 353, 444, 535, 626" y="342, 476, 610"
-    let start_x = 213_u16; // Same as updated slots
-    let start_y = 350_u16; // Same as slots
-    let spacing_x = 91_u16; // Same as updated slots
-    let spacing_y = 134_u16; // Same as updated slots
+    let start_x = 213_u16;
+    let start_y = 350_u16;
+    let spacing_x = 91_u16;
+    let spacing_y = 134_u16;
     let badge_width = 38_u16;
     let badge_height = 16_u16;
     let badge_offset_x = 49_u16; // Cell x + 49px to match manual positioning
