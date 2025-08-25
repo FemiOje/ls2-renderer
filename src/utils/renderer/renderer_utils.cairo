@@ -6,8 +6,7 @@
 // @author Built for the Loot Survivor ecosystem
 
 use death_mountain_renderer::models::models::{
-    AdventurerVerbose, BagVerbose, GameDetail, ItemVerbose, Slot, Stats,
-    StatsTrait,
+    AdventurerVerbose, BagVerbose, GameDetail, ItemVerbose, Slot,
 };
 use death_mountain_renderer::models::page_types::{BattleState, PageMode};
 use death_mountain_renderer::utils::encoding::encoding::U256BytesUsedTraitImpl;
@@ -18,12 +17,28 @@ use death_mountain_renderer::utils::string::string_utils::{
 // Extracted modules are imported via re-exports at the bottom of this file
 // This maintains backward compatibility while using the new modular structure
 
-// Import equipment modules
+// Import extracted modules
 use death_mountain_renderer::utils::renderer::equipment::{
     slots::generate_equipment_slots,
     positioning::generate_equipment_icons,
     badges::generate_equipment_level_badges,
     names::generate_equipment_names,
+};
+use death_mountain_renderer::utils::renderer::components::{
+    ui_components::{
+        generate_stats_text_with_page,
+        generate_gold_display_with_page,
+        generate_health_bar_with_page,
+        generate_level_display_with_page,
+    },
+    headers::{
+        generate_svg_header, generate_animated_svg_header, generate_dynamic_animated_svg_header,
+        generate_svg_footer, generate_animated_svg_footer,
+    },
+};
+use death_mountain_renderer::utils::renderer::core::text_utils::{
+    generate_adventurer_name_text_with_page,
+    generate_logo_with_page,
 };
 
 
@@ -45,442 +60,22 @@ use death_mountain_renderer::utils::renderer::equipment::{
 // Import them using: use death_mountain_renderer::utils::renderer::components::theme::*;
 
 
-// Generate dynamic adventurer stats text elements for the 7 core stats
-fn generate_stats_text(stats: Stats) -> ByteArray {
-    generate_stats_text_with_page(stats, 0) // Default to green theme
-}
-
-// Generate dynamic adventurer stats text elements with theme color based on page
-fn generate_stats_text_with_page(stats: Stats, page: u8) -> ByteArray {
-    let mut stats_text = "";
-    let theme_color = get_theme_color(page);
-
-    // STR (Strength) - stat name on top, value below - aligned with logo/level at y=124
-    stats_text += "<text x=\"195\" y=\"124\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s16\">STR</text>";
-    stats_text += "<text x=\"195\" y=\"164\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s32\">";
-    stats_text += u8_to_string(stats.strength);
-    stats_text += "</text>";
-
-    // DEX (Dexterity) - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"224\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s16\">DEX</text>";
-    stats_text += "<text x=\"195\" y=\"264\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s32\">";
-    stats_text += u8_to_string(stats.dexterity);
-    stats_text += "</text>";
-
-    // VIT (Vitality) - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"324\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s16\">VIT</text>";
-    stats_text += "<text x=\"195\" y=\"364\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s32\">";
-    stats_text += u8_to_string(stats.vitality);
-    stats_text += "</text>";
-
-    // INT (Intelligence) - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"424\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s16\">INT</text>";
-    stats_text += "<text x=\"195\" y=\"464\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s32\">";
-    stats_text += u8_to_string(stats.intelligence);
-    stats_text += "</text>";
-
-    // WIS (Wisdom) - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"524\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s16\">WIS</text>";
-    stats_text += "<text x=\"195\" y=\"564\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s32\">";
-    stats_text += u8_to_string(stats.wisdom);
-    stats_text += "</text>";
-
-    // CHA (Charisma) - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"624\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s16\">CHA</text>";
-    stats_text += "<text x=\"195\" y=\"664\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s32\">";
-    stats_text += u8_to_string(stats.charisma);
-    stats_text += "</text>";
-
-    // LUCK - stat name on top, value below
-    stats_text += "<text x=\"195\" y=\"724\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s16\">LUCK</text>";
-    stats_text += "<text x=\"195\" y=\"764\" fill=\"";
-    stats_text += theme_color.clone();
-    stats_text += "\" class=\"s32\">";
-    stats_text += u8_to_string(stats.luck);
-    stats_text += "</text>";
-
-    stats_text
-}
 
 
-// Generate dynamic adventurer name text as SVG with responsive font sizing and theme color
-pub fn generate_adventurer_name_text_with_page(name: ByteArray, page: u8) -> ByteArray {
-    let mut name_text = "";
-    let theme_color = get_theme_color(page);
-
-    // Truncate name if longer than 31 characters to ensure smooth UI display
-    let truncated_name = if name.len() > 31 {
-        let mut result = "";
-        let mut i = 0;
-        while i < 28 {
-            if i < name.len() {
-                result.append_byte(name.at(i).unwrap());
-            }
-            i += 1;
-        }
-        result += "...";
-        result
-    } else {
-        name
-    };
-
-    // Get the length of the (potentially truncated) adventurer name to determine font size
-    let name_length = truncated_name.len();
-
-    let font_size = if name_length <= 10 {
-        "24px"
-    } else if name_length <= 16 {
-        "18px"
-    } else {
-        "10px"
-    };
-
-    // Use dynamic text rendering with calculated font size and theme color
-    // Adjust x position based on page: page 1 uses x="268" to align with updated layout
-    let x_position = if page == 1 {
-        "268"
-    } else {
-        "339"
-    };
-    let y_position = if page == 1 {
-        "171"
-    } else {
-        "160"
-    };
-    name_text += "<text x=\"";
-    name_text += x_position;
-    name_text += "\" y=\"";
-    name_text += y_position;
-    name_text += "\" fill=\"";
-    name_text += theme_color;
-    name_text += "\" style=\"font-size:";
-    name_text += font_size;
-    name_text += "\" text-anchor=\"left\">";
-    name_text += truncated_name;
-    name_text += "</text>";
-
-    name_text
-}
-
-// Generate dynamic adventurer name text as SVG with responsive font sizing (legacy function)
-pub fn generate_adventurer_name_text(name: ByteArray) -> ByteArray {
-    generate_adventurer_name_text_with_page(name, 0) // Default to green theme
-}
-
-// Generate the logo SVG path - decorative "S" element with theme color
-pub fn generate_logo_with_page(page: u8) -> ByteArray {
-    let mut logo = "";
-    let theme_color = get_theme_color(page);
-
-    logo += "<path fill=\"";
-    logo += theme_color;
-
-    // Adjust logo position based on page layout
-    if page == 1 {
-        // Page 1 (Item Bag) - position logo to align with new layout starting at x=213
-        logo +=
-            "\" fill-rule=\"evenodd\" d=\"M213 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM210.5 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
-    } else {
-        // Page 0 (Inventory) and other pages - use original position
-        logo +=
-            "\" fill-rule=\"evenodd\" d=\"M288.5 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM286 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
-    }
-
-    logo
-}
-
-// Generate the logo SVG path - decorative "S" element (legacy function)
-pub fn generate_logo() -> ByteArray {
-    generate_logo_with_page(0) // Default to green theme
-}
 
 
-// Generate SVG header and container elements
-fn generate_svg_header() -> ByteArray {
-    let mut header = "";
-    header +=
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"862\" height=\"1270\" fill=\"none\">";
-    header += "<g filter=\"url(#a)\"><g clip-path=\"url(#b)\">";
-    header += "<rect width=\"567\" height=\"862\" x=\"147.2\" y=\"27\" fill=\"#000\" rx=\"10\"/>";
-    header
-}
 
-// Generate animated SVG header with CSS transitions for multi-page animations
-fn generate_animated_svg_header() -> ByteArray {
-    let mut header = "";
-    header +=
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"862\" height=\"1270\" fill=\"none\">";
-    header += "<style>";
-    header += ".page{opacity:0;animation:pageTransition 20s infinite;}";
-    header += ".page:nth-child(1){animation-delay:0s;}";
-    header += ".page:nth-child(2){animation-delay:5s;}";
-    header += ".page:nth-child(3){animation-delay:10s;}";
-    header += ".page:nth-child(4){animation-delay:15s;}";
-    header += "@keyframes pageTransition{0%,20%{opacity:1;}25%,95%{opacity:0;}100%{opacity:0;}}";
-    header +=
-        "text{font-family:VT323,IBM Plex Mono,Roboto Mono,Source Code Pro,monospace;font-weight:bold}";
-    header += ".s8{font-size:8px}.s10{font-size:10px}.s12{font-size:12px}";
-    header += ".s16{font-size:16px}.s24{font-size:24px}.s32{font-size:32px}";
-    header += "</style>";
-    header += "<g filter=\"url(#a)\">";
-    header
-}
 
-// Generate dynamic animated SVG header based on page count
-fn generate_dynamic_animated_svg_header(page_count: u8) -> ByteArray {
-    let mut header = "";
-    header +=
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"862\" height=\"1270\" fill=\"none\">";
-    header += "<style>";
 
-    // Only add animation CSS if more than 1 page
-    if page_count > 1 {
-        // Animation constants
-        let display_duration = 5_u8; // 5 seconds per page display
-        let transition_duration = 1_u8; // 1 second transition between pages
-        let page_width = 1200_u16; // Width of each page in pixels
-        
-        // Calculate total cycle duration: each page gets display + transition time
-        let total_duration = page_count * (display_duration + transition_duration);
 
-        // Container that slides between pages using transform
-        header += ".page-container{animation:slidePages ";
-        header += u256_to_string(total_duration.into());
-        header += "s infinite;}";
 
-        // Generate positioning for all pages dynamically
-        header += ".page{transform-origin:0 0;}";
-        let mut page_index = 2_u8; // Start from second page (first page is at 0,0)
-        while page_index <= page_count {
-            let x_position = (page_index - 1).into() * page_width.into();
-            header += ".page:nth-child(";
-            header += u256_to_string(page_index.into());
-            header += "){transform:translateX(";
-            header += u256_to_string(x_position);
-            header += "px);}";
-            page_index += 1;
-        }
 
-        // Generate dynamic keyframes for N pages
-        header += "@keyframes slidePages{";
-        
-        // Calculate percentage per page cycle
-        let page_cycle_percent = 100_u32 / page_count.into();
-        let display_percent = (display_duration.into() * 100_u32) / total_duration.into();
-        
-        let mut current_page = 0_u8;
-        while current_page < page_count {
-            // Calculate start and end percentages for this page
-            let cycle_start = current_page.into() * page_cycle_percent;
-            let display_end = cycle_start + display_percent;
-            
-            // Calculate the transform value (negative because container moves left)
-            let transform_x_abs = current_page.into() * page_width.into();
-            
-            // Add keyframe for this page's display period
-            header += u256_to_string(cycle_start.into());
-            header += "%,";
-            header += u256_to_string(display_end.into());
-            header += "%{transform:translateX(-";
-            header += u256_to_string(transform_x_abs);
-            header += "px);}";
-            
-            current_page += 1;
-        }
-        
-        // Add final keyframe to loop back to first page
-        header += "100%{transform:translateX(0px);}";
-        header += "}";
-    } else {
-        // No animation for single page - just static display
-        header += ".page{transform-origin:0 0;}";
-    }
 
-    header +=
-        "text{font-family:VT323,IBM Plex Mono,Roboto Mono,Source Code Pro,monospace;font-weight:bold}";
-    header += ".s8{font-size:8px}.s10{font-size:10px}.s12{font-size:12px}";
-    header += ".s16{font-size:16px}.s24{font-size:24px}.s32{font-size:32px}";
-    header += "</style>";
-    header += "<g filter=\"url(#a)\">";
-    header
-}
-
-// Generate gold display UI components
-fn generate_gold_display(gold: u16) -> ByteArray {
-    generate_gold_display_with_page(gold, 0) // Default to green theme
-}
-
-// get_gold_background_color function has been moved to components/theme.cairo
-
-// Generate gold display UI components with theme color
-fn generate_gold_display_with_page(gold: u16, page: u8) -> ByteArray {
-    let mut gold_display = "";
-    let theme_color = get_theme_color(page);
-    let background_color = get_gold_background_color(page);
-
-    // Add dark main rectangle for gold display
-    gold_display += "<rect width=\"91\" height=\"61.1\" x=\"541.7\" y=\"113\" fill=\"";
-    gold_display += background_color;
-    gold_display += "\" rx=\"6\"/>";
-    // Add small lighter rectangle for "GOLD" label with theme color
-    gold_display += "<rect width=\"32\" height=\"16\" x=\"608\" y=\"106\" fill=\"";
-    gold_display += theme_color.clone();
-    gold_display += "\" rx=\"2\"/>";
-    // Add "GOLD" text in black on the themed rectangle
-    gold_display +=
-        "<text x=\"624\" y=\"117\" fill=\"#000\" class=\"s12\" text-anchor=\"middle\">GOLD</text>";
-    // Add gold value in theme color on the darker background
-    gold_display += "<text x=\"587\" y=\"150\" fill=\"";
-    gold_display += theme_color;
-    gold_display += "\" class=\"s24\" text-anchor=\"middle\">";
-    gold_display += u256_to_string(gold.into());
-    gold_display += "</text>";
-    gold_display
-}
 
 // Generate level display text
-fn generate_level_display(level: u8) -> ByteArray {
-    generate_level_display_with_page(level, 0) // Default to green theme
-}
 
-// Generate level display text with theme color
-fn generate_level_display_with_page(level: u8, page: u8) -> ByteArray {
-    let mut level_display = "";
-    let theme_color = get_theme_color(page);
 
-    // Adjust x position based on page: page 1 uses x="268" to align with updated layout
-    let x_position = if page == 1 {
-        "268"
-    } else {
-        "339"
-    };
-    let y_position = if page == 1 {
-        "135"
-    } else {
-        "124"
-    };
-    level_display += "<text x=\"";
-    level_display += x_position;
-    level_display += "\" y=\"";
-    level_display += y_position;
-    level_display += "\" fill=\"";
-    level_display += theme_color;
-    level_display += "\" class=\"s16\">LEVEL ";
-    level_display += u8_to_string(level);
-    level_display += "</text>";
-    level_display
-}
 
-// Generate dynamic health bar with color coding
-fn generate_health_bar(stats: Stats, health: u16) -> ByteArray {
-    generate_health_bar_with_page(stats, health, 0) // Default to green theme
-}
-
-// Generate dynamic health bar with color coding and theme color for text
-fn generate_health_bar_with_page(stats: Stats, health: u16, page: u8) -> ByteArray {
-    let mut health_bar = "";
-    let max_health = stats.get_max_health();
-    let MAX_BAR_WIDTH: u256 = 300; // Maximum bar width in pixels
-    let MIN_FILLED_WIDTH: u256 = 2; // Minimum visible width when HP > 0
-    let theme_color = get_theme_color(page);
-
-    // Calculate dynamic filled width
-    let filled_width = if max_health > 0 {
-        let health_u256: u256 = health.into();
-        let max_health_u256: u256 = max_health.into();
-        let calculated = (health_u256 * MAX_BAR_WIDTH) / max_health_u256;
-        // Ensure minimum visibility when health > 0
-        if health > 0 && calculated < MIN_FILLED_WIDTH {
-            MIN_FILLED_WIDTH
-        } else {
-            calculated
-        }
-    } else {
-        0
-    };
-
-    // Determine health bar color based on HP percentage
-    let health_percentage = if max_health > 0 {
-        let health_u256: u256 = health.into();
-        let max_health_u256: u256 = max_health.into();
-        (health_u256 * 100) / max_health_u256
-    } else {
-        0
-    };
-
-    let bar_color = if health_percentage >= 75 {
-        "#78E846" // Green (healthy - 75-100%)
-    } else if health_percentage >= 25 {
-        "#FFD700" // Yellow/Gold (wounded - 25-74%)
-    } else if health > 0 {
-        "#FF4444" // Red (critical - 1-24%)
-    } else {
-        "#FF4444" // Red for zero health
-    };
-
-    // Generate background bar (full width, dark color)
-    // Adjust x position based on page: page 1 uses x="213" to align with updated layout
-    let bar_x_position = if page == 1 {
-        "213"
-    } else {
-        "286"
-    };
-    health_bar +=
-        "<path stroke=\"#171D10\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M";
-    health_bar += bar_x_position.clone();
-    health_bar += " 234h";
-    health_bar += u256_to_string(MAX_BAR_WIDTH);
-    health_bar += "\"/>";
-
-    // Generate filled health bar (dynamic width, color-coded)
-    health_bar += "<path stroke=\"";
-    health_bar += bar_color;
-    health_bar +=
-        "\" stroke-dasharray=\"42 4\" stroke-linecap=\"square\" stroke-linejoin=\"round\" stroke-width=\"9\" d=\"M";
-    health_bar += bar_x_position.clone();
-    health_bar += " 234h";
-    health_bar += u256_to_string(filled_width);
-    health_bar += "\"/>";
-
-    // Add HP display (current HP / max HP) with theme color
-    health_bar += "<text x=\"";
-    health_bar += bar_x_position;
-    health_bar += "\" y=\"270\" fill=\"";
-    health_bar += theme_color;
-    health_bar += "\" class=\"s16\">";
-    health_bar += u256_to_string(health.into());
-    health_bar += "/";
-    health_bar += u256_to_string(max_health.into());
-    health_bar += " HP</text>";
-
-    health_bar
-}
 
 // Generate inventory section header
 fn generate_inventory_header() -> ByteArray {
@@ -604,47 +199,7 @@ fn generate_border() -> ByteArray {
 }
 
 // Generate SVG footer with definitions and closing tags
-fn generate_svg_footer() -> ByteArray {
-    let mut footer = "";
-    footer +=
-        "</g></g><defs><style>text{font-family:VT323,IBM Plex Mono,Roboto Mono,Source Code Pro,monospace;font-weight:bold}.s8{font-size:8px}.s10{font-size:10px}.s12{font-size:12px}.s16{font-size:16px}.s24{font-size:24px}.s32{font-size:32px}</style><clipPath id=\"b\"><rect width=\"567\" height=\"862\" x=\"147.2\" y=\"27\" fill=\"#fff\" rx=\"10\"/></clipPath><clipPath id=\"c\"><path fill=\"#fff\" d=\"M302 373h37v37h-37z\"/></clipPath><clipPath id=\"d\"><path fill=\"#fff\" d=\"M298 504h47v47h-47z\"/></clipPath><filter id=\"a\" width=\"861\" height=\"1402\" x=\".2\" y=\"0\" color-interpolation-filters=\"sRGB\" filterUnits=\"userSpaceOnUse\"><feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/><feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/><feOffset dy=\"23\"/><feGaussianBlur stdDeviation=\"25\"/><feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.26 0\"/><feBlend in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_19_3058\"/><feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/><feOffset dy=\"92\"/><feGaussianBlur stdDeviation=\"46\"/><feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.22 0\"/><feBlend in2=\"effect1_dropShadow_19_3058\" result=\"effect2_dropShadow_19_3058\"/><feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/><feOffset dy=\"206\"/><feGaussianBlur stdDeviation=\"62\"/><feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0\"/><feBlend in2=\"effect2_dropShadow_19_3058\" result=\"effect3_dropShadow_19_3058\"/><feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/><feOffset dy=\"366\"/><feGaussianBlur stdDeviation=\"73.5\"/><feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0\"/><feBlend in2=\"effect3_dropShadow_19_3058\" result=\"effect4_dropShadow_19_3058\"/><feBlend in=\"SourceGraphic\" in2=\"effect4_dropShadow_19_3058\" result=\"shape\"/></filter></defs></svg>";
-    footer
-}
 
-// Generate animated SVG footer with definitions and closing tags
-fn generate_animated_svg_footer() -> ByteArray {
-    let mut footer = "";
-    footer +=
-        "</g><defs><clipPath id=\"b\"><rect width=\"567\" height=\"862\" x=\"147.2\" y=\"27\" fill=\"#fff\" rx=\"10\"/></clipPath>";
-    footer += "<clipPath id=\"c\"><path fill=\"#fff\" d=\"M302 373h37v37h-37z\"/></clipPath>";
-    footer += "<clipPath id=\"d\"><path fill=\"#fff\" d=\"M298 504h47v47h-47z\"/></clipPath>";
-    footer +=
-        "<filter id=\"a\" width=\"861\" height=\"1402\" x=\".2\" y=\"0\" color-interpolation-filters=\"sRGB\" filterUnits=\"userSpaceOnUse\">";
-    footer += "<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>";
-    footer +=
-        "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
-    footer += "<feOffset dy=\"23\"/><feGaussianBlur stdDeviation=\"25\"/>";
-    footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.26 0\"/>";
-    footer += "<feBlend in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_19_3058\"/>";
-    footer +=
-        "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
-    footer += "<feOffset dy=\"92\"/><feGaussianBlur stdDeviation=\"46\"/>";
-    footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.22 0\"/>";
-    footer += "<feBlend in2=\"effect1_dropShadow_19_3058\" result=\"effect2_dropShadow_19_3058\"/>";
-    footer +=
-        "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
-    footer += "<feOffset dy=\"206\"/><feGaussianBlur stdDeviation=\"62\"/>";
-    footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0\"/>";
-    footer += "<feBlend in2=\"effect2_dropShadow_19_3058\" result=\"effect3_dropShadow_19_3058\"/>";
-    footer +=
-        "<feColorMatrix in=\"SourceAlpha\" result=\"hardAlpha\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\"/>";
-    footer += "<feOffset dy=\"366\"/><feGaussianBlur stdDeviation=\"73.5\"/>";
-    footer += "<feColorMatrix values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0\"/>";
-    footer += "<feBlend in2=\"effect3_dropShadow_19_3058\" result=\"effect4_dropShadow_19_3058\"/>";
-    footer += "<feBlend in=\"SourceGraphic\" in2=\"effect4_dropShadow_19_3058\" result=\"shape\"/>";
-    footer += "</filter></defs></svg>";
-    footer
-}
 
 // Generate dynamic SVG with adventurer data for specific page
 pub fn generate_svg_with_page(adventurer: AdventurerVerbose, page: u8) -> ByteArray {

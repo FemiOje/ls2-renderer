@@ -11,8 +11,13 @@ use death_mountain_renderer::mocks::mock_adventurer::{
 use death_mountain_renderer::models::models::StatsTrait;
 use death_mountain_renderer::utils::renderer::page::page_renderer::PageRendererImpl;
 use death_mountain_renderer::utils::renderer::renderer_utils::{
-    chest, foot, generate_adventurer_name_text, generate_full_animated_svg, generate_svg, hand,
-    head, neck, ring, waist, weapon,
+    generate_full_animated_svg, generate_svg,
+};
+use death_mountain_renderer::utils::renderer::components::{
+    icons::{chest, foot, hand, head, neck, ring, waist, weapon},
+};
+use death_mountain_renderer::utils::renderer::core::text_utils::{
+    generate_adventurer_name_text,
 };
 use death_mountain_renderer::utils::string::string_utils::{
     contains_pattern, ends_with_pattern, felt252_to_string, starts_with_pattern, u256_to_string,
