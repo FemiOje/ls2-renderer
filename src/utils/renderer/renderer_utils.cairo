@@ -6,7 +6,7 @@
 // @author Built for the Loot Survivor ecosystem
 
 use death_mountain_renderer::models::models::{
-    AdventurerVerbose, BagVerbose, EquipmentVerbose, GameDetail, ItemVerbose, Slot, Stats,
+    AdventurerVerbose, BagVerbose, GameDetail, ItemVerbose, Slot, Stats,
     StatsTrait,
 };
 use death_mountain_renderer::models::page_types::{BattleState, PageMode};
@@ -17,6 +17,14 @@ use death_mountain_renderer::utils::string::string_utils::{
 
 // Extracted modules are imported via re-exports at the bottom of this file
 // This maintains backward compatibility while using the new modular structure
+
+// Import equipment modules
+use death_mountain_renderer::utils::renderer::equipment::{
+    slots::generate_equipment_slots,
+    positioning::generate_equipment_icons,
+    badges::generate_equipment_level_badges,
+    names::generate_equipment_names,
+};
 
 
 // ============================================================================
@@ -495,61 +503,31 @@ fn generate_bag_header() -> ByteArray {
     bag_header
 }
 
-// Generate equipment slot containers
-fn generate_equipment_slots() -> ByteArray {
-    let mut slots = "";
-
-    // Top row equipment slots
-    slots +=
-        "<rect width=\"71\" height=\"71\" x=\"285.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Weapon slot
-    slots +=
-        "<rect width=\"71\" height=\"71\" x=\"377.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Chest slot
-    slots +=
-        "<rect width=\"71\" height=\"71\" x=\"469.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Head slot
-    slots +=
-        "<rect width=\"71\" height=\"71\" x=\"561.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Ring slot
-
-    // Bottom row equipment slots
-    slots +=
-        "<rect width=\"71\" height=\"71\" x=\"285.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Hand slot
-    slots +=
-        "<rect width=\"71\" height=\"71\" x=\"377.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Neck slot
-    slots +=
-        "<rect width=\"71\" height=\"71\" x=\"469.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Foot slot
-    slots +=
-        "<rect width=\"71\" height=\"71\" x=\"561.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Waist slot
-
-    slots
-}
-
-// Generate equipment icons within the slots
-fn generate_equipment_icons() -> ByteArray {
-    let mut icons = "";
-
-    // Top row equipment icons - individually centered in boxes
-    icons += "<g transform=\"translate(309, 367) scale(3)\" fill=\"#78E846\">" + weapon() + "</g>";
-    icons += "<g transform=\"translate(390, 368) scale(3)\" fill=\"#78E846\">" + chest() + "</g>";
-    icons += "<g transform=\"translate(483, 378) scale(3)\" fill=\"#78E846\">" + head() + "</g>";
-    icons += "<g transform=\"translate(578, 370) scale(3)\" fill=\"#78E846\">" + ring() + "</g>";
-
-    // Bottom row equipment icons - individually centered in boxes
-    icons += "<g transform=\"translate(308, 503) scale(3)\" fill=\"#78E846\">" + hand() + "</g>";
-    icons += "<g transform=\"translate(391, 506) scale(3)\" fill=\"#78E846\">" + neck() + "</g>";
-    icons += "<g transform=\"translate(483, 508) scale(3)\" fill=\"#78E846\">" + foot() + "</g>";
-    icons += "<g transform=\"translate(575, 508) scale(3)\" fill=\"#78E846\">" + waist() + "</g>";
-
-    icons
-}
 
 
-// Extract individual words from equipment name
-fn extract_words(text: ByteArray) -> Array<ByteArray> {
+
+
+
+// Split bag item name into words for line-by-line rendering
+fn get_bag_item_words(item_name: felt252) -> Array<ByteArray> {
+    if item_name == 0 {
+        return array!["EMPTY"];
+    }
+
+    let name_str = felt252_to_string(item_name);
+
+    // If name is empty, return EMPTY
+    if name_str.len() == 0 {
+        return array!["EMPTY"];
+    }
+
+    // Extract words from bag item name
     let mut words: Array<ByteArray> = array![];
     let mut current_word = "";
     let mut i = 0;
 
-    while i < text.len() {
-        let byte = text.at(i).unwrap();
+    while i < name_str.len() {
+        let byte = name_str.at(i).unwrap();
         if byte == 32 { // ASCII code for space
             if current_word.len() > 0 {
                 words.append(current_word);
@@ -569,157 +547,8 @@ fn extract_words(text: ByteArray) -> Array<ByteArray> {
     words
 }
 
-// Split equipment name into words for line-by-line rendering
-fn get_equipment_words(item_name: felt252) -> Array<ByteArray> {
-    if item_name == 0 {
-        return array!["EMPTY"];
-    }
 
-    let name_str = felt252_to_string(item_name);
 
-    // If name is empty, return EMPTY
-    if name_str.len() == 0 {
-        return array!["EMPTY"];
-    }
-
-    extract_words(name_str)
-}
-
-// Split bag item name into words for line-by-line rendering
-fn get_bag_item_words(item_name: felt252) -> Array<ByteArray> {
-    if item_name == 0 {
-        return array!["EMPTY"];
-    }
-
-    let name_str = felt252_to_string(item_name);
-
-    // If name is empty, return EMPTY
-    if name_str.len() == 0 {
-        return array!["EMPTY"];
-    }
-
-    extract_words(name_str)
-}
-
-// Helper function to render equipment name words at given x position and base y
-fn render_equipment_words(words: Array<ByteArray>, x: u16, base_y: u16) -> ByteArray {
-    let mut name_text = "";
-    let mut i = 0;
-
-    while i < words.len() {
-        let y_u32: u32 = base_y.into() + (i * 14); // 14px line spacing
-        // Clamp y to prevent u16 overflow, use u32 directly for display
-        name_text += "<text x=\"";
-        name_text += u256_to_string(x.into());
-        name_text += "\" y=\"";
-        name_text += u256_to_string(y_u32.into());
-        name_text += "\" fill=\"#78E846\" class=\"s12\" text-anchor=\"middle\">";
-        name_text += words.at(i).clone();
-        name_text += "</text>";
-        i += 1;
-    }
-
-    name_text
-}
-
-// Generate equipment names below the slots
-fn generate_equipment_names(equipment: EquipmentVerbose) -> ByteArray {
-    let mut names = "";
-
-    // Equipment names - Top row (below equipment boxes)
-    let weapon_words = get_equipment_words(equipment.weapon.name);
-    names += render_equipment_words(weapon_words, 321, 442);
-
-    let chest_words = get_equipment_words(equipment.chest.name);
-    names += render_equipment_words(chest_words, 413, 442);
-
-    let head_words = get_equipment_words(equipment.head.name);
-    names += render_equipment_words(head_words, 505, 442);
-
-    let ring_words = get_equipment_words(equipment.ring.name);
-    names += render_equipment_words(ring_words, 597, 442);
-
-    // Equipment names - Bottom row (below equipment boxes)
-    let hand_words = get_equipment_words(equipment.hand.name);
-    names += render_equipment_words(hand_words, 321, 576);
-
-    let neck_words = get_equipment_words(equipment.neck.name);
-    names += render_equipment_words(neck_words, 413, 576);
-
-    let foot_words = get_equipment_words(equipment.foot.name);
-    names += render_equipment_words(foot_words, 505, 576);
-
-    let waist_words = get_equipment_words(equipment.waist.name);
-    names += render_equipment_words(waist_words, 597, 576);
-
-    names
-}
-
-// Generate level badges for each equipment slot
-fn generate_equipment_level_badges(equipment: EquipmentVerbose) -> ByteArray {
-    let mut badges = "";
-
-    // Top row equipment level badges - positioned like gold badge (top-right, extending beyond
-    // slot)
-    // Weapon level badge (top-left slot)
-    badges += "<rect width=\"38\" height=\"16\" x=\"335\" y=\"355\" fill=\"#78E846\" rx=\"2\"/>";
-    badges +=
-        "<text x=\"354\" y=\"366\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.weapon.xp));
-    badges += "</text>";
-
-    // Chest level badge (top-middle-left slot)
-    badges += "<rect width=\"38\" height=\"16\" x=\"427\" y=\"355\" fill=\"#78E846\" rx=\"2\"/>";
-    badges +=
-        "<text x=\"446\" y=\"366\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.chest.xp));
-    badges += "</text>";
-
-    // Head level badge (top-middle-right slot)
-    badges += "<rect width=\"38\" height=\"16\" x=\"519\" y=\"355\" fill=\"#78E846\" rx=\"2\"/>";
-    badges +=
-        "<text x=\"538\" y=\"366\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.head.xp));
-    badges += "</text>";
-
-    // Ring level badge (top-right slot)
-    badges += "<rect width=\"38\" height=\"16\" x=\"611\" y=\"355\" fill=\"#78E846\" rx=\"2\"/>";
-    badges +=
-        "<text x=\"630\" y=\"366\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.ring.xp));
-    badges += "</text>";
-
-    // Bottom row equipment level badges
-    // Hand level badge (bottom-left slot)
-    badges += "<rect width=\"38\" height=\"16\" x=\"335\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
-    badges +=
-        "<text x=\"354\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.hand.xp));
-    badges += "</text>";
-
-    // Neck level badge (bottom-middle-left slot)
-    badges += "<rect width=\"38\" height=\"16\" x=\"427\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
-    badges +=
-        "<text x=\"446\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.neck.xp));
-    badges += "</text>";
-
-    // Foot level badge (bottom-middle-right slot)
-    badges += "<rect width=\"38\" height=\"16\" x=\"519\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
-    badges +=
-        "<text x=\"538\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.foot.xp));
-    badges += "</text>";
-
-    // Waist level badge (bottom-right slot)
-    badges += "<rect width=\"38\" height=\"16\" x=\"611\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
-    badges +=
-        "<text x=\"630\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.waist.xp));
-    badges += "</text>";
-
-    badges
-}
 
 // Generate decorative border based on page type with themed colors
 fn generate_border_for_page(page: u8) -> ByteArray {

@@ -15,6 +15,12 @@ pub mod utils {
         pub mod core {
             pub mod math_utils;
         }
+        pub mod equipment {
+            pub mod slots;
+            pub mod positioning;
+            pub mod badges;
+            pub mod names;
+        }
     }
     pub mod string {
         pub mod string_utils;

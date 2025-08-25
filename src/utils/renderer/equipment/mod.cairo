@@ -1,1 +1,5 @@
-// Equipment rendering modules - to be populated in future phases
+// Equipment rendering modules
+pub mod slots;
+pub mod positioning; 
+pub mod badges;
+pub mod names;
