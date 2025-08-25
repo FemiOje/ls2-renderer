@@ -24,6 +24,10 @@ pub mod utils {
             pub mod badges;
             pub mod names;
         }
+        pub mod bag {
+            pub mod bag_utils;
+            pub mod bag_renderer;
+        }
     }
     pub mod string {
         pub mod string_utils;

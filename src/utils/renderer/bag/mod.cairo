@@ -1,1 +1,3 @@
-// Bag rendering modules - to be populated in future phases
+// Bag rendering modules
+pub mod bag_utils;
+pub mod bag_renderer;
