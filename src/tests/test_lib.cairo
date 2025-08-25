@@ -28,3 +28,5 @@ pub mod fuzz {
     pub mod test_invariant_testing;
     pub mod test_svg_generation_fuzz;
 }
+
+pub mod test_page_types;

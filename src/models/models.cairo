@@ -58,9 +58,11 @@ pub struct Adventurer {
     pub action_count: u16,
 }
 
-#[derive(Drop, Serde)]
+#[derive(Drop, Serde, Clone)]
 pub struct AdventurerVerbose {
     pub name: felt252,
+    pub packed_adventurer: felt252,
+    pub packed_bag: felt252,
     pub health: u16,
     pub xp: u16,
     pub level: u8,
@@ -158,11 +160,6 @@ pub struct Stats {
     pub luck: u8,
 }
 
-#[derive(Copy, Drop, PartialEq, Serde, Debug)]
-pub struct AdventurerEntropy {
-    pub entropy: u64,
-    pub block_number: u64,
-}
 
 #[derive(Copy, Drop, Serde, PartialEq)]
 pub enum DiscoveryType {

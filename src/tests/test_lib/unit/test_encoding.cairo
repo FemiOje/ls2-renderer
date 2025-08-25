@@ -4,7 +4,7 @@
 // @notice Comprehensive tests for gas-optimized Base64 encoding operations
 // @dev Tests boundary conditions, performance, and security edge cases
 
-use death_mountain_renderer::utils::encoding::{
+use death_mountain_renderer::utils::encoding::encoding::{
     BytesUsedTrait, bytes_base64_encode, get_base64_char_set,
 };
 
