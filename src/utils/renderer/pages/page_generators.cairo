@@ -34,7 +34,7 @@ use death_mountain_renderer::utils::renderer::bag::bag_renderer::{
     generate_bag_item_level_badges, generate_bag_item_names,
 };
 
-// Import header functions from renderer_utils (temporary until headers are extracted)
+// Import header functions
 use death_mountain_renderer::utils::renderer::renderer_utils::{
     generate_inventory_header,
 };

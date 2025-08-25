@@ -11,7 +11,7 @@ use death_mountain_renderer::mocks::mock_adventurer::{
 use death_mountain_renderer::models::models::StatsTrait;
 use death_mountain_renderer::utils::renderer::page::page_renderer::PageRendererImpl;
 use death_mountain_renderer::utils::renderer::renderer_utils::{
-    generate_full_animated_svg, generate_svg,
+    generate_svg,
 };
 use death_mountain_renderer::utils::renderer::components::{
     icons::{chest, foot, hand, head, neck, ring, waist, weapon},
@@ -489,8 +489,8 @@ fn test_output_animated_svg() {
     // Create mock adventurer
     let adventurer = get_simple_adventurer();
 
-    // Generate the full animated SVG
-    let animated_svg = generate_full_animated_svg(adventurer);
+    // Generate the dynamic SVG (includes animations based on adventurer state)
+    let animated_svg = generate_svg(adventurer);
 
     // Output the animated SVG for manual inspection with proper markers
     println!("=== ANIMATED SVG ===");

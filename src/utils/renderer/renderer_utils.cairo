@@ -16,7 +16,7 @@ use death_mountain_renderer::utils::encoding::encoding::U256BytesUsedTraitImpl;
 
 // Import extracted modules for functions still used in renderer_utils
 use death_mountain_renderer::utils::renderer::components::headers::{
-    generate_svg_header, generate_animated_svg_header, generate_dynamic_animated_svg_header,
+    generate_svg_header, generate_dynamic_animated_svg_header,
     generate_svg_footer, generate_animated_svg_footer,
 };
 use death_mountain_renderer::utils::renderer::pages::page_generators::{
@@ -25,7 +25,9 @@ use death_mountain_renderer::utils::renderer::pages::page_generators::{
 };
 
 
-// Generate inventory section header
+/// @notice Generate inventory section header
+/// @dev Creates styled "INVENTORY" text header with green theme color
+/// @return SVG text element for inventory section header
 pub fn generate_inventory_header() -> ByteArray {
     let mut inventory_header = "";
     inventory_header += "<text x=\"286\" y=\"325\" fill=\"#78E846\" class=\"s16\">";
@@ -108,32 +110,6 @@ fn generate_sliding_container_end() -> ByteArray {
     "</g>"
 }
 
-// Generate animated SVG with all four pages and smooth transitions
-// Deleting soon
-pub fn generate_full_animated_svg(adventurer: AdventurerVerbose) -> ByteArray {
-    let mut svg = "";
-
-    // Add animated SVG header with CSS animations
-    svg += generate_animated_svg_header();
-
-    // Generate all four pages with their content and borders
-    let inventory_content = generate_inventory_page_content(adventurer.clone());
-    let inventory_border = generate_border_for_page(0);
-    svg += generate_page_wrapper(inventory_content, inventory_border);
-
-    let item_bag_content = generate_item_bag_page_content(adventurer.clone());
-    let item_bag_border = generate_border_for_page(1);
-    svg += generate_page_wrapper(item_bag_content, item_bag_border);
-
-    let battle_content = generate_battle_page_content(adventurer.clone());
-    let battle_border = generate_border_for_page(2);
-    svg += generate_page_wrapper(battle_content, battle_border);
-
-    // Add animated SVG footer
-    svg += generate_animated_svg_footer();
-
-    svg
-}
 
 // Generate dynamic SVG that automatically handles all cases including animations based on
 // adventurer's battle state
