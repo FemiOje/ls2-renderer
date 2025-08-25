@@ -8,6 +8,13 @@ pub mod utils {
         }
         pub mod renderer;
         pub mod renderer_utils;
+        pub mod components {
+            pub mod icons;
+            pub mod theme;
+        }
+        pub mod core {
+            pub mod math_utils;
+        }
     }
     pub mod string {
         pub mod string_utils;
