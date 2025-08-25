@@ -12,9 +12,9 @@ use death_mountain_renderer::mocks::mock_adventurer::{
     get_adventurer_with_max_stats, get_simple_adventurer,
 };
 use death_mountain_renderer::models::models::StatsTrait;
-use death_mountain_renderer::utils::encoding::bytes_base64_encode;
-use death_mountain_renderer::utils::renderer::Renderer;
-use death_mountain_renderer::utils::string_utils::starts_with_pattern;
+use death_mountain_renderer::utils::encoding::encoding::bytes_base64_encode;
+use death_mountain_renderer::utils::renderer::renderer::Renderer;
+use death_mountain_renderer::utils::string::string_utils::starts_with_pattern;
 use snforge_std::{
     CheatSpan, ContractClassTrait, DeclareResultTrait, cheat_block_number, cheat_block_timestamp,
     declare, start_cheat_caller_address, stop_cheat_caller_address,

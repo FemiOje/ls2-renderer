@@ -12,6 +12,7 @@ pub trait IMinigameDetails<TState> {
 #[starknet::interface]
 pub trait IMinigameDetailsSVG<TState> {
     fn game_details_svg(self: @TState, token_id: u64) -> ByteArray;
+    fn game_details_svg_page(self: @TState, token_id: u64, page: u8) -> ByteArray;
 }
 
 #[starknet::interface]
@@ -26,7 +27,7 @@ pub mod renderer_contract {
         IDeathMountainSystemsDispatcher, IDeathMountainSystemsDispatcherTrait,
     };
     use death_mountain_renderer::models::models::{AdventurerVerbose, GameDetail};
-    use death_mountain_renderer::utils::renderer::Renderer;
+    use death_mountain_renderer::utils::renderer::renderer::Renderer;
     use starknet::ContractAddress;
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
 
@@ -66,8 +67,14 @@ pub mod renderer_contract {
                 .get_adventurer_verbose(token_id);
             Renderer::get_image(adventurer_verbose)
         }
-    }
 
+        fn game_details_svg_page(self: @ContractState, token_id: u64, page: u8) -> ByteArray {
+            let death_mountain_dispatcher = self.death_mountain_dispatcher.read();
+            let adventurer_verbose: AdventurerVerbose = death_mountain_dispatcher
+                .get_adventurer_verbose(token_id);
+            Renderer::get_image_page(adventurer_verbose, page)
+        }
+    }
 
     #[abi(embed_v0)]
     impl RendererImpl of super::IRenderer<ContractState> {

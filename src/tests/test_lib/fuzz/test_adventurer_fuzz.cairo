@@ -5,7 +5,7 @@ use death_mountain_renderer::mocks::mock_adventurer::{
     get_simple_adventurer,
 };
 use death_mountain_renderer::models::models::{AdventurerVerbose, StatsTrait};
-use death_mountain_renderer::utils::renderer::RendererImpl;
+use death_mountain_renderer::utils::renderer::renderer::RendererImpl;
 
 // Helper function to create adventurer with custom stats (uses available create_custom_adventurer)
 fn create_adventurer_with_stats(health: u16, level: u8, vitality: u8) -> AdventurerVerbose {

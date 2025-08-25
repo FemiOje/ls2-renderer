@@ -65,6 +65,8 @@ pub mod mock_adventurer {
 
             AdventurerVerbose {
                 name,
+                packed_adventurer: 0,
+                packed_bag: 0,
                 health: adventurer.health,
                 xp: adventurer.xp,
                 level,
@@ -294,6 +296,10 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
         strength: 12, dexterity: 10, vitality: 14, intelligence: 8, wisdom: 9, charisma: 7, luck: 5,
     };
 
+    let empty_item = ItemVerbose {
+        id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+    };
+
     let weapon_item = ItemVerbose {
         id: 1,
         name: 'Dagger',
@@ -305,7 +311,7 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
 
     let chest_item = ItemVerbose {
         id: 2,
-        name: 'Leather Armor',
+        name: 'Studded Leather Armor',
         tier: Tier::T1,
         item_type: Type::Blade_or_Hide,
         slot: Slot::Chest,
@@ -316,30 +322,52 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
         weapon: weapon_item,
         chest: chest_item,
         head: ItemVerbose {
-            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+            id: 3,
+            name: 'Crown',
+            tier: Tier::T1,
+            item_type: Type::Magic_or_Cloth,
+            slot: Slot::Head,
+            xp: 25,
         },
         waist: ItemVerbose {
-            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+            id: 4,
+            name: 'Leather Belt',
+            tier: Tier::T1,
+            item_type: Type::Blade_or_Hide,
+            slot: Slot::Waist,
+            xp: 30,
         },
         foot: ItemVerbose {
-            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+            id: 5,
+            name: 'Boots',
+            tier: Tier::T1,
+            item_type: Type::Blade_or_Hide,
+            slot: Slot::Foot,
+            xp: 40,
         },
         hand: ItemVerbose {
-            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+            id: 6,
+            name: 'Gloves',
+            tier: Tier::T1,
+            item_type: Type::Blade_or_Hide,
+            slot: Slot::Hand,
+            xp: 20,
         },
-        neck: ItemVerbose {
-            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
-        },
+        neck: empty_item,
         ring: ItemVerbose {
-            id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
+            id: 8,
+            name: 'Silver Ring',
+            tier: Tier::T1,
+            item_type: Type::Ring,
+            slot: Slot::Ring,
+            xp: 10,
         },
-    };
-
-    let empty_item = ItemVerbose {
-        id: 0, name: 0, tier: Tier::None, item_type: Type::None, slot: Slot::None, xp: 0,
     };
 
     AdventurerVerbose {
+        name: 'TestHero',
+        packed_adventurer: 0,
+        packed_bag: 0,
         health: 250,
         level: 5,
         stats,
@@ -347,21 +375,97 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
         bag: BagVerbose {
             item_1: weapon_item,
             item_2: chest_item,
-            item_3: weapon_item,
-            item_4: empty_item,
-            item_5: empty_item,
-            item_6: empty_item,
-            item_7: empty_item,
-            item_8: empty_item,
-            item_9: empty_item,
-            item_10: empty_item,
+            item_3: ItemVerbose {
+                id: 10,
+                name: 'Iron Sword',
+                tier: Tier::T2,
+                item_type: Type::Blade_or_Hide,
+                slot: Slot::Weapon,
+                xp: 75,
+            },
+            item_4: ItemVerbose {
+                id: 11,
+                name: 'Magic Staff',
+                tier: Tier::T3,
+                item_type: Type::Magic_or_Cloth,
+                slot: Slot::Weapon,
+                xp: 120,
+            },
+            item_5: ItemVerbose {
+                id: 12,
+                name: 'Chain Mail',
+                tier: Tier::T2,
+                item_type: Type::Bludgeon_or_Metal,
+                slot: Slot::Chest,
+                xp: 90,
+            },
+            item_6: ItemVerbose {
+                id: 13,
+                name: 'Wizard Hat',
+                tier: Tier::T2,
+                item_type: Type::Magic_or_Cloth,
+                slot: Slot::Head,
+                xp: 65,
+            },
+            item_7: ItemVerbose {
+                id: 14,
+                name: 'Hard Leather Gloves',
+                tier: Tier::T3,
+                item_type: Type::Blade_or_Hide,
+                slot: Slot::Hand,
+                xp: 110,
+            },
+            item_8: ItemVerbose {
+                id: 15,
+                name: 'Leather Boots',
+                tier: Tier::T1,
+                item_type: Type::Blade_or_Hide,
+                slot: Slot::Foot,
+                xp: 45,
+            },
+            item_9: ItemVerbose {
+                id: 16,
+                name: 'Gold Ring',
+                tier: Tier::T4,
+                item_type: Type::Ring,
+                slot: Slot::Ring,
+                xp: 150,
+            },
+            item_10: ItemVerbose {
+                id: 17,
+                name: 'Silver Necklace',
+                tier: Tier::T2,
+                item_type: Type::Necklace,
+                slot: Slot::Neck,
+                xp: 80,
+            },
             item_11: empty_item,
-            item_12: empty_item,
+            item_12: ItemVerbose {
+                id: 19,
+                name: 'Plate Armor',
+                tier: Tier::T4,
+                item_type: Type::Bludgeon_or_Metal,
+                slot: Slot::Chest,
+                xp: 180,
+            },
             item_13: empty_item,
-            item_14: empty_item,
-            item_15: empty_item,
+            item_14: ItemVerbose {
+                id: 21,
+                name: 'Silk Belt',
+                tier: Tier::T2,
+                item_type: Type::Magic_or_Cloth,
+                slot: Slot::Waist,
+                xp: 70,
+            },
+            item_15: ItemVerbose {
+                id: 22,
+                name: 'Diamond Ring',
+                tier: Tier::T5,
+                item_type: Type::Ring,
+                slot: Slot::Ring,
+                xp: 200,
+            },
         },
-        name: 'TestHero',
         xp: 1000,
         gold: 100,
         beast_health: 0,
@@ -374,8 +478,15 @@ pub fn get_simple_adventurer() -> AdventurerVerbose {
 pub fn get_adventurer_with_max_stats() -> AdventurerVerbose {
     let adventurer = get_simple_adventurer();
     AdventurerVerbose {
+        name: 'MaxHero',
+        packed_adventurer: 0,
+        packed_bag: 0,
         health: 65535,
         level: 255,
+        xp: 65535,
+        gold: adventurer.gold,
+        beast_health: adventurer.beast_health,
+        stat_upgrades_available: adventurer.stat_upgrades_available,
         stats: Stats {
             strength: 255,
             dexterity: 255,
@@ -386,22 +497,24 @@ pub fn get_adventurer_with_max_stats() -> AdventurerVerbose {
             luck: 255,
         },
         equipment: adventurer.equipment,
-        bag: adventurer.bag,
-        name: 'MaxHero',
-        xp: 65535,
-        gold: adventurer.gold,
-        beast_health: adventurer.beast_health,
-        stat_upgrades_available: adventurer.stat_upgrades_available,
         item_specials_seed: adventurer.item_specials_seed,
         action_count: adventurer.action_count,
+        bag: adventurer.bag,
     }
 }
 
 pub fn get_adventurer_with_min_stats() -> AdventurerVerbose {
     let adventurer = get_simple_adventurer();
     AdventurerVerbose {
+        name: 'MinHero',
+        packed_adventurer: 0,
+        packed_bag: 0,
         health: 1,
+        xp: 0,
         level: 1,
+        gold: adventurer.gold,
+        beast_health: adventurer.beast_health,
+        stat_upgrades_available: adventurer.stat_upgrades_available,
         stats: Stats {
             strength: 1,
             dexterity: 1,
@@ -412,40 +525,44 @@ pub fn get_adventurer_with_min_stats() -> AdventurerVerbose {
             luck: 1,
         },
         equipment: adventurer.equipment,
-        bag: adventurer.bag,
-        name: 'MinHero',
-        xp: 0,
-        gold: adventurer.gold,
-        beast_health: adventurer.beast_health,
-        stat_upgrades_available: adventurer.stat_upgrades_available,
         item_specials_seed: adventurer.item_specials_seed,
         action_count: adventurer.action_count,
+        bag: adventurer.bag,
     }
 }
 
 pub fn get_adventurer_with_long_name() -> AdventurerVerbose {
     let adventurer = get_simple_adventurer();
     AdventurerVerbose {
-        health: adventurer.health,
-        level: adventurer.level,
-        stats: adventurer.stats,
-        equipment: adventurer.equipment,
-        bag: adventurer.bag,
         name: 'VeryLongAdventurerName',
+        packed_adventurer: 0,
+        packed_bag: 0,
+        health: adventurer.health,
         xp: adventurer.xp,
+        level: adventurer.level,
         gold: adventurer.gold,
         beast_health: adventurer.beast_health,
         stat_upgrades_available: adventurer.stat_upgrades_available,
+        stats: adventurer.stats,
+        equipment: adventurer.equipment,
         item_specials_seed: adventurer.item_specials_seed,
         action_count: adventurer.action_count,
+        bag: adventurer.bag,
     }
 }
 
 pub fn create_custom_adventurer(health: u16, level: u8, vitality: u8) -> AdventurerVerbose {
     let base = get_simple_adventurer();
     AdventurerVerbose {
+        name: base.name,
+        packed_adventurer: 0,
+        packed_bag: 0,
         health,
+        xp: base.xp,
         level,
+        gold: base.gold,
+        beast_health: base.beast_health,
+        stat_upgrades_available: base.stat_upgrades_available,
         stats: Stats {
             strength: base.stats.strength,
             dexterity: base.stats.dexterity,
@@ -456,22 +573,24 @@ pub fn create_custom_adventurer(health: u16, level: u8, vitality: u8) -> Adventu
             luck: base.stats.luck,
         },
         equipment: base.equipment,
-        bag: base.bag,
-        name: base.name,
-        xp: base.xp,
-        gold: base.gold,
-        beast_health: base.beast_health,
-        stat_upgrades_available: base.stat_upgrades_available,
         item_specials_seed: base.item_specials_seed,
         action_count: base.action_count,
+        bag: base.bag,
     }
 }
 
 pub fn create_custom_adventurer_with_name(name: felt252) -> AdventurerVerbose {
     let base = get_simple_adventurer();
     AdventurerVerbose {
+        name: name,
+        packed_adventurer: 0,
+        packed_bag: 0,
         health: base.health,
+        xp: base.xp,
         level: base.level,
+        gold: base.gold,
+        beast_health: base.beast_health,
+        stat_upgrades_available: base.stat_upgrades_available,
         stats: Stats {
             strength: base.stats.strength,
             dexterity: base.stats.dexterity,
@@ -482,13 +601,8 @@ pub fn create_custom_adventurer_with_name(name: felt252) -> AdventurerVerbose {
             luck: base.stats.luck,
         },
         equipment: base.equipment,
-        bag: base.bag,
-        name: name,
-        xp: base.xp,
-        gold: base.gold,
-        beast_health: base.beast_health,
-        stat_upgrades_available: base.stat_upgrades_available,
         item_specials_seed: base.item_specials_seed,
         action_count: base.action_count,
+        bag: base.bag,
     }
 }
