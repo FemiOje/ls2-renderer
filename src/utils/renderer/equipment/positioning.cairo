@@ -19,13 +19,13 @@ pub fn generate_equipment_icons() -> ByteArray {
     icons += "<g transform=\"translate(309, 367) scale(3)\" fill=\"#78E846\">" + weapon() + "</g>";
     icons += "<g transform=\"translate(390, 368) scale(3)\" fill=\"#78E846\">" + chest() + "</g>";
     icons += "<g transform=\"translate(483, 378) scale(3)\" fill=\"#78E846\">" + head() + "</g>";
-    icons += "<g transform=\"translate(578, 370) scale(3)\" fill=\"#78E846\">" + ring() + "</g>";
+    icons += "<g transform=\"translate(575, 370) scale(3)\" fill=\"#78E846\">" + waist() + "</g>";
 
     // Bottom row equipment icons - individually centered in boxes
     icons += "<g transform=\"translate(308, 503) scale(3)\" fill=\"#78E846\">" + hand() + "</g>";
-    icons += "<g transform=\"translate(391, 506) scale(3)\" fill=\"#78E846\">" + neck() + "</g>";
-    icons += "<g transform=\"translate(483, 508) scale(3)\" fill=\"#78E846\">" + foot() + "</g>";
-    icons += "<g transform=\"translate(575, 508) scale(3)\" fill=\"#78E846\">" + waist() + "</g>";
+    icons += "<g transform=\"translate(391, 508) scale(3)\" fill=\"#78E846\">" + foot() + "</g>";
+    icons += "<g transform=\"translate(483, 503) scale(3)\" fill=\"#78E846\">" + ring() + "</g>";
+    icons += "<g transform=\"translate(578, 506) scale(3)\" fill=\"#78E846\">" + neck() + "</g>";
 
     icons
 }

@@ -19,17 +19,17 @@ pub fn generate_equipment_slots() -> ByteArray {
     slots +=
         "<rect width=\"71\" height=\"71\" x=\"469.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Head slot
     slots +=
-        "<rect width=\"71\" height=\"71\" x=\"561.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Ring slot
+        "<rect width=\"71\" height=\"71\" x=\"561.7\" y=\"357.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Waist slot
 
     // Bottom row equipment slots
     slots +=
         "<rect width=\"71\" height=\"71\" x=\"285.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Hand slot
     slots +=
-        "<rect width=\"71\" height=\"71\" x=\"377.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Neck slot
+        "<rect width=\"71\" height=\"71\" x=\"377.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Foot slot
     slots +=
-        "<rect width=\"71\" height=\"71\" x=\"469.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Foot slot
+        "<rect width=\"71\" height=\"71\" x=\"469.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Ring slot
     slots +=
-        "<rect width=\"71\" height=\"71\" x=\"561.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Waist slot
+        "<rect width=\"71\" height=\"71\" x=\"561.7\" y=\"491.6\" stroke=\"#2B5418\" rx=\"5.5\" fill=\"none\"/>"; // Neck slot
 
     slots
 }

@@ -100,21 +100,21 @@ pub fn generate_equipment_names(equipment: EquipmentVerbose) -> ByteArray {
     let head_words = get_equipment_words(equipment.head.name);
     names += render_equipment_words(head_words, 505, 442);
 
-    let ring_words = get_equipment_words(equipment.ring.name);
-    names += render_equipment_words(ring_words, 597, 442);
+    let waist_words = get_equipment_words(equipment.waist.name);
+    names += render_equipment_words(waist_words, 597, 442);
 
     // Equipment names - Bottom row (below equipment boxes)
     let hand_words = get_equipment_words(equipment.hand.name);
     names += render_equipment_words(hand_words, 321, 576);
 
-    let neck_words = get_equipment_words(equipment.neck.name);
-    names += render_equipment_words(neck_words, 413, 576);
-
     let foot_words = get_equipment_words(equipment.foot.name);
-    names += render_equipment_words(foot_words, 505, 576);
+    names += render_equipment_words(foot_words, 413, 576);
 
-    let waist_words = get_equipment_words(equipment.waist.name);
-    names += render_equipment_words(waist_words, 597, 576);
+    let ring_words = get_equipment_words(equipment.ring.name);
+    names += render_equipment_words(ring_words, 505, 576);
+
+    let neck_words = get_equipment_words(equipment.neck.name);
+    names += render_equipment_words(neck_words, 597, 576);
 
     names
 }

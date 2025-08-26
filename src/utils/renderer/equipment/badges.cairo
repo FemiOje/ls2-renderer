@@ -39,11 +39,11 @@ pub fn generate_equipment_level_badges(equipment: EquipmentVerbose) -> ByteArray
     badges += u8_to_string(get_greatness(equipment.head.xp));
     badges += "</text>";
 
-    // Ring level badge (top-right slot)
+    // Waist level badge (top-right slot)
     badges += "<rect width=\"38\" height=\"16\" x=\"611\" y=\"355\" fill=\"#78E846\" rx=\"2\"/>";
     badges +=
         "<text x=\"630\" y=\"366\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.ring.xp));
+    badges += u8_to_string(get_greatness(equipment.waist.xp));
     badges += "</text>";
 
     // Bottom row equipment level badges
@@ -54,25 +54,25 @@ pub fn generate_equipment_level_badges(equipment: EquipmentVerbose) -> ByteArray
     badges += u8_to_string(get_greatness(equipment.hand.xp));
     badges += "</text>";
 
-    // Neck level badge (bottom-middle-left slot)
+    // Foot level badge (bottom-middle-left slot)
     badges += "<rect width=\"38\" height=\"16\" x=\"427\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
     badges +=
         "<text x=\"446\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.neck.xp));
-    badges += "</text>";
-
-    // Foot level badge (bottom-middle-right slot)
-    badges += "<rect width=\"38\" height=\"16\" x=\"519\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
-    badges +=
-        "<text x=\"538\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
     badges += u8_to_string(get_greatness(equipment.foot.xp));
     badges += "</text>";
 
-    // Waist level badge (bottom-right slot)
+    // Ring level badge (bottom-middle-right slot)
+    badges += "<rect width=\"38\" height=\"16\" x=\"519\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
+    badges +=
+        "<text x=\"538\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
+    badges += u8_to_string(get_greatness(equipment.ring.xp));
+    badges += "</text>";
+
+    // Neck level badge (bottom-right slot)
     badges += "<rect width=\"38\" height=\"16\" x=\"611\" y=\"489\" fill=\"#78E846\" rx=\"2\"/>";
     badges +=
         "<text x=\"630\" y=\"500\" fill=\"#000\" class=\"s10\" stroke=\"#000\" stroke-width=\"0.5\" text-anchor=\"middle\">LVL ";
-    badges += u8_to_string(get_greatness(equipment.waist.xp));
+    badges += u8_to_string(get_greatness(equipment.neck.xp));
     badges += "</text>";
 
     badges
