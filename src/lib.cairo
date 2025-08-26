@@ -8,6 +8,9 @@ pub mod utils {
         }
         pub mod pages {
             pub mod battle;
+            pub mod battle_layout;
+            pub mod battle_messages;
+            pub mod battle_sprites;
             pub mod inventory;
             pub mod item_bag;
             pub mod page_generators;

@@ -105,7 +105,7 @@ generate_page_outputs() {
     echo -e "${BLUE}📄 Page $page_num: $page_name ($theme_color theme)${NC}"
     echo "================================"
     
-    if extract_svg_from_test "test_output_all_pages_svg" "$page_num" "$TEMP_DIR/page_$page_num.svg"; then
+    if extract_svg_from_test "test_simple_output_page_${page_num}_svg" "$page_num" "$TEMP_DIR/page_$page_num.svg"; then
         local filename_base="page_${page_num}_$(echo $page_name | tr '[:upper:]' '[:lower:]' | tr ' ' '_')"
         cp "$TEMP_DIR/page_$page_num.svg" "$OUTPUT_DIR/${filename_base}.svg"
         

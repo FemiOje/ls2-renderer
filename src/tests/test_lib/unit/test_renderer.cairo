@@ -584,6 +584,22 @@ fn test_simple_output_page_1_svg() {
 }
 
 #[test]
+fn test_simple_output_page_2_svg() {
+    let adventurer = get_simple_adventurer();
+    let svg = generate_svg_with_page(adventurer, 2);
+
+    println!("=== PAGE 2 SVG ===");
+    println!("{}", svg);
+    println!("=== END PAGE 2 SVG ===");
+
+    // Also output base64 encoded version
+    let svg_base64 = bytes_base64_encode(svg);
+    println!("=== PAGE 2 BASE64 ===");
+    println!("data:image/svg+xml;base64,{}", svg_base64);
+    println!("=== END PAGE 2 BASE64 ===");
+}
+
+#[test]
 fn test_simple_svg_comparison() {
     let adventurer = get_simple_adventurer();
     let svg_page_0 = generate_svg_with_page(adventurer.clone(), 0);
