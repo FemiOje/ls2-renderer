@@ -46,18 +46,18 @@ pub fn generate_adventurer_name_text_with_page(name: ByteArray, page: u8) -> Byt
     // Use dynamic text rendering with calculated font size and theme color
     // Adjust x position based on page: align with respective logo positions
     let x_position = if page == 1 {
-        "268"  // Page 1: Item Bag
+        "268" // Page 1: Item Bag
     } else if page == 2 {
-        "274"  // Page 2: Battle - align with battle grid at x=224
+        "274" // Page 2: Battle - align with battle grid at x=224
     } else {
-        "339"  // Page 0: Inventory and other pages
+        "339" // Page 0: Inventory and other pages
     };
     let y_position = if page == 1 {
         "171"
     } else if page == 2 {
-        "135"  // Page 2: Battle - align horizontally with logo
+        "135" // Page 2: Battle - align horizontally with logo
     } else {
-        "160"  // Page 0: Inventory and other pages
+        "160" // Page 0: Inventory and other pages
     };
     name_text += "<text x=\"";
     name_text += x_position;

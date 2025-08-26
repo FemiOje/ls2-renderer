@@ -17,12 +17,12 @@ pub fn generate_battle_message(adventurer: AdventurerVerbose) -> ByteArray {
     if adventurer.health == 0 {
         return generate_death_message();
     }
-    
+
     // Check if in active combat with beast
     if adventurer.beast_health > 0 {
         return generate_combat_message(adventurer);
     }
-    
+
     // Default exploration message
     generate_exploration_message()
 }
@@ -33,14 +33,14 @@ pub fn generate_battle_message(adventurer: AdventurerVerbose) -> ByteArray {
 /// @return Combat-specific battle message
 fn generate_combat_message(adventurer: AdventurerVerbose) -> ByteArray {
     let mut message = "";
-    
+
     // Generate damage message based on health difference
     let damage_taken: u64 = if adventurer.health < 100 {
         (100 - adventurer.health).into()
     } else {
         0
     };
-    
+
     if damage_taken > 0 {
         message += "TROLL AMBUSHED YOU FOR ";
         message += u64_to_string(damage_taken);
@@ -53,10 +53,10 @@ fn generate_combat_message(adventurer: AdventurerVerbose) -> ByteArray {
             1 => "YOU STRIKE THE TROLL!",
             2 => "TROLL ROARS MENACINGLY!",
             3 => "COMBAT IS INTENSE!",
-            _ => "BATTLE CONTINUES!"
+            _ => "BATTLE CONTINUES!",
         };
     }
-    
+
     message
 }
 

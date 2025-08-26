@@ -59,3 +59,47 @@ pub fn neck() -> ByteArray {
 pub fn ring() -> ByteArray {
     "<path d=\"M13 3V2h-1V1h-2v1h1v3h-1v2H9v1H8v1H7v1H6v1H4v1H1v-1H0v2h1v1h1v1h4v-1h2v-1h1v-1h1v-1h1v-1h1V9h1V7h1V3h-1ZM3 9h1V8h1V7h1V6h1V5h1V4h2V2H9V1H8v1H6v1H5v1H4v1H3v1H2v1H1v2H0v1h1v1h2V9Z\"/>"
 }
+
+/// @notice Generates the power icon SVG path with customizable fill color
+/// @dev Power icon that can be themed for both player and troll stats
+/// @param fill_color The fill color for the power icon (e.g., "#78E846" for green, "#FE9676" for
+/// orange)
+/// @return SVG path element for power icon with specified color
+pub fn power_icon(fill_color: ByteArray) -> ByteArray {
+    let mut icon = "<path fill=\"";
+    icon += fill_color;
+    icon +=
+        "\" d=\"M9 6H8V4H7v3H4v1H3v2h1V8h3V7h2V6h2V0h2v6h-2v1h2V6h2V0h2v6h-2v1h2v7h-1v1h-5v1h5v-1h1v8h-1v1H4v-1H3v-8h1v1h3v-1H4v-1H1v-2H0V6h1V4h6V0h2v6Z\"/>";
+    icon
+}
+
+/// @notice Generates the level icon SVG path
+/// @dev Level indicator icon for both player and troll with customizable color
+/// @param fill_color The fill color for the level icon
+/// @return SVG path element for level icon
+pub fn level_icon(fill_color: ByteArray) -> ByteArray {
+    let mut icon = "";
+    icon += "<path fill=\"";
+    icon += fill_color.clone();
+    icon +=
+        "\" d=\"M20 20h3v2h-3v-2ZM18 18h2v2h-2v-2ZM16 16h2v2h-2v-2ZM7 7h3v2H7V7ZM5 5h2v2H5V5ZM3 3h2v2H3V3ZM3 20h2v2H3v-2ZM5 18h2v2H5v-2ZM7 16h3v2H7v-2Z\"/>";
+    icon += "<path fill=\"";
+    icon += fill_color.clone();
+    icon += "\" d=\"M14 9V3h-2v6h-2v3H3v2h7v2h2v6h2v-6h2v-2h7v-2h-7V9h-2Z\"/>";
+    icon += "<path fill=\"";
+    icon += fill_color;
+    icon += "\" d=\"M16 7h2v2h-2V7ZM18 5h2v2h-2V5ZM20 3h3v2h-3V3Z\"/>";
+    icon
+}
+
+/// @notice Generates the dexterity icon SVG path
+/// @dev Dexterity stat icon with customizable color
+/// @param fill_color The fill color for the dexterity icon
+/// @return SVG path element for dexterity icon
+pub fn dexterity_icon(fill_color: ByteArray) -> ByteArray {
+    let mut icon = "<path fill=\"";
+    icon += fill_color;
+    icon +=
+        "\" d=\"M12 13v-2h-1v-1h-1V9H9V7H7V6H6V5H5V3H3V2H2V1H1v25h1v-1h1v-2h2v-1h1v-1h1v-2h2v-1h1v-1h1v-2h1v-1h2v-1h-2ZM26 13v-2h-2v-1h-1V9h-1V7h-2V6h-1V5h-1V3h-2V2h-1V1h-1v25h1v-1h1v-2h2v-1h1v-1h1v-2h2v-1h1v-1h1v-2h2v-1h1v-1h-1Z\"/>";
+    icon
+}
