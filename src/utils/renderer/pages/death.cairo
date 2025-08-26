@@ -15,6 +15,7 @@ use death_mountain_renderer::utils::renderer::components::ui_components::{
 use death_mountain_renderer::utils::renderer::core::text_utils::{
     generate_adventurer_name_text_with_page, generate_logo_with_page,
 };
+use death_mountain_renderer::utils::renderer::components::icons::grave_icon;
 use death_mountain_renderer::utils::string::string_utils::felt252_to_string;
 
 /// @notice Generate death page content (Page 3 - Grey theme)
@@ -31,20 +32,25 @@ pub fn generate_death_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     content += generate_gold_display_with_page(adventurer.gold, 3);
     content += generate_level_display_with_page(adventurer.level, 3);
     content += generate_health_bar_with_page(adventurer.stats, adventurer.health, 3);
-    content += generate_death_header();
+    content += generate_grave_icon_positioned();
 
     // Note: Equipment section is omitted for death page
 
     content
 }
 
-/// @notice Generate death section header with grey theme styling
-/// @dev Creates styled "DEATH" text header with grey theme color
-/// @return SVG text element for death section header
-pub fn generate_death_header() -> ByteArray {
-    let mut death_header = "";
-    death_header += "<text x=\"286\" y=\"325\" fill=\"#888888\" class=\"s16\">";
-    death_header += "DEATH";
-    death_header += "</text>";
-    death_header
+
+/// @notice Generate positioned grave icon for death page
+/// @dev Creates grave icon centered and enlarged to fill available space
+/// @return SVG group element containing the positioned grave icon
+pub fn generate_grave_icon_positioned() -> ByteArray {
+    let mut positioned_icon = "";
+    
+    // Center the grave icon and scale it to 3.5x size to fill the available space
+    // Positioned at (295, 400) to center within the content area, scaled 3.5x
+    positioned_icon += "<g transform=\"translate(295, 400) scale(3.5)\" viewBox=\"0 0 80 100\">";
+    positioned_icon += grave_icon();
+    positioned_icon += "</g>";
+    
+    positioned_icon
 }

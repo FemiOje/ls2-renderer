@@ -103,3 +103,33 @@ pub fn dexterity_icon(fill_color: ByteArray) -> ByteArray {
         "\" d=\"M12 13v-2h-1v-1h-1V9H9V7H7V6H6V5H5V3H3V2H2V1H1v25h1v-1h1v-2h2v-1h1v-1h1v-2h2v-1h1v-1h1v-2h1v-1h2v-1h-2ZM26 13v-2h-2v-1h-1V9h-1V7h-2V6h-1V5h-1V3h-2V2h-1V1h-1v25h1v-1h1v-2h2v-1h1v-1h1v-2h2v-1h1v-1h1v-2h2v-1h1v-1h-1Z\"/>";
     icon
 }
+
+/// @notice Generates the grave icon SVG for death page
+/// @dev Pixelated tombstone design with cross symbol for deceased adventurers
+/// @return SVG content for grave icon with 80x100 dimensions
+pub fn grave_icon() -> ByteArray {
+    let mut icon = "";
+    
+    // Tombstone body
+    icon += "<path fill=\"#666\" d=\"M20 25h40v55H20z\"/>";
+    
+    // Arched tombstone top (pixelated dome effect)
+    icon += "<path fill=\"#666\" d=\"M25 15h30v15H25z\"/>";
+    icon += "<path fill=\"#666\" d=\"M30 10h20v10H30z\"/>";
+    icon += "<path fill=\"#666\" d=\"M35 5h10v10H35z\"/>";
+    
+    // Cross symbol
+    icon += "<path fill=\"#999\" d=\"M37 20h6v30h-6z\"/>";  // Vertical bar
+    icon += "<path fill=\"#999\" d=\"M27 30h26v6H27z\"/>";   // Horizontal bar
+    
+    // Ground and details
+    icon += "<path fill=\"#444\" d=\"M10 80h60v4H10z\"/>";
+    icon += "<path fill=\"#555\" d=\"M15 78h3v3h-3zM62 78h3v3h-3zM25 76h2v2h-2zM53 76h2v2h-2zM56 30h4v45h-4z\"/>";
+    icon += "<path fill=\"#555\" d=\"M25 76h30v4H25z\"/>";
+    
+    // Depth details
+    icon += "<path fill=\"#777\" d=\"M20 25h4v4h-4z\"/>";
+    icon += "<path fill=\"#555\" d=\"M56 25h4v4h-4z\"/>";
+    
+    icon
+}
