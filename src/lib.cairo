@@ -11,6 +11,7 @@ pub mod utils {
             pub mod battle_layout;
             pub mod battle_messages;
             pub mod battle_sprites;
+            pub mod death;
             pub mod inventory;
             pub mod item_bag;
             pub mod page_generators;

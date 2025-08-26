@@ -600,6 +600,24 @@ fn test_simple_output_page_2_svg() {
 }
 
 #[test]
+fn test_simple_output_page_3_svg() {
+    let mut dead_adventurer = get_simple_adventurer();
+    dead_adventurer.health = 0; // Make the adventurer dead to trigger death page
+    
+    let svg = generate_svg_with_page(dead_adventurer, 3);
+
+    println!("=== PAGE 3 SVG ===");
+    println!("{}", svg);
+    println!("=== END PAGE 3 SVG ===");
+
+    // Also output base64 encoded version
+    let svg_base64 = bytes_base64_encode(svg);
+    println!("=== PAGE 3 BASE64 ===");
+    println!("data:image/svg+xml;base64,{}", svg_base64);
+    println!("=== END PAGE 3 BASE64 ===");
+}
+
+#[test]
 fn test_simple_svg_comparison() {
     let adventurer = get_simple_adventurer();
     let svg_page_0 = generate_svg_with_page(adventurer.clone(), 0);

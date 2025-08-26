@@ -6,9 +6,10 @@
 
 #[derive(Copy, Drop, PartialEq, Serde, Debug)]
 pub enum PageType {
-    Inventory, // Page 1: Current inventory page (green theme) - current implementation
-    ItemBag, // Page 2: Item Bag contents (orange theme) - displays adventurer's bag items
-    Battle // Page 3: Battle-specific interface (gradient border) - only shown during combat
+    Inventory, // Page 0: Current inventory page (green theme) - current implementation
+    ItemBag, // Page 1: Item Bag contents (orange theme) - displays adventurer's bag items
+    Battle, // Page 2: Battle-specific interface (red theme) - only shown during combat
+    Death // Page 3: Death page (grey theme) - only shown when health == 0
 }
 
 #[derive(Copy, Drop, PartialEq, Serde, Debug)]
@@ -21,6 +22,7 @@ pub enum BattleState {
 #[derive(Copy, Drop, PartialEq, Serde, Debug)]
 pub enum PageMode {
     BattleOnly, // Show only battle page
+    DeathOnly, // Show only death page
     Normal: u8 // Normal cycling with page count
 }
 

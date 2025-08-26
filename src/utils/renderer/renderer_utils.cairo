@@ -21,8 +21,8 @@ use death_mountain_renderer::utils::renderer::core::svg_builder::{
     generate_border_for_page, generate_sliding_container_end, generate_sliding_container_start,
 };
 use death_mountain_renderer::utils::renderer::pages::page_generators::{
-    generate_battle_page_content, generate_inventory_page_content, generate_item_bag_page_content,
-    generate_page_content, generate_page_wrapper,
+    generate_battle_page_content, generate_death_page_content, generate_inventory_page_content,
+    generate_item_bag_page_content, generate_page_content, generate_page_wrapper,
 };
 
 
@@ -54,7 +54,7 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
     };
 
     let page_mode = match battle_state {
-        BattleState::Dead => PageMode::Normal(2), // Only inventory and bag pages when dead
+        BattleState::Dead => PageMode::DeathOnly, // Only death page when dead
         BattleState::InCombat => PageMode::BattleOnly, // Only battle page
         BattleState::Normal => PageMode::Normal(
             2,
@@ -63,6 +63,7 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
 
     let page_count = match page_mode {
         PageMode::BattleOnly => 1_u8,
+        PageMode::DeathOnly => 1_u8,
         PageMode::Normal(count) => count,
     };
 
@@ -75,6 +76,12 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
             let battle_content = generate_battle_page_content(adventurer.clone());
             let battle_border = generate_border_for_page(2);
             svg += generate_page_wrapper(battle_content, battle_border);
+        },
+        PageMode::DeathOnly => {
+            // Only show death page when adventurer is dead (no sliding animation)
+            let death_content = generate_death_page_content(adventurer.clone());
+            let death_border = generate_border_for_page(3);
+            svg += generate_page_wrapper(death_content, death_border);
         },
         PageMode::Normal(_) => {
             // Show 2-page sliding cycle: Inventory <-> ItemBag

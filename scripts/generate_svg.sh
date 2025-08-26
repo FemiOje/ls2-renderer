@@ -7,9 +7,11 @@
 # Page 0: Inventory (Green theme)
 # Page 1: Item Bag (Orange theme)  
 # Page 2: Battle (Red theme)
+# Page 3: Death (Grey theme)
 # 
 # Normal Mode: Pages 0-1 (2-page animated cycle)
 # Battle Mode: Page 2 only (static display)
+# Death Mode: Page 3 only (static display when health == 0)
 
 set -e
 
@@ -30,7 +32,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}📋 Generating SVG outputs for all 3 pages...${NC}"
+echo -e "${BLUE}📋 Generating SVG outputs for all 4 pages...${NC}"
 
 # Function to extract SVG from test output
 extract_svg_from_test() {
@@ -120,10 +122,11 @@ generate_page_outputs() {
     fi
 }
 
-# Generate all 3 pages (one test run each for now - can optimize later)
+# Generate all 4 pages (one test run each for now - can optimize later)
 generate_page_outputs "0" "Inventory" "Green"
 generate_page_outputs "1" "Item Bag" "Orange" 
 generate_page_outputs "2" "Battle" "Red"
+generate_page_outputs "3" "Death" "Grey"
 
 # Function to generate animated SVGs
 generate_animated_svgs() {
@@ -229,6 +232,8 @@ echo "├── page_1_item_bag.svg             - Item Bag page SVG (Orange them
 echo "├── page_1_item_bag.png             - Item Bag page PNG (Orange theme)"
 echo "├── page_2_battle.svg               - Battle page SVG (Red theme)"
 echo "├── page_2_battle.png               - Battle page PNG (Red theme)"
+echo "├── page_3_death.svg                - Death page SVG (Grey theme)"
+echo "├── page_3_death.png                - Death page PNG (Grey theme)"
 echo "├── animated_normal_mode.svg        - Animated SVG for normal mode (2-page cycle)"
 echo "├── animated_battle_mode.svg        - Animated SVG for battle mode (single page)"
 echo "└── size_comparison.txt             - Size comparison stats"
@@ -236,6 +241,7 @@ echo ""
 echo -e "${BLUE}🎮 Page System:${NC}"
 echo "• Normal Mode: Pages 0-1 (Inventory + Item Bag) in animated cycle"
 echo "• Battle Mode: Page 2 only (Battle page) when in combat"
+echo "• Death Mode: Page 3 only (Death page) when health == 0"
 echo "• Animated SVGs: Dynamic state-based rendering for NFT display"
 echo ""
 echo -e "${BLUE}💡 Usage Tips:${NC}"

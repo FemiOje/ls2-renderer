@@ -8,6 +8,9 @@
 use death_mountain_renderer::models::models::AdventurerVerbose;
 pub use death_mountain_renderer::utils::renderer::pages::battle::generate_battle_page_content;
 
+// Local import for death page
+pub use death_mountain_renderer::utils::renderer::pages::death::generate_death_page_content;
+
 // Import and re-export individual page modules for backward compatibility
 pub use death_mountain_renderer::utils::renderer::pages::inventory::generate_inventory_page_content;
 pub use death_mountain_renderer::utils::renderer::pages::item_bag::generate_item_bag_page_content;
@@ -15,13 +18,14 @@ pub use death_mountain_renderer::utils::renderer::pages::item_bag::generate_item
 /// @notice Main page router - generates content based on page number
 /// @dev Routes to appropriate page content generator based on page parameter
 /// @param adventurer The adventurer data to render
-/// @param page The page number (0=inventory, 1=bag, 2=battle)
+/// @param page The page number (0=inventory, 1=bag, 2=battle, 3=death)
 /// @return Complete page content for the specified page
 pub fn generate_page_content(adventurer: AdventurerVerbose, page: u8) -> ByteArray {
     match page {
         0 => generate_inventory_page_content(adventurer),
         1 => generate_item_bag_page_content(adventurer),
         2 => generate_battle_page_content(adventurer),
+        3 => generate_death_page_content(adventurer),
         _ => generate_inventory_page_content(adventurer) // Default to inventory page
     }
 }
