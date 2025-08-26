@@ -44,16 +44,20 @@ pub fn generate_adventurer_name_text_with_page(name: ByteArray, page: u8) -> Byt
     };
 
     // Use dynamic text rendering with calculated font size and theme color
-    // Adjust x position based on page: page 1 uses x="268" to align with updated layout
+    // Adjust x position based on page: align with respective logo positions
     let x_position = if page == 1 {
-        "268"
+        "268"  // Page 1: Item Bag
+    } else if page == 2 {
+        "274"  // Page 2: Battle - align with battle grid at x=224
     } else {
-        "339"
+        "339"  // Page 0: Inventory and other pages
     };
     let y_position = if page == 1 {
         "171"
+    } else if page == 2 {
+        "135"  // Page 2: Battle - align horizontally with logo
     } else {
-        "160"
+        "160"  // Page 0: Inventory and other pages
     };
     name_text += "<text x=\"";
     name_text += x_position;
@@ -94,6 +98,10 @@ pub fn generate_logo_with_page(page: u8) -> ByteArray {
         // Page 1 (Item Bag) - position logo to align with new layout starting at x=213
         logo +=
             "\" fill-rule=\"evenodd\" d=\"M213 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM210.5 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
+    } else if page == 2 {
+        // Page 2 (Battle) - position logo to align with battle grid starting at x=224
+        logo +=
+            "\" fill-rule=\"evenodd\" d=\"M224 115.5c0 2.4 0 2.5-1.2 2.7l-1.3.1-.1 9.4-.2 9.4h7.9l.1 2.6.1 2.7 4.4.1c6.4.2 6.5.2 6.5-2.9v-2.5l3.8-.1 3.9-.2v-18.5l-1.3-.1c-1.2-.2-1.3-.3-1.3-2.7V113h-21.3v2.5Zm7.9 12.1v4l-2.4-.2-2.5-.1-.1-3.8-.1-3.9h5.1v4Zm10.6 0v4h-5v-8h5.1v4Zm-5.5 6.7v2.3h-4.6V132h4.6v2.3ZM221.5 140c-.2.3-.2 6.3-.1 13.3V166l9.4.1 9.4.1v-5.5h-13.4v-21.3h-2.6c-1.6 0-2.6.2-2.7.6Zm7.8 5c-.1.4-.2 3.5 0 6.9v6.2l6.6.1 6.6.2v10.1l-10.5.1-10.5.1-.2 2.7-.1 2.7h24.1v-2.5c0-2.4 0-2.6 1.3-2.7l1.3-.2v-8l.2-8h-13.4v-2.2l6.6-.1 6.6-.2v-5.5l-9.2-.1c-7.2-.1-9.2 0-9.4.5Z\" clip-rule=\"evenodd\"/>";
     } else {
         // Page 0 (Inventory) and other pages - use original position
         logo +=

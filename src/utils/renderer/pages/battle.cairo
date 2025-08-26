@@ -32,8 +32,15 @@ use death_mountain_renderer::utils::renderer::pages::battle_messages::{
 pub fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     let mut content = "";
 
-    // Add adventurer name with battle theme
-    content += generate_adventurer_name_text_with_page(felt252_to_string(adventurer.name), 2);
+    // Add custom two-line battle header: "<name>'s" and "Current Battle"
+    let player_name = felt252_to_string(adventurer.name);
+    
+    // First line: Player name with apostrophe-s (using standard positioning for page 2)
+    content += generate_adventurer_name_text_with_page(player_name + "'s", 2);
+    
+    // Second line: "Current Battle" (positioned below the player name at aligned x position)
+    content += "<text x=\"274\" y=\"160\" text-anchor=\"left\" fill=\"#FF6B6B\" font-family=\"monospace\" font-size=\"20\" font-weight=\"bold\">Current Battle</text>";
+    
     content += generate_logo_with_page(2);
 
     // Generate modular battle layout components

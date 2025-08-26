@@ -48,7 +48,7 @@ pub fn generate_troll_battle_row(power: u64, level: u64) -> ByteArray {
     
     // Troll label
     row += "<rect x=\"238\" y=\"233\" width=\"60\" height=\"21\" rx=\"2\" fill=\"#FE9675\"/>";
-    row += "<text x=\"268\" y=\"249\" fill=\"black\" class=\"s12\" text-anchor=\"middle\">TROLL</text>";
+    row += "<text x=\"268\" y=\"249\" fill=\"black\" class=\"s16\" text-anchor=\"middle\">TROLL</text>";
     
     // Power column
     row += "<rect x=\"";
@@ -61,8 +61,8 @@ pub fn generate_troll_battle_row(power: u64, level: u64) -> ByteArray {
     row += format!("{}", BATTLE_ROW_HEIGHT);
     row += "\" rx=\"6\" fill=\"#210E04\"/>";
     
-    row += "<text x=\"467\" y=\"280\" fill=\"#FE9676\" class=\"s12\" text-anchor=\"middle\">POWER</text>";
-    row += "<text x=\"467\" y=\"320\" fill=\"#FE9676\" class=\"s24\" text-anchor=\"middle\">";
+    row += "<text x=\"467\" y=\"280\" fill=\"#FE9676\" class=\"s16\" text-anchor=\"middle\">POWER</text>";
+    row += "<text x=\"467\" y=\"320\" fill=\"#FE9676\" class=\"s32\" text-anchor=\"middle\">"; 
     row += u64_to_string(power);
     row += "</text>";
     
@@ -77,8 +77,8 @@ pub fn generate_troll_battle_row(power: u64, level: u64) -> ByteArray {
     row += format!("{}", BATTLE_ROW_HEIGHT);
     row += "\" rx=\"6\" fill=\"#210E04\"/>";
     
-    row += "<text x=\"591\" y=\"280\" fill=\"#FE9676\" class=\"s12\" text-anchor=\"middle\">LEVEL</text>";
-    row += "<text x=\"591\" y=\"320\" fill=\"#FE9676\" class=\"s24\" text-anchor=\"middle\">";
+    row += "<text x=\"591\" y=\"280\" fill=\"#FE9676\" class=\"s16\" text-anchor=\"middle\">LEVEL</text>";
+    row += "<text x=\"591\" y=\"320\" fill=\"#FE9676\" class=\"s32\" text-anchor=\"middle\">"; 
     row += u64_to_string(level);
     row += "</text>";
     
@@ -104,7 +104,7 @@ pub fn generate_battle_message_row(message: ByteArray) -> ByteArray {
     row += "\" rx=\"5\" fill=\"#2C1A0A\" stroke=\"black\"/>";
     
     // Battle message text
-    row += "<text x=\"435\" y=\"510\" fill=\"#E89446\" class=\"s16\" text-anchor=\"middle\">";
+    row += "<text x=\"435\" y=\"510\" fill=\"#E89446\" class=\"s24\" text-anchor=\"middle\">"; 
     row += message;
     row += "</text>";
     
@@ -131,7 +131,7 @@ pub fn generate_player_battle_row(adventurer: AdventurerVerbose) -> ByteArray {
     
     // Player label
     row += "<rect x=\"237\" y=\"575\" width=\"40\" height=\"21\" rx=\"4\" fill=\"#78E846\"/>";
-    row += "<text x=\"257\" y=\"591\" fill=\"black\" class=\"s12\" text-anchor=\"middle\">YOU</text>";
+    row += "<text x=\"257\" y=\"591\" fill=\"black\" class=\"s16\" text-anchor=\"middle\">YOU</text>";
     
     // Power column
     row += "<rect x=\"";
@@ -144,8 +144,8 @@ pub fn generate_player_battle_row(adventurer: AdventurerVerbose) -> ByteArray {
     row += format!("{}", BATTLE_ROW_HEIGHT);
     row += "\" rx=\"6\" fill=\"#171D10\"/>";
     
-    row += "<text x=\"467\" y=\"622\" fill=\"#78E846\" class=\"s12\" text-anchor=\"middle\">POWER</text>";
-    row += "<text x=\"467\" y=\"662\" fill=\"#78E846\" class=\"s24\" text-anchor=\"middle\">";
+    row += "<text x=\"467\" y=\"622\" fill=\"#78E846\" class=\"s16\" text-anchor=\"middle\">POWER</text>";
+    row += "<text x=\"467\" y=\"662\" fill=\"#78E846\" class=\"s32\" text-anchor=\"middle\">"; 
     // Calculate power based on weapon + stats
     let power = adventurer.stats.strength + adventurer.stats.dexterity;
     row += u64_to_string(power.into());
@@ -162,8 +162,8 @@ pub fn generate_player_battle_row(adventurer: AdventurerVerbose) -> ByteArray {
     row += format!("{}", BATTLE_ROW_HEIGHT);
     row += "\" rx=\"6\" fill=\"#171D10\"/>";
     
-    row += "<text x=\"591\" y=\"622\" fill=\"#78E846\" class=\"s12\" text-anchor=\"middle\">DEX</text>";
-    row += "<text x=\"591\" y=\"662\" fill=\"#78E846\" class=\"s24\" text-anchor=\"middle\">";
+    row += "<text x=\"591\" y=\"622\" fill=\"#78E846\" class=\"s16\" text-anchor=\"middle\">DEX</text>";
+    row += "<text x=\"591\" y=\"662\" fill=\"#78E846\" class=\"s32\" text-anchor=\"middle\">"; 
     row += u64_to_string(adventurer.stats.dexterity.into());
     row += "</text>";
     
@@ -219,7 +219,7 @@ pub fn generate_health_bar(x: u32, y: u32, current_health: u64, max_health: u64,
     health_bar += format!("{}", y + 25);
     health_bar += "\" fill=\"";
     health_bar += color_theme;
-    health_bar += "\" class=\"s10\" text-anchor=\"middle\">";
+    health_bar += "\" class=\"s16\" text-anchor=\"middle\">"; 
     health_bar += u64_to_string(current_health);
     health_bar += "/";
     health_bar += u64_to_string(max_health);
