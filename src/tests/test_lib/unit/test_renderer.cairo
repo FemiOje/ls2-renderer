@@ -603,7 +603,7 @@ fn test_simple_output_page_2_svg() {
 fn test_simple_output_page_3_svg() {
     let mut dead_adventurer = get_simple_adventurer();
     dead_adventurer.health = 0; // Make the adventurer dead to trigger death page
-    
+
     let svg = generate_svg_with_page(dead_adventurer, 3);
 
     println!("=== PAGE 3 SVG ===");

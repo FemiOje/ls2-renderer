@@ -21,8 +21,9 @@ use death_mountain_renderer::utils::renderer::core::svg_builder::{
     generate_border_for_page, generate_sliding_container_end, generate_sliding_container_start,
 };
 use death_mountain_renderer::utils::renderer::pages::page_generators::{
-    generate_battle_page_content, generate_death_page_content, generate_inventory_page_content,
-    generate_item_bag_page_content, generate_page_content, generate_page_wrapper,
+    // generate_battle_page_content, // TEMPORARILY DISABLED
+    generate_death_page_content, generate_inventory_page_content, generate_item_bag_page_content,
+    generate_page_content, generate_page_wrapper,
 };
 
 
@@ -55,14 +56,17 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
 
     let page_mode = match battle_state {
         BattleState::Dead => PageMode::DeathOnly, // Only death page when dead
-        BattleState::InCombat => PageMode::BattleOnly, // Only battle page
+        // BattleState::InCombat => PageMode::BattleOnly, // Only battle page - TEMPORARILY DISABLED
+        BattleState::InCombat => PageMode::Normal(
+            2,
+        ), // TEMPORARY: Use normal 2-page mode during battle
         BattleState::Normal => PageMode::Normal(
             2,
         ) // Only inventory and bag pages when alive & not in battle
     };
 
     let page_count = match page_mode {
-        PageMode::BattleOnly => 1_u8,
+        PageMode::BattleOnly => 2_u8, // TEMPORARILY DISABLED - now returns normal 2-page count
         PageMode::DeathOnly => 1_u8,
         PageMode::Normal(count) => count,
     };
@@ -72,10 +76,22 @@ pub fn generate_svg(adventurer: AdventurerVerbose) -> ByteArray {
 
     match page_mode {
         PageMode::BattleOnly => {
-            // Only show battle page when in combat (no sliding animation)
-            let battle_content = generate_battle_page_content(adventurer.clone());
-            let battle_border = generate_border_for_page(2);
-            svg += generate_page_wrapper(battle_content, battle_border);
+            // TEMPORARILY DISABLED - battle mode now shows normal 2-page cycle instead
+            if page_count > 1 {
+                svg += generate_sliding_container_start();
+            }
+
+            let inventory_content = generate_inventory_page_content(adventurer.clone());
+            let inventory_border = generate_border_for_page(0);
+            svg += generate_page_wrapper(inventory_content, inventory_border);
+
+            let item_bag_content = generate_item_bag_page_content(adventurer.clone());
+            let item_bag_border = generate_border_for_page(1);
+            svg += generate_page_wrapper(item_bag_content, item_bag_border);
+
+            if page_count > 1 {
+                svg += generate_sliding_container_end();
+            }
         },
         PageMode::DeathOnly => {
             // Only show death page when adventurer is dead (no sliding animation)

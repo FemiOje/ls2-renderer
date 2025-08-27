@@ -141,7 +141,7 @@ generate_animated_svgs() {
     
     # Generate normal mode SVG
     echo -e "${BLUE}📋 Generating Normal Mode SVG...${NC}"
-    scarb test test_output_dynamic_animated_svg_comparison 2>&1 | sed -n "/=== NORMAL MODE SVG ===/,/=== END NORMAL MODE SVG ===/p" | sed '1d;$d' > "$normal_file"
+    scarb test test_output_animated_svg 2>&1 | sed -n "/=== ANIMATED SVG ===/,/=== END ANIMATED SVG ===/p" | sed '1d;$d' > "$normal_file"
     
     if [ -s "$normal_file" ]; then
         echo -e "${GREEN}✅ Normal Mode SVG generated successfully!${NC}"
@@ -159,25 +159,30 @@ generate_animated_svgs() {
         echo -e "${RED}❌ Failed to generate Normal Mode SVG${NC}"
     fi
     
-    # Generate battle mode SVG
+    # Battle mode SVG generation temporarily disabled
     echo ""
-    echo -e "${BLUE}📋 Generating Battle Mode SVG...${NC}"
-    scarb test test_output_dynamic_animated_svg_comparison 2>&1 | sed -n "/=== BATTLE MODE SVG ===/,/=== END BATTLE MODE SVG ===/p" | sed '1d;$d' > "$battle_file"
+    echo -e "${YELLOW}⚠️  Battle Mode SVG generation temporarily disabled${NC}"
+    echo -e "${YELLOW}    Battle page implementation is currently commented out${NC}"
+    echo -e "${YELLOW}    Battle mode now falls back to normal 2-page animation${NC}"
+    # Generate battle mode SVG
+    # echo ""
+    # echo -e "${BLUE}📋 Generating Battle Mode SVG...${NC}"
+    # scarb test test_output_dynamic_animated_svg_comparison 2>&1 | sed -n "/=== BATTLE MODE SVG ===/,/=== END BATTLE MODE SVG ===/p" | sed '1d;$d' > "$battle_file"
     
-    if [ -s "$battle_file" ]; then
-        echo -e "${GREEN}✅ Battle Mode SVG generated successfully!${NC}"
-        echo "📁 File: $battle_file"
-        echo "📊 Size: $(ls -lh $battle_file | awk '{print $5}')"
-        echo ""
-        echo -e "${RED}⚔️  Battle Mode Features:${NC}"
-        echo "  • Static display (no animation)"
-        echo "  • Page 2: Battle page only (Red theme - #FF6B6B)"
-        echo "  • Shows current battle interface"
-        echo "  • Active when adventurer is IN battle (beast_health > 0)"
-        battle_success=1
-    else
-        echo -e "${RED}❌ Failed to generate Battle Mode SVG${NC}"
-    fi
+    # if [ -s "$battle_file" ]; then
+    #     echo -e "${GREEN}✅ Battle Mode SVG generated successfully!${NC}"
+    #     echo "📁 File: $battle_file"
+    #     echo "📊 Size: $(ls -lh $battle_file | awk '{print $5}')"
+    #     echo ""
+    #     echo -e "${RED}⚔️  Battle Mode Features:${NC}"
+    #     echo "  • Static display (no animation)"
+    #     echo "  • Page 2: Battle page only (Red theme - #FF6B6B)"
+    #     echo "  • Shows current battle interface"
+    #     echo "  • Active when adventurer is IN battle (beast_health > 0)"
+    #     battle_success=1
+    # else
+    #     echo -e "${RED}❌ Failed to generate Battle Mode SVG${NC}"
+    # fi
     
     echo ""
     echo "=================================================="
@@ -190,11 +195,12 @@ generate_animated_svgs() {
         echo -e "${RED}✗ Normal Mode SVG: Failed${NC}"
     fi
     
-    if [ $battle_success -eq 1 ]; then
-        echo -e "${GREEN}✓ Battle Mode SVG:${NC} $battle_file"  
-    else
-        echo -e "${RED}✗ Battle Mode SVG: Failed${NC}"
-    fi
+    # if [ $battle_success -eq 1 ]; then
+    #     echo -e "${GREEN}✓ Battle Mode SVG:${NC} $battle_file"  
+    # else
+    #     echo -e "${RED}✗ Battle Mode SVG: Failed${NC}"
+    # fi
+    echo -e "${YELLOW}⚠️  Battle Mode SVG: Temporarily disabled${NC}"
 }
 
 # Generate animated SVGs
@@ -235,12 +241,12 @@ echo "├── page_2_battle.png               - Battle page PNG (Red theme)"
 echo "├── page_3_death.svg                - Death page SVG (Grey theme)"
 echo "├── page_3_death.png                - Death page PNG (Grey theme)"
 echo "├── animated_normal_mode.svg        - Animated SVG for normal mode (2-page cycle)"
-echo "├── animated_battle_mode.svg        - Animated SVG for battle mode (single page)"
+echo "├── animated_battle_mode.svg        - [DISABLED] Battle mode SVG generation"
 echo "└── size_comparison.txt             - Size comparison stats"
 echo ""
 echo -e "${BLUE}🎮 Page System:${NC}"
 echo "• Normal Mode: Pages 0-1 (Inventory + Item Bag) in animated cycle"
-echo "• Battle Mode: Page 2 only (Battle page) when in combat"
+echo "• Battle Mode: [TEMPORARILY DISABLED] Falls back to normal 2-page mode"
 echo "• Death Mode: Page 3 only (Death page) when health == 0"
 echo "• Animated SVGs: Dynamic state-based rendering for NFT display"
 echo ""

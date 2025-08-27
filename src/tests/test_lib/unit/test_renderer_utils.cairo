@@ -553,31 +553,32 @@ fn test_output_animated_svg() {
     println!("SVG size validation completed");
 }
 
-#[test]
-fn test_dynamic_animated_svg_battle_mode() {
-    // Create adventurer in battle mode (beast_health > 0)
-    let mut battle_adventurer = get_simple_adventurer();
-    battle_adventurer.beast_health = 50; // Set beast health to indicate combat
+// TEMPORARILY DISABLED - Battle mode tests
+// #[test]
+// fn test_dynamic_animated_svg_battle_mode() {
+//     // Create adventurer in battle mode (beast_health > 0)
+//     let mut battle_adventurer = get_simple_adventurer();
+//     battle_adventurer.beast_health = 50; // Set beast health to indicate combat
 
-    // Generate dynamic animated SVG - should only show battle page
-    let battle_svg = generate_svg(battle_adventurer.clone());
+//     // Generate dynamic animated SVG - should only show battle page
+//     let battle_svg = generate_svg(battle_adventurer.clone());
 
-    // Validate battle mode specific content
-    let battle_page_count = PageRendererImpl::get_page_count(battle_adventurer.clone());
-    assert!(battle_page_count == 1, "Battle mode should have 1 page");
+//     // Validate battle mode specific content
+//     let battle_page_count = PageRendererImpl::get_page_count(battle_adventurer.clone());
+//     assert!(battle_page_count == 1, "Battle mode should have 1 page");
 
-    // Should contain battle-specific content
-    assert!(contains_pattern(@battle_svg, @"Current Battle"), "Should contain battle title");
-    assert!(contains_pattern(@battle_svg, @"fill=\"#FF6B6B\""), "Should have red battle theme");
+//     // Should contain battle-specific content
+//     assert!(contains_pattern(@battle_svg, @"Current Battle"), "Should contain battle title");
+//     assert!(contains_pattern(@battle_svg, @"fill=\"#FF6B6B\""), "Should have red battle theme");
 
-    // Should be static (no animation) since only 1 page
-    assert!(
-        contains_pattern(@battle_svg, @".page{opacity:1;}"),
-        "Should be static display for single battle page",
-    );
+//     // Should be static (no animation) since only 1 page
+//     assert!(
+//         contains_pattern(@battle_svg, @".page{opacity:1;}"),
+//         "Should be static display for single battle page",
+//     );
 
-    println!("SUCCESS: Battle mode dynamic SVG validation passed");
-}
+//     println!("SUCCESS: Battle mode dynamic SVG validation passed");
+// }
 
 #[test]
 fn test_dynamic_animated_svg_normal_mode() {
@@ -618,49 +619,50 @@ fn test_dynamic_animated_svg_normal_mode() {
     println!("SUCCESS: Normal mode dynamic SVG validation passed");
 }
 
-#[test]
-fn test_output_dynamic_animated_svg_comparison() {
-    // Test 1: Battle Mode (1 page - 5 second duration)
-    let mut battle_adventurer = get_simple_adventurer();
-    battle_adventurer.beast_health = 50;
-    battle_adventurer.health = 80;
+// TEMPORARILY DISABLED - Battle vs Normal mode comparison test
+// #[test]
+// fn test_output_dynamic_animated_svg_comparison() {
+//     // Test 1: Battle Mode (1 page - 5 second duration)
+//     let mut battle_adventurer = get_simple_adventurer();
+//     battle_adventurer.beast_health = 50;
+//     battle_adventurer.health = 80;
 
-    let battle_svg = generate_svg(battle_adventurer.clone());
-    let battle_page_count = PageRendererImpl::get_page_count(battle_adventurer.clone());
+//     let battle_svg = generate_svg(battle_adventurer.clone());
+//     let battle_page_count = PageRendererImpl::get_page_count(battle_adventurer.clone());
 
-    println!("=== BATTLE MODE SVG ===");
-    println!("{}", battle_svg);
-    println!("=== END BATTLE MODE SVG ===");
+//     println!("=== BATTLE MODE SVG ===");
+//     println!("{}", battle_svg);
+//     println!("=== END BATTLE MODE SVG ===");
 
-    // Test 2: Normal Mode (2 pages - 10 second duration)
-    let mut normal_adventurer = get_simple_adventurer();
-    normal_adventurer.beast_health = 0;
-    normal_adventurer.health = 100;
+//     // Test 2: Normal Mode (2 pages - 10 second duration)
+//     let mut normal_adventurer = get_simple_adventurer();
+//     normal_adventurer.beast_health = 0;
+//     normal_adventurer.health = 100;
 
-    let normal_svg = generate_svg(normal_adventurer.clone());
-    let normal_page_count = PageRendererImpl::get_page_count(normal_adventurer.clone());
+//     let normal_svg = generate_svg(normal_adventurer.clone());
+//     let normal_page_count = PageRendererImpl::get_page_count(normal_adventurer.clone());
 
-    println!("=== NORMAL MODE SVG ===");
-    println!("{}", normal_svg);
-    println!("=== END NORMAL MODE SVG ===");
+//     println!("=== NORMAL MODE SVG ===");
+//     println!("{}", normal_svg);
+//     println!("=== END NORMAL MODE SVG ===");
 
-    // Validate the key differences
-    assert!(battle_page_count == 1, "Battle mode should have 1 page");
-    assert!(normal_page_count == 2, "Normal mode should have 2 pages");
+//     // Validate the key differences
+//     assert!(battle_page_count == 1, "Battle mode should have 1 page");
+//     assert!(normal_page_count == 2, "Normal mode should have 2 pages");
 
-    // Battle mode should be static (no animation), normal mode should have animation
-    assert!(
-        contains_pattern(@battle_svg, @".page{opacity:1;}"),
-        "Battle mode should be static (no animation)",
-    );
-    assert!(
-        contains_pattern(@normal_svg, @"pageTransition 10s infinite"),
-        "Normal mode should have 10s animation",
-    );
+//     // Battle mode should be static (no animation), normal mode should have animation
+//     assert!(
+//         contains_pattern(@battle_svg, @".page{opacity:1;}"),
+//         "Battle mode should be static (no animation)",
+//     );
+//     assert!(
+//         contains_pattern(@normal_svg, @"pageTransition 10s infinite"),
+//         "Normal mode should have 10s animation",
+//     );
 
-    println!("SUCCESS: Dynamic page count comparison completed");
-    println!("Battle mode: 1 page, Normal mode: 2 pages");
-}
+//     println!("SUCCESS: Dynamic page count comparison completed");
+//     println!("Battle mode: 1 page, Normal mode: 2 pages");
+// }
 
 #[test]
 fn test_animation_scalability_with_different_page_counts() {
