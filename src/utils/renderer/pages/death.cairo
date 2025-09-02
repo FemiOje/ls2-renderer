@@ -10,13 +10,12 @@ use death_mountain_renderer::utils::renderer::components::icons::grave_icon;
 
 // Import UI components
 use death_mountain_renderer::utils::renderer::components::ui_components::{
-    generate_gold_display_with_page, generate_health_bar_with_page,
-    generate_level_display_with_page, generate_stats_text_with_page,
+    generate_gold_display_with_page, generate_level_display_with_page, generate_stats_text_with_page,
 };
 use death_mountain_renderer::utils::renderer::core::text_utils::{
     generate_adventurer_name_text_with_page, generate_logo_with_page,
 };
-use death_mountain_renderer::utils::string::string_utils::felt252_to_string;
+use death_mountain_renderer::utils::string::string_utils::{felt252_to_string, u64_to_string};
 
 /// @notice Generate death page content (Page 3 - Grey theme)
 /// @dev Creates complete death page with stats, but no equipment section
@@ -31,26 +30,53 @@ pub fn generate_death_page_content(adventurer: AdventurerVerbose) -> ByteArray {
     content += generate_logo_with_page(3);
     content += generate_gold_display_with_page(adventurer.gold, 3);
     content += generate_level_display_with_page(adventurer.level, 3);
-    content += generate_health_bar_with_page(adventurer.stats, adventurer.health, 3);
     content += generate_grave_icon_positioned();
+    content += generate_death_message(adventurer.xp);
 
-    // Note: Equipment section is omitted for death page
 
     content
 }
 
 
 /// @notice Generate positioned grave icon for death page
-/// @dev Creates grave icon centered and enlarged to fill available space
+/// @dev Creates grave icon centered and scaled accounting for left-side stats text
 /// @return SVG group element containing the positioned grave icon
 pub fn generate_grave_icon_positioned() -> ByteArray {
     let mut positioned_icon = "";
 
-    // Center the grave icon and scale it to 3.5x size to fill the available space
-    // Positioned at (295, 400) to center within the content area, scaled 3.5x
-    positioned_icon += "<g transform=\"translate(295, 400) scale(3.5)\" viewBox=\"0 0 80 100\">";
+    // Position the grave icon at x=320 to align with death message text
+    // Positioned at (320, 320) to align with text, scaled 3.0x
+    positioned_icon += "<g transform=\"translate(320, 320) scale(3.0)\" viewBox=\"0 0 80 100\">";
     positioned_icon += grave_icon();
     positioned_icon += "</g>";
 
     positioned_icon
+}
+
+/// @notice Generate Death Mountain inspired death message
+/// @dev Creates a 3-line death message with heroic tone, only XP as variable
+/// @param adventurer The deceased adventurer data (only XP is used)
+/// @return SVG text elements containing the formatted death message
+pub fn generate_death_message(adventurer_xp: u16) -> ByteArray {
+    let mut message = "";
+    
+    // Extract only XP for the death message
+    let xp_str = u64_to_string(adventurer_xp.into());
+    
+    
+    message += "<text x=\"440\" y=\"655\" fill=\"#888888\" class=\"s16\" text-anchor=\"middle\">";
+    message += "Though they fought valiantly,";
+    message += "</text>";
+    
+    message += "<text x=\"440\" y=\"688\" fill=\"#888888\" class=\"s16\" text-anchor=\"middle\">";
+    message += "Death Mountain has claimed another.";
+    message += "</text>";
+    
+    message += "<text x=\"440\" y=\"721\" fill=\"#888888\" class=\"s16\" text-anchor=\"middle\">";
+    message += "Final score: <tspan font-weight=\"bold\">";
+    message += xp_str;
+    message += "</tspan> XP";
+    message += "</text>";
+    
+    message
 }
