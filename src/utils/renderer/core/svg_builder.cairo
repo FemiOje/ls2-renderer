@@ -12,9 +12,16 @@ use death_mountain_renderer::utils::renderer::components::theme::get_theme_color
 /// @param page The page number for theme color selection (0=green, 1=orange, 2=red)
 /// @return Complete SVG border markup with themed colors
 pub fn generate_border_for_page(page: u8) -> ByteArray {
-    let border_color = get_theme_color(page);
-
     let mut border = "";
+    
+    // For page 2 (battle), use gradient instead of solid color
+    let border_color = if page == 2 {
+        // Add gradient definition for battle page
+        border += generate_battle_gradient();
+        "url(#battleGradient)"
+    } else {
+        get_theme_color(page)
+    };
     border += "<path fill=\"";
     border += border_color.clone();
     border += "\" d=\"M686 863h-6v-7h6v7Z\"/><path fill=\"";
@@ -77,5 +84,19 @@ pub fn generate_sliding_container_start() -> ByteArray {
 /// @return SVG group closing tag for page sliding animations
 pub fn generate_sliding_container_end() -> ByteArray {
     "</g>"
+}
+
+/// @notice Generate battle gradient definition for SVG
+/// @dev Creates the linear gradient definition used in Union.svg for battle elements
+/// @return SVG gradient definition that transitions from orange-red to green
+pub fn generate_battle_gradient() -> ByteArray {
+    let mut gradient = "";
+    gradient += "<defs>";
+    gradient += "<linearGradient id=\"battleGradient\" x1=\"284.3\" x2=\"284.3\" y1=\".8\" y2=\"862.8\" gradientUnits=\"userSpaceOnUse\">";
+    gradient += "<stop stop-color=\"#FE9676\"/>";
+    gradient += "<stop offset=\"1\" stop-color=\"#58F54C\"/>";
+    gradient += "</linearGradient>";
+    gradient += "</defs>";
+    gradient
 }
 

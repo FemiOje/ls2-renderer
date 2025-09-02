@@ -38,7 +38,7 @@ pub fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray 
 
     // Second line: "Current Battle" (positioned below the player name at aligned x position)
     content +=
-        "<text x=\"274\" y=\"160\" text-anchor=\"left\" fill=\"#FF6B6B\" font-family=\"monospace\" font-size=\"20\" font-weight=\"bold\">Current Battle</text>";
+        "<text x=\"274\" y=\"160\" text-anchor=\"left\" fill=\"#FE9676\" font-family=\"monospace\" font-size=\"20\" font-weight=\"bold\">Current Battle</text>";
 
     content += generate_logo_with_page(2);
 

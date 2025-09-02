@@ -12,7 +12,7 @@ pub fn get_theme_color(page: u8) -> ByteArray {
     match page {
         0 => "#78E846", // Page 0 (Inventory) - Green theme
         1 => "#E89446", // Page 1 (ItemBag) - Orange theme  
-        2 => "#FF6B6B", // Page 2 (Battle) - Red theme
+        2 => "#FE9676", // Page 2 (Battle) - Red theme
         3 => "#888888", // Page 3 (Death) - Grey theme
         _ => "#78E846" // Default to green
     }
