@@ -32,10 +32,10 @@ const MESSAGE_WIDTH: u32 = 421_u32;
 
 /// @notice Generate the top battle row containing beast information
 /// @dev Creates red-themed row with beast sprite, power, and level display
-/// @param power The beast's power value to display
-/// @param level The beast's level to display
+/// @param power The beast's power value to display (or "-" if unknown)
+/// @param level The beast's level to display (or "-" if unknown)
 /// @return SVG content for the beast battle row
-pub fn generate_beast_battle_row(power: u64, level: u64) -> ByteArray {
+pub fn generate_beast_battle_row(power: ByteArray, level: ByteArray) -> ByteArray {
     let mut row = "";
 
     // beast row background container
@@ -73,7 +73,7 @@ pub fn generate_beast_battle_row(power: u64, level: u64) -> ByteArray {
     row +=
         "<text x=\"467\" y=\"331\" fill=\"#FE9676\" class=\"s16\" text-anchor=\"middle\">POWER</text>";
     row += "<text x=\"467\" y=\"370\" fill=\"#FE9676\" class=\"s32\" text-anchor=\"middle\">";
-    row += u64_to_string(power);
+    row += power;
     row += "</text>";
 
     // Level column
@@ -95,7 +95,7 @@ pub fn generate_beast_battle_row(power: u64, level: u64) -> ByteArray {
     row +=
         "<text x=\"591\" y=\"331\" fill=\"#FE9676\" class=\"s16\" text-anchor=\"middle\">LEVEL</text>";
     row += "<text x=\"591\" y=\"370\" fill=\"#FE9676\" class=\"s32\" text-anchor=\"middle\">";
-    row += u64_to_string(level);
+    row += level;
     row += "</text>";
 
     row

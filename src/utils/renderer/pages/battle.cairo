@@ -45,16 +45,15 @@ pub fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray 
     // Generate modular battle layout components
 
     // Row 1: beast battle information (red/pink theme)
-    let beast_power = 25_u64; // Mock beast power
-    let beast_level = 3_u64; // Mock beast level
-    content += generate_beast_battle_row(beast_power, beast_level);
+    // Beast power and level are unknown, so display dashes
+    content += generate_beast_battle_row("-", "-");
 
     // Add beast sprite to the character column
-    content += generate_beast_sprite(280, 280);
+    content += generate_beast_sprite(260, 280);
 
     // Display beast health as text only (no health bar since we don't know max health)
     if adventurer.beast_health > 0 {
-        content += "<text x=\"315\" y=\"405\" fill=\"#FE9676\" class=\"s16\" text-anchor=\"middle\">";
+        content += "<text x=\"260\" y=\"405\" fill=\"#FE9676\" class=\"s16\" text-anchor=\"middle\">";
         content += format!("{}", adventurer.beast_health);
         content += " HP</text>";
     }
@@ -68,12 +67,12 @@ pub fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray 
 
     // Add player sprite to the character column
     let has_weapon = adventurer.equipment.weapon.id != 0;
-    content += generate_player_sprite(280, 620, has_weapon);
+    content += generate_player_sprite(260, 620, has_weapon);
 
     // Add player health bar - use safe health calculation
     let vitality_bonus: u64 = (adventurer.stats.vitality * 15).into();
     let max_health: u64 = 100 + vitality_bonus;
-    content += generate_health_bar(240, 740, adventurer.health.into(), max_health, "#78E846");
+    content += generate_health_bar(235, 740, adventurer.health.into(), max_health, "#78E846");
 
     content
 }
