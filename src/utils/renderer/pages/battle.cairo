@@ -15,16 +15,16 @@ use death_mountain_renderer::utils::renderer::core::text_utils::{
 // Import modular battle layout components
 use death_mountain_renderer::utils::renderer::pages::battle_layout::{
     generate_battle_message_row, generate_health_bar, generate_player_battle_row,
-    generate_troll_battle_row,
+    generate_beast_battle_row,
 };
 use death_mountain_renderer::utils::renderer::pages::battle_messages::generate_battle_message;
 use death_mountain_renderer::utils::renderer::pages::battle_sprites::{
-    generate_player_sprite, generate_troll_sprite,
+    generate_player_sprite, generate_beast_sprite,
 };
 use death_mountain_renderer::utils::string::string_utils::felt252_to_string;
 
 /// @notice Generate battle page content (Page 2 - Battle interface)
-/// @dev Creates modular 3-row battle layout with troll, message, and player sections
+/// @dev Creates modular 3-row battle layout with beast, message, and player sections
 /// @param adventurer The adventurer data to render
 /// @return Complete SVG content for battle page with modular layout
 pub fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray {
@@ -44,16 +44,20 @@ pub fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray 
 
     // Generate modular battle layout components
 
-    // Row 1: Troll battle information (red/pink theme)
-    let troll_power = 25_u64; // Mock troll power
-    let troll_level = 3_u64; // Mock troll level
-    content += generate_troll_battle_row(troll_power, troll_level);
+    // Row 1: beast battle information (red/pink theme)
+    let beast_power = 25_u64; // Mock beast power
+    let beast_level = 3_u64; // Mock beast level
+    content += generate_beast_battle_row(beast_power, beast_level);
 
-    // Add troll sprite to the character column
-    content += generate_troll_sprite(280, 280);
+    // Add beast sprite to the character column
+    content += generate_beast_sprite(280, 280);
 
-    // Add troll health bar
-    content += generate_health_bar(240, 380, 85, 100, "#FE9676");
+    // Display beast health as text only (no health bar since we don't know max health)
+    if adventurer.beast_health > 0 {
+        content += "<text x=\"315\" y=\"405\" fill=\"#FE9676\" class=\"s16\" text-anchor=\"middle\">";
+        content += format!("{}", adventurer.beast_health);
+        content += " HP</text>";
+    }
 
     // Row 2: Battle message (orange theme)
     let battle_message = generate_battle_message(adventurer.clone());
@@ -69,7 +73,7 @@ pub fn generate_battle_page_content(adventurer: AdventurerVerbose) -> ByteArray 
     // Add player health bar - use safe health calculation
     let vitality_bonus: u64 = (adventurer.stats.vitality * 15).into();
     let max_health: u64 = 100 + vitality_bonus;
-    content += generate_health_bar(240, 720, adventurer.health.into(), max_health, "#78E846");
+    content += generate_health_bar(240, 740, adventurer.health.into(), max_health, "#78E846");
 
     content
 }

@@ -61,7 +61,7 @@ pub fn ring() -> ByteArray {
 }
 
 /// @notice Generates the power icon SVG path with customizable fill color
-/// @dev Power icon that can be themed for both player and troll stats
+/// @dev Power icon that can be themed for both player and beast stats
 /// @param fill_color The fill color for the power icon (e.g., "#78E846" for green, "#FE9676" for
 /// orange)
 /// @return SVG path element for power icon with specified color
@@ -74,7 +74,7 @@ pub fn power_icon(fill_color: ByteArray) -> ByteArray {
 }
 
 /// @notice Generates the level icon SVG path
-/// @dev Level indicator icon for both player and troll with customizable color
+/// @dev Level indicator icon for both player and beast with customizable color
 /// @param fill_color The fill color for the level icon
 /// @return SVG path element for level icon
 pub fn level_icon(fill_color: ByteArray) -> ByteArray {

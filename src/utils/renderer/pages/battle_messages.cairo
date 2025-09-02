@@ -32,30 +32,7 @@ pub fn generate_battle_message(adventurer: AdventurerVerbose) -> ByteArray {
 /// @param adventurer The adventurer data with active beast combat
 /// @return Combat-specific battle message
 fn generate_combat_message(adventurer: AdventurerVerbose) -> ByteArray {
-    let mut message = "";
-
-    // Generate damage message based on health difference
-    let damage_taken: u64 = if adventurer.health < 100 {
-        (100 - adventurer.health).into()
-    } else {
-        0
-    };
-
-    if damage_taken > 0 {
-        message += "TROLL AMBUSHED YOU FOR ";
-        message += u64_to_string(damage_taken);
-        message += " DMG!";
-    } else {
-        // Alternative combat messages
-        let message_variant = adventurer.xp % 5; // Use XP for pseudo-randomness
-        message += match message_variant {
-            0 => "TROLL BLOCKS YOUR ATTACK!",
-            1 => "YOU STRIKE THE TROLL!",
-            2 => "TROLL ROARS MENACINGLY!",
-            3 => "COMBAT IS INTENSE!",
-            _ => "BATTLE CONTINUES!",
-        };
-    }
+    let mut message = "BATTLE IN PROGRESS...";
 
     message
 }
@@ -71,7 +48,7 @@ fn generate_death_message() -> ByteArray {
 /// @dev Creates message for peaceful exploration state
 /// @return Exploration-specific message
 fn generate_exploration_message() -> ByteArray {
-    "EXPLORING THE DEPTHS..."
+    "BATTLE IN PROGRESS..."
 }
 
 /// @notice Generate victory message

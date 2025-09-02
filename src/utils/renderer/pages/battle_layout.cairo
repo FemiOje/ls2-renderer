@@ -2,7 +2,7 @@
 //
 // @title Battle Layout Components
 // @notice Modular components for the 3-row battle interface layout
-// @dev Implements the troll/player battle interface with row-based structure
+// @dev Implements the beast/player battle interface with row-based structure
 // @author Built for the Loot Survivor ecosystem
 
 use death_mountain_renderer::models::models::AdventurerVerbose;
@@ -12,7 +12,7 @@ use death_mountain_renderer::utils::renderer::components::icons::{
 use death_mountain_renderer::utils::string::string_utils::u64_to_string;
 
 // Layout constants based on Frame 4191 reference design
-const BATTLE_ROW_Y: u32 = 220_u32; // Top row (troll) Y position
+const BATTLE_ROW_Y: u32 = 220_u32; // Top row (beast) Y position
 const BATTLE_ROW_HEIGHT: u32 = 222_u32; // Height of top/bottom rows
 const MESSAGE_ROW_Y: u32 = 470_u32; // Middle message row Y position  
 const MESSAGE_ROW_HEIGHT: u32 = 66_u32; // Height of message row
@@ -30,15 +30,15 @@ const COL3_WIDTH: u32 = 110_u32; // Level/stats column width
 const MESSAGE_X: u32 = 225_u32;
 const MESSAGE_WIDTH: u32 = 421_u32;
 
-/// @notice Generate the top battle row containing troll information
-/// @dev Creates red-themed row with troll sprite, power, and level display
-/// @param power The troll's power value to display
-/// @param level The troll's level to display
-/// @return SVG content for the troll battle row
-pub fn generate_troll_battle_row(power: u64, level: u64) -> ByteArray {
+/// @notice Generate the top battle row containing beast information
+/// @dev Creates red-themed row with beast sprite, power, and level display
+/// @param power The beast's power value to display
+/// @param level The beast's level to display
+/// @return SVG content for the beast battle row
+pub fn generate_beast_battle_row(power: u64, level: u64) -> ByteArray {
     let mut row = "";
 
-    // Troll row background container
+    // beast row background container
     row += "<rect x=\"";
     row += format!("{}", COL1_X);
     row += "\" y=\"";
@@ -49,10 +49,10 @@ pub fn generate_troll_battle_row(power: u64, level: u64) -> ByteArray {
     row += format!("{}", BATTLE_ROW_HEIGHT);
     row += "\" rx=\"6\" fill=\"#210E04\"/>";
 
-    // Troll label
+    // beast label
     row += "<rect x=\"238\" y=\"233\" width=\"60\" height=\"21\" rx=\"2\" fill=\"#FE9675\"/>";
     row +=
-        "<text x=\"268\" y=\"249\" fill=\"black\" class=\"s16\" text-anchor=\"middle\">TROLL</text>";
+        "<text x=\"268\" y=\"249\" fill=\"black\" class=\"s16\" text-anchor=\"middle\">BEAST</text>";
 
     // Power column
     row += "<rect x=\"";
