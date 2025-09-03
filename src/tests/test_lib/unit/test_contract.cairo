@@ -28,13 +28,31 @@ fn deploy_mock_adventurer() -> ContractAddress {
 }
 
 fn deploy_renderer_contract() -> (ContractAddress, ContractAddress) {
-    let mock_adventurer_address = deploy_mock_adventurer();
-
+    let owner: ContractAddress = 0x123.try_into().unwrap();
+    
     let contract_class = declare("renderer_contract").unwrap().contract_class();
-    let constructor_args = array![mock_adventurer_address.into()];
+    let constructor_args = array![owner.into()];
 
     let (renderer_contract_address, _) = contract_class.deploy(@constructor_args).unwrap();
-    (mock_adventurer_address, renderer_contract_address)
+    (owner, renderer_contract_address)
+}
+
+fn deploy_renderer_contract_with_death_mountain() -> (ContractAddress, ContractAddress, ContractAddress) {
+    let mock_adventurer_address = deploy_mock_adventurer();
+    let owner: ContractAddress = 0x123.try_into().unwrap();
+    
+    let contract_class = declare("renderer_contract").unwrap().contract_class();
+    let constructor_args = array![owner.into()];
+
+    let (renderer_contract_address, _) = contract_class.deploy(@constructor_args).unwrap();
+    
+    // Set the death mountain address as the owner
+    let contract = IRendererDispatcher { contract_address: renderer_contract_address };
+    start_cheat_caller_address(renderer_contract_address, owner);
+    contract.set_death_mountain_address(mock_adventurer_address);
+    stop_cheat_caller_address(renderer_contract_address);
+    
+    (mock_adventurer_address, renderer_contract_address, owner)
 }
 
 #[test]
@@ -45,19 +63,19 @@ fn test_contract_constructor_valid_address() {
 
 
 #[test]
-fn test_contract_constructor_zero_address_panic() {
+fn test_contract_constructor_zero_owner_panic() {
     let zero_address: ContractAddress = 0_felt252.try_into().unwrap();
 
     let contract_class = declare("renderer_contract").unwrap().contract_class();
     let constructor_args = array![zero_address.into()];
 
     let deployment_result = contract_class.deploy(@constructor_args);
-    assert!(deployment_result.is_err(), "Deployment should fail with zero address");
+    assert!(deployment_result.is_err(), "Deployment should fail with zero owner address");
 }
 
 #[test]
 fn test_contract_implements_minigame_details() {
-    let (_, contract_address) = deploy_renderer_contract();
+    let (_, contract_address, _) = deploy_renderer_contract_with_death_mountain();
     let contract = IMinigameDetailsDispatcher { contract_address };
 
     let _traits = contract.game_details(TEST_TOKEN_ID);
@@ -66,7 +84,7 @@ fn test_contract_implements_minigame_details() {
 
 #[test]
 fn test_contract_implements_minigame_details_svg() {
-    let (_, contract_address) = deploy_renderer_contract();
+    let (_, contract_address, _) = deploy_renderer_contract_with_death_mountain();
     let contract = IMinigameDetailsSVGDispatcher { contract_address };
 
     let _svg_data = contract.game_details_svg(TEST_TOKEN_ID);
@@ -74,7 +92,7 @@ fn test_contract_implements_minigame_details_svg() {
 
 #[test]
 fn test_contract_implements_renderer() {
-    let (mock_address, contract_address) = deploy_renderer_contract();
+    let (mock_address, contract_address, _) = deploy_renderer_contract_with_death_mountain();
 
     let contract = IRendererDispatcher { contract_address };
     let stored_address = contract.get_death_mountain_address();
@@ -306,4 +324,70 @@ fn test_contract_interface_inheritance() {
     );
     assert_eq!(svg_contract.contract_address, contract_address, "IMinigameDetailsSVG should match");
     assert_eq!(renderer_contract.contract_address, contract_address, "IRenderer should match");
+}
+
+// Ownership Tests
+
+#[test]
+fn test_ownership_set_death_mountain_address_as_owner() {
+    let (_, contract_address) = deploy_renderer_contract();
+    let owner: ContractAddress = 0x123.try_into().unwrap();
+    let new_death_mountain_address: ContractAddress = 0x999.try_into().unwrap();
+    
+    let contract = IRendererDispatcher { contract_address };
+    
+    start_cheat_caller_address(contract_address, owner);
+    contract.set_death_mountain_address(new_death_mountain_address);
+    stop_cheat_caller_address(contract_address);
+    
+    let stored_address = contract.get_death_mountain_address();
+    assert_eq!(stored_address, new_death_mountain_address, "Death Mountain address should be updated");
+}
+
+#[test]
+#[should_panic(expected: ('Caller is not the owner',))]
+fn test_ownership_set_death_mountain_address_as_non_owner() {
+    let (_, contract_address) = deploy_renderer_contract();
+    let non_owner: ContractAddress = 0x456.try_into().unwrap();
+    let new_death_mountain_address: ContractAddress = 0x999.try_into().unwrap();
+    
+    let contract = IRendererDispatcher { contract_address };
+    
+    start_cheat_caller_address(contract_address, non_owner);
+    contract.set_death_mountain_address(new_death_mountain_address);  // Should panic
+    stop_cheat_caller_address(contract_address);
+}
+
+#[test]
+#[should_panic]
+fn test_ownership_set_zero_death_mountain_address() {
+    let (_, contract_address) = deploy_renderer_contract();
+    let owner: ContractAddress = 0x123.try_into().unwrap();
+    let zero_address: ContractAddress = 0_felt252.try_into().unwrap();
+    
+    let contract = IRendererDispatcher { contract_address };
+    
+    start_cheat_caller_address(contract_address, owner);
+    contract.set_death_mountain_address(zero_address);  // Should panic
+    stop_cheat_caller_address(contract_address);
+}
+
+#[test]
+#[should_panic]
+fn test_game_details_without_death_mountain_set() {
+    let (_, contract_address) = deploy_renderer_contract();
+    let contract = IMinigameDetailsDispatcher { contract_address };
+    
+    // Should panic because death mountain address is not set
+    let _traits = contract.game_details(TEST_TOKEN_ID);
+}
+
+#[test]
+#[should_panic]
+fn test_game_details_svg_without_death_mountain_set() {
+    let (_, contract_address) = deploy_renderer_contract();
+    let contract = IMinigameDetailsSVGDispatcher { contract_address };
+    
+    // Should panic because death mountain address is not set
+    let _svg = contract.game_details_svg(TEST_TOKEN_ID);
 }
